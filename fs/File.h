@@ -109,10 +109,18 @@ public:
 		return fileName.substr(pos+1);
 	}
 
-	/** get the file's extension only */
+	/** get the file's extension only (like "xml") */
 	std::string getExtension() const {
 		size_t pos1 = fileName.find_last_of(NEEDED_SLASH);
 		size_t pos2 = fileName.find_last_of(".");
+		if (pos2 == fileName.npos || pos2 < pos1) {return "";}
+		return fileName.substr(pos2+1);
+	}
+
+	/** get the file's extension only, supporting multiple extensions (like "xml.gz") */
+	std::string getExtensionMulti() const {
+		size_t pos1 = fileName.find_last_of(NEEDED_SLASH);
+		size_t pos2 = fileName.find_first_of(".", pos1);
 		if (pos2 == fileName.npos || pos2 < pos1) {return "";}
 		return fileName.substr(pos2+1);
 	}

@@ -8,6 +8,7 @@
 #ifndef GZIPINPUTSTREAM_H_
 #define GZIPINPUTSTREAM_H_
 
+#include "GzipOutputStream.h"
 #include "InputStream.h"
 #include "Buffer.h"
 #include <zlib.h>

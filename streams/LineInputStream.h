@@ -8,80 +8,92 @@
 #ifndef LINEINPUTSTREAM_H_
 #define LINEINPUTSTREAM_H_
 
-#include "BufferedInputStream.h"
+#include "InputStream.h"
 
 namespace K {
 
-class LineInputStream : public InputStream {
-public:
+	class LineInputStream : public InputStream {
+	public:
 
-	/** ctor */
-	LineInputStream(BufferedInputStream& bis) : bis(bis), lastChar(0) {
-		;
-	}
+		/** ctor */
+		LineInputStream(InputStream& is) : is(is), lastChar(0) {
+			;
+		}
 
-	/** dtor */
-	virtual ~LineInputStream() {
-		;
-	}
+		/** dtor */
+		virtual ~LineInputStream() {
+			;
+		}
 
-	/** read next line from the underlying device */
-	std::string readLine() {
+		/** read the whole file */
+		std::string readAll() {
+			std::string s = "";
+			while(true) {
+				uint8_t buf[4096];
+				int len = read(buf, 4096);
+				if (len == -1) {break;}
+				s += std::string( (const char*) buf, len );
+			}
+			return s;
+		}
 
-		std::string ret;
-		int byte;
+		/** read next line from the underlying device */
+		std::string readLine() {
 
-		// build output
-		while (true) {
+			std::string ret;
+			int byte;
 
-			// get next byte
-			byte = bis.read();
+			// build output
+			while (true) {
 
-			// check for EOF
-			if (byte == -1) {break;}
+				// get next byte
+				byte = is.read();
 
-			// split?
-			if (byte == '\r') {break;}
-			if (byte == '\n') {
-				if (lastChar == '\r') {lastChar = byte; continue;}
-				break;
+				// check for EOF
+				if (byte == -1) {break;}
+
+				// split?
+				if (byte == '\r') {break;}
+				if (byte == '\n') {
+					if (lastChar == '\r') {lastChar = byte; continue;}
+					break;
+				}
+
+				// append current char
+				ret += (char) byte;
+				lastChar = byte;
+
 			}
 
-			// append current char
-			ret += (char) byte;
 			lastChar = byte;
+
+			// done
+			return ret;
 
 		}
 
-		lastChar = byte;
+		int read() override {
+			return is.read();
+		}
 
-		// done
-		return ret;
+		int read(uint8_t* data, unsigned int len) override {
+			return is.read(data, len);
+		}
 
-	}
-
-	int read() override {
-		return bis.read();
-	}
-
-	int read(uint8_t* data, unsigned int len) override {
-		return bis.read(data, len);
-	}
-
-	void close() override {
-		bis.close();
-	}
+		void close() override {
+			is.close();
+		}
 
 
-private:
+	private:
 
-	/** buffered input stream */
-	BufferedInputStream bis;
+		/** input stream. should be buffered! */
+		InputStream& is;
 
-	/** used to detect \r\n */
-	int lastChar;
+		/** used to detect \r\n */
+		int lastChar;
 
-};
+	};
 
 }
 
