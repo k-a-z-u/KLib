@@ -185,6 +185,14 @@ public:
 		return !S_ISDIR(buf.st_mode);
 	}
 
+	/** create this directory (all parent directories must already be present!) */
+	void mkdir() {
+		#ifdef __linux__
+			::mkdir(getAbsolutePath().c_str(), 0744);
+		#else
+			_mkdir(getAbsolutePath().c_str());
+		#endif
+	}
 
 	/** get all files/folders within this folder */
 	void listFiles(std::vector<File>& lst) {
@@ -204,6 +212,14 @@ public:
 		// cleanup
 		closedir(pDIR);
 
+	}
+
+	/** quick&dirty write-to-file function */
+	void write(uint8_t* data, uint32_t len) {
+		FILE* handle = fopen(getAbsolutePath().c_str(), "wb");
+		if (!handle) {throw FileException("could not open file '" + getAbsolutePath() + "' for writing");}
+		fwrite(data, len, 1, handle);
+		fclose(handle);
 	}
 
 	/** delete this file */
