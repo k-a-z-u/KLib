@@ -8,7 +8,7 @@
 
 #ifdef WITH_TESTS
 #include "../Test.h"
-#include "../../klib/streams/ByteArrayOutputStream.h"
+#include "../../streams/ByteArrayOutputStream.h"
 
 using namespace K;
 

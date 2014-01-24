@@ -15,8 +15,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#include "../../klib/sockets/SocketInputStream.h"
-#include "../../klib/sockets/SocketOutputStream.h"
+#include "SocketInputStream.h"
+#include "SocketOutputStream.h"
 
 namespace K {
 

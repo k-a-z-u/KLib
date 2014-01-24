@@ -8,15 +8,15 @@
 
 #ifdef WITH_TESTS
 #include "../Test.h"
-#include "../../klib/streams/GzipOutputStream.h"
-#include "../../klib/streams/GzipInputStream.h"
-#include "../../klib/streams/ByteArrayOutputStream.h"
-#include "../../klib/streams/ByteArrayInOutStream.h"
-#include "../../klib/streams/ByteArrayInputStream.h"
-#include "../../klib/streams/FileOutputStream.h"
-#include "../../klib/streams/FileInputStream.h"
-#include "../../klib/streams/BufferedInputStream.h"
-#include "../../klib/streams/BufferedOutputStream.h"
+#include "../../streams/GzipOutputStream.h"
+#include "../../streams/GzipInputStream.h"
+#include "../../streams/ByteArrayOutputStream.h"
+#include "../../streams/ByteArrayInOutStream.h"
+#include "../../streams/ByteArrayInputStream.h"
+#include "../../streams/FileOutputStream.h"
+#include "../../streams/FileInputStream.h"
+#include "../../streams/BufferedInputStream.h"
+#include "../../streams/BufferedOutputStream.h"
 #include <cmath>
 
 using namespace K;

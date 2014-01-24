@@ -13,7 +13,7 @@
 
 #ifdef WITH_TESTS
 #include "../Test.h"
-#include "../../klib/streams/ByteArrayInOutStream.h"
+#include "../../streams/ByteArrayInOutStream.h"
 
 using namespace K;
 

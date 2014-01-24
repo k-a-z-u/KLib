@@ -12,7 +12,7 @@
 #ifdef WITH_TESTS
 #include "../Test.h"
 #include <cstdint>
-#include "../../klib/streams/Buffer.h"
+#include "../../streams/Buffer.h"
 
 using namespace K;
 

@@ -10,10 +10,10 @@
 
 #ifdef WITH_TESTS
 #include "../../Test.h"
-#include "../../../klib/fs/File.h"
-#include "../../../klib/gfx/svg/SVGFile.h"
-#include "../../../klib/gfx/svg/SVGLayer.h"
-#include "../../../klib/gfx/svg/SVGPath.h"
+#include "../../../fs/File.h"
+#include "../../../gfx/svg/SVGFile.h"
+#include "../../../gfx/svg/SVGLayer.h"
+#include "../../../gfx/svg/SVGPath.h"
 
 using namespace K;
 

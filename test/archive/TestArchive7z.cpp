@@ -10,7 +10,7 @@
 
 #ifdef WITH_TESTS
 #include "../Test.h"
-#include "../../klib/archive/Archive7z.h"
+#include "../../archive/Archive7z.h"
 #include <vector>
 #include <cstdint>
 

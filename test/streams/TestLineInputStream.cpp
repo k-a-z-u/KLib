@@ -12,9 +12,9 @@
 
 #include "../Test.h"
 
-#include "../../klib/streams/LineInputStream.h"
-#include "../../klib/streams/BufferedInputStream.h"
-#include "../../klib/streams/ByteArrayInputStream.h"
+#include "../../streams/LineInputStream.h"
+#include "../../streams/BufferedInputStream.h"
+#include "../../streams/ByteArrayInputStream.h"
 
 using namespace K;
 

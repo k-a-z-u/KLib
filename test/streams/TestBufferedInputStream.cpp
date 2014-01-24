@@ -10,8 +10,8 @@
 
 #ifdef WITH_TESTS
 #include "../Test.h"
-#include "../../klib/streams/ByteArrayInputStream.h"
-#include "../../klib/streams/BufferedInputStream.h"
+#include "../../streams/ByteArrayInputStream.h"
+#include "../../streams/BufferedInputStream.h"
 
 using namespace K;
 

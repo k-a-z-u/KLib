@@ -11,8 +11,8 @@
 #ifdef WITH_TESTS
 #include "../Test.h"
 #include "../TestHelper.h"
-#include "../../klib/sockets/ServerSocket.h"
-#include "../../klib/sockets/Socket.h"
+#include "../../sockets/ServerSocket.h"
+#include "../../sockets/Socket.h"
 
 using namespace K;
 
