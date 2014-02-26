@@ -8,6 +8,8 @@
 #ifndef ARCHIVE7Z_H_
 #define ARCHIVE7Z_H_
 
+#ifdef WITH_7Z
+
 extern "C" {
 #include "../inc/7z/7z.h"
 #include "../inc/7z/7zAlloc.h"
@@ -297,5 +299,7 @@ typedef std::function< void(const std::string& file, float percent)> Archive7zCa
 
 
 }
+
+#endif
 
 #endif /* ARCHIVE7Z_H_ */

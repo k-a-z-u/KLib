@@ -11,12 +11,14 @@
 #include <exception>
 #include <string>
 
+/**
+ * exception handling within the sockets backend
+ */
 class SocketException : public std::exception {
 
 public:
 
-	//virtual ~SocketException() {;}
-
+	/** ctor */
 	SocketException(const std::string& msg) : msg(msg) {
 		;
 	}

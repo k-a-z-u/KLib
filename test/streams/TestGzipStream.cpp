@@ -7,6 +7,10 @@
 
 
 #ifdef WITH_TESTS
+
+#ifdef WITH_ZLIB
+
+
 #include "../Test.h"
 #include "../../streams/GzipOutputStream.h"
 #include "../../streams/GzipInputStream.h"
@@ -267,5 +271,7 @@ TEST(GzipStream, compressDecompressFlush) {
 	}
 
 }
+
+#endif
 
 #endif

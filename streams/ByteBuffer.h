@@ -17,24 +17,42 @@ class ByteBuffer {
 public:
 
 	/** ctor */
-	ByteBuffer();
+	ByteBuffer(unsigned int initialSize = 4096) {
+		resize(initialSize);
+	}
 
 	/** dtor */
-	~ByteBuffer();
+	~ByteBuffer() {
+		if(data) {free(data);}
+	}
 
 	/** append the given data */
-	void write(uint8_t* data, int len);
+	void write(uint8_t* data, int len) {
+		ensureSpaceFor(len);
+		memcpy(this->data+used, data, len);
+		this->used += len;
+	}
 
 	/** get the number of free bytes */
-	unsigned int freeBytes();
+	unsigned int freeBytes() {
+		return size - used;
+	}
 
 private:
 
 	/** make sure the buffer has at least the given size */
-	void resize(unsigned int size);
+	void resize(unsigned int size) {
+		data = (uint8_t*) realloc(data, size);
+		this->size = size;
+	}
 
 	/** ensure the buffer provides space for the given number of bytes */
-	void ensureSpaceFor(unsigned int size);
+	void ensureSpaceFor(unsigned int size) {
+		unsigned int free = freeBytes();
+		if (free > size) {return;}
+		unsigned int newSize = (this->size + size) * 2;
+		resize(newSize);
+	}
 
 
 	/** the data buffer */

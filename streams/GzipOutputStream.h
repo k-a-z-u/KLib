@@ -8,6 +8,8 @@
 #ifndef GZIPOUTPUTSTREAM_H_
 #define GZIPOUTPUTSTREAM_H_
 
+#ifdef WITH_ZLIB
+
 #include "OutputStream.h"
 #include <zlib.h>
 
@@ -158,5 +160,6 @@ private:
 
 }
 
+#endif
 
 #endif /* GZIPOUTPUTSTREAM_H_ */

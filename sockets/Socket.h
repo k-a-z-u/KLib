@@ -11,12 +11,14 @@
 #include "SocketTypes.h"
 #include "SocketException.h"
 
+#include "SocketInputStream.h"
+#include "SocketOutputStream.h"
+
+#ifdef WITH_SSL
 #include <openssl/rand.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-
-#include "SocketInputStream.h"
-#include "SocketOutputStream.h"
+#endif
 
 namespace K {
 
@@ -42,12 +44,15 @@ public:
 	/** close the socket */
 	void close();
 
+#ifdef WITH_SSL
 
 	/** initiate a SSL handshake to be answered by the other side */
 	void startServerSSL();
 
 	/** answer a SSL handshake initiated by the other side */
 	void startClientSSL();
+
+#endif
 
 
 	/** get an InputStream to read from this socket */
@@ -83,6 +88,7 @@ private:
 	/** the socket's handle */
 	int handle;
 
+#ifdef WITH_SSL
 	/** SSL specifics */
 	struct SSLs {
 		SSL* handle;
@@ -90,6 +96,8 @@ private:
 		bool enabled;
 		SSLs() : handle(nullptr), context(nullptr), enabled(false) {;}
 	} ssl;
+#endif
+
 
 };
 

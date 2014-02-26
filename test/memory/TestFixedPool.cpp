@@ -27,15 +27,18 @@ namespace K {
 		ASSERT_EQ(nullptr, pool.freeList);
 		ASSERT_EQ(nullptr, pool.chunkList);
 
-		for (unsigned int i = 0; i < 1023; ++i) {
+		// allocate max-size minus 1 elements
+		for (unsigned int i = 0; i < (K::FixedPool<Dummy>::Chunk::numEntries-1); ++i) {
 			pool.alloc();
 			ASSERT_NE(nullptr, pool.freeList);
 		}
 
+		// after allocating another element, the current chunk should be filled completely
 		Dummy* m = pool.alloc();
 		ASSERT_EQ(nullptr, pool.freeList);
 		ASSERT_NE(nullptr, pool.chunkList);
 
+		// one chunk should be freed by now
 		pool.free(m);
 		ASSERT_NE(nullptr, pool.freeList);
 

@@ -6,9 +6,9 @@
  */
 
 
-
-
 #ifdef WITH_TESTS
+#ifdef WITH_7Z
+
 #include "../Test.h"
 #include "../../archive/Archive7z.h"
 #include <vector>
@@ -22,7 +22,9 @@ TEST(Archive7z, open) {
 	std::string s2 = "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. \n";
 	std::string s3 = "Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. \n";
 
-	Archive7z zz(File("/apps/workspaces/mail/KLib/test/archive/test.7z"));
+	File folder = File(__FILE__).getParent();
+	File file = File(folder, "test.7z");
+	Archive7z zz(file);
 
 	Archive7zComposite root = zz.getFiles();
 
@@ -45,4 +47,5 @@ TEST(Archive7z, open) {
 
 }
 
+#endif
 #endif

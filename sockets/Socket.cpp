@@ -21,6 +21,7 @@
 //	signing-request:	openssl req -new -key privkey.pem -out server.csr
 //	certificate:		openssl x509 -req -days 365 -in server.csr -signkey privkey.pem -out server.crt
 
+
 namespace K {
 
 Socket::Socket() : handle(0) {
@@ -61,6 +62,8 @@ void Socket::connect(const SckHost& host, const SckPort port) {
 
 }
 
+#ifdef WITH_SSL
+
 void Socket::startServerSSL() {
 
 	SSL_load_error_strings ();
@@ -76,8 +79,8 @@ void Socket::startServerSSL() {
 	ssl.context = SSL_CTX_new (SSLv23_server_method ());
 	if (!ssl.context) {throw SSLSocketException("error while creating ssl context");}//ERR_print_errors_fp (stderr);}
 
-	std::string privateKey = "/apps/workspaces/mail/certs/privkey.pem";
-	std::string cert = "/apps/workspaces/mail/certs/server.crtt";
+	std::string privateKey = "";
+	std::string cert = "";
 
 	// load the certificate
 	ret = SSL_CTX_use_certificate_file(ssl.context, cert.c_str(), SSL_FILETYPE_PEM);
@@ -139,6 +142,8 @@ void Socket::startClientSSL() {
 
 }
 
+#endif
+
 SocketInputStream Socket::getInputStream() {
 	return SocketInputStream(*this);
 }
@@ -151,7 +156,11 @@ SocketOutputStream Socket::getOutputStream() {
 void Socket::write(uint8_t* data, unsigned int len) {
 	ssize_t ret = 0;
 	if (ssl.enabled) {
+#ifdef WITH_SSL
 		ret = SSL_write(ssl.handle, data, len);
+#else
+		throw new SocketException("compiled without SSL support");
+#endif
 	} else {
 		//ret = ::write(handle, data, (size_t) len);
 		ret = ::send(handle, data, (size_t) len, MSG_NOSIGNAL);
@@ -165,7 +174,11 @@ int Socket::read(uint8_t* data, unsigned int len) {
 	//if (!handle) {return -1;}
 	ssize_t ret = 0;
 	if (ssl.enabled) {
+#ifdef WITH_SSL
 		ret = SSL_read(ssl.handle, data, len);
+#else
+		throw new SocketException("compiled without SSL support");
+#endif
 	} else {
 		//ret = ::read(handle, data, (size_t) len);
 		ret = ::recv(handle, data, (size_t) len, MSG_NOSIGNAL);

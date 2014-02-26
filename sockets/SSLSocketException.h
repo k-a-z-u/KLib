@@ -8,11 +8,15 @@
 #ifndef SSLSOCKETEXCEPTION_H_
 #define SSLSOCKETEXCEPTION_H_
 
-
+/**
+ * special exceptions for errors within the SSL backend
+ * of the socket classes.
+ */
 class SSLSocketException : public std::exception {
 
 public:
 
+	/** ctor */
 	SSLSocketException(const std::string& msg) : msg(msg) {
 		this->msg += "\n";
 		this->msg += ERR_error_string(ERR_get_error(), nullptr);

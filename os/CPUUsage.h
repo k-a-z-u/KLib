@@ -11,7 +11,6 @@
 #error "TODO"
 #endif
 
-#include <iostream>
 
 namespace K {
 
@@ -33,7 +32,6 @@ namespace K {
 
 #if defined(__linux__)
 			uint64_t time = Time::getTimeMS();
-            std::cout << time << std::endl;
 			clock_t clk = clock();
 
 			clock_t clkDiff = clk - last.clk;
@@ -83,14 +81,16 @@ namespace K {
 
 
 #if defined(__linux__)
-		struct {
+		struct Last {
 			clock_t clk;
 			uint64_t time;
+			Last() : clk(0), time(0) {;}
 		} last;
 #elif defined(__WIN32__)
-        struct {
+		struct Last {
             uint64_t usage;
             uint64_t time;
+			Last() : usage(0), time(0) {;}
         } last;
 #endif
 

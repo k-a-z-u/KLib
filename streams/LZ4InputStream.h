@@ -9,7 +9,6 @@
 #define LZ4INPUTSTREAM_H_
 
 #include "lz4/lz4.h"
-//#include "lz4/lz4.hc"
 #include "InputStream.h"
 #include "Buffer.h"
 

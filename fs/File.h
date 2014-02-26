@@ -154,6 +154,11 @@ public:
 		return fileName;
 	}
 
+	/** get the relative (to working directory) path of this file */
+	std::string getRelativePath() const {
+		return fileName.substr( getWorkingDir().length() );
+	}
+
 	/** get the file's size */
 	size_t length() const {
 		struct stat status;

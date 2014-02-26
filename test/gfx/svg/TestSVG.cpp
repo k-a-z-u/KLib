@@ -19,7 +19,9 @@ using namespace K;
 
 TEST(SVG, load) {
 
-	File f("/apps/workspaces/mail/KLib/test/gfx/svg/1.svg");
+
+	File folder = File(__FILE__).getParent();
+	File f(folder, "1.svg");
 	SVGFile file(f);
 
 	SVGComposite* root = file.getLayers();
