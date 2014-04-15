@@ -5,8 +5,8 @@
  *      Author: kazu
  */
 
-#ifndef SOCKETEXCEPTION_H_
-#define SOCKETEXCEPTION_H_
+#ifndef K_SOCKET_SOCKETEXCEPTION_H_
+#define K_SOCKET_SOCKETEXCEPTION_H_
 
 #include <exception>
 #include <string>
@@ -35,4 +35,4 @@ private:
 };
 
 
-#endif /* SOCKETEXCEPTION_H_ */
+#endif /* K_SOCKET_SOCKETEXCEPTION_H_ */

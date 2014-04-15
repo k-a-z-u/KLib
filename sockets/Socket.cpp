@@ -10,6 +10,7 @@
 #include "SocketException.h"
 #include "SSLSocketException.h"
 
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -36,29 +37,22 @@ Socket::~Socket() {
 	close();
 }
 
-void Socket::connect(const SckHost& host, const SckPort port) {
+void Socket::connect(const NetworkAddress& target) {
 
 	close();
 
-	struct hostent* he;
-
-	// convert hostname to ip
-	he = gethostbyname( host.c_str() );
-	if (!he) {throw SocketException("error while retrieving IP for hostname: '" + host + "'");}
-
-	// connection struct
-	struct sockaddr_in srvAddr;
-	srvAddr.sin_addr = *((struct in_addr*)he->h_addr);
-	srvAddr.sin_family = AF_INET;
-	srvAddr.sin_port = htons(port);
-
 	// create socket
-	handle =  socket(AF_INET, SOCK_STREAM, 0);
+	handle = socket(AF_INET, SOCK_STREAM, 0);
 	if (handle == -1) {throw SocketException("error while creating socket");}
 
 	// connect
-	int ret = ::connect(handle, (struct sockaddr*) &srvAddr,  sizeof(struct sockaddr));
-	if (ret == -1) {throw SocketException("error while connecting to: " + host + ":" + std::to_string(port));}
+	const struct sockaddr_in& addr = target.getAsSocketAddress();
+	int ret = ::connect(handle, (struct sockaddr*) &addr, sizeof(struct sockaddr));
+
+	// success?
+	if (ret == -1) {
+		throw SocketException("error while connecting to: " + target.getHostIP() + ":" + std::to_string(target.getPort()));
+	}
 
 }
 

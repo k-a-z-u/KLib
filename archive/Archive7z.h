@@ -32,8 +32,8 @@ namespace K {
 typedef std::function< void(const std::string& file, float percent)> Archive7zCallback;
 
 	/**
- * exceptions for the 7z archiver
- */
+	 * exceptions for the 7z archiver
+	 */
 	class Archive7zException : public Exception {
 	public:
 		Archive7zException(const std::string& msg) : Exception(msg) {;}

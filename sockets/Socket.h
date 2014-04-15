@@ -14,6 +14,8 @@
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
 
+#include "address/NetworkAddress.h"
+
 #ifdef WITH_SSL
 #include <openssl/rand.h>
 #include <openssl/ssl.h>
@@ -38,8 +40,8 @@ public:
 	~Socket();
 
 
-	/** connect to the given host / port */
-	void connect(const SckHost& host, const SckPort port);
+	/** connect to the given NetworkAddress */
+	void connect(const NetworkAddress& target);
 
 	/** close the socket */
 	void close();

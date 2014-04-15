@@ -21,8 +21,9 @@ TEST(Sockets, data) {
 	ServerSocket ssck;
 	ssck.bind(1337);
 
+	NetworkAddress addr1("127.0.0.1", 1337);
 	Socket sck1;
-	sck1.connect("127.0.0.1", 1337);
+	sck1.connect(addr1);
 
 	Socket* sck2 = ssck.accept();
 

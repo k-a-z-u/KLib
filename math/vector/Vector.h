@@ -1,12 +1,11 @@
-#ifndef K_MATH_VECTOR_H
-#define K_MATH_VECTOR_H
+#ifndef K_MATH_VECTOR_VECTOR_H_
+#define K_MATH_VECTOR_VECTOR_H_
 
+#include <initializer_list>
+#include <cassert>
+#include <iosfwd>
 
 namespace K {
-
-	#include <initializer_list>
-	#include <cassert>
-	#include <iosfwd>
 
 	/**
 	 * represents a simple vector with some basic methods
@@ -17,22 +16,35 @@ namespace K {
 	public:
 
 		/** empty ctor */
-		Vector() : values() {
+		Vector() : _values(), values(_values) {
 			;
 		}
 
 		/** ctor from initializer value */
-		Vector(const std::initializer_list<type> list) {
+		Vector(const std::initializer_list<type> list) : values(_values) {
 			assert(list.size() == dimension);
 			for (unsigned int i = 0; i < list.size(); ++i) {
 				values[i] = *(list.begin() + i);
 			}
 		}
 
-		/** set the value for the given index (0=x, 1=z, ...) */
+		/** wrap the vector around the given external data array */
+		Vector(type* data) : values(data) {
+			;
+		}
+
+
+
+		/** set the value for the given index (0=x, 1=z, ...). performs out-of-bounds check */
 		void set(unsigned int idx, type val) {
-			static_assert(idx <= dimension, "index out of bounds");
+			assert(idx < dimension);
 			this->values[idx] = val;
+		}
+
+		/** get the value for the given index. performs out-of-bounds check */
+		type get(unsigned int idx) {
+			assert(idx < dimension);
+			return this->values[idx];
 		}
 
 		/** get the length of this vector */
@@ -57,6 +69,11 @@ namespace K {
 			}
 		}
 
+		/** get the width of this vector (usually 1) */
+		unsigned int getWidth() const {return 1;}
+
+		/** get the height of this vector */
+		unsigned int getHeight() const {return dimension;}
 
 		/** add another vector to this one */
 		Vector& operator += (const Vector& other) {
@@ -174,6 +191,11 @@ namespace K {
 		}
 
 
+		/** get the underlying array */
+		type* getArray() const {
+			return values;
+		}
+
 		/** write to output stream */
 		friend std::ostream& operator << (std::ostream& out, const Vector& v) {
 			out << "vector(";
@@ -189,10 +211,11 @@ namespace K {
 	private:
 
 		/** store value for each coordinate */
-		type values[dimension];
+		type _values[dimension];
+		type* values;
 
 	};
 
 }
 
-#endif // K_MATH_VECTOR_H
+#endif // K_MATH_VECTOR_VECTOR_H_
