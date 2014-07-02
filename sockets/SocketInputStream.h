@@ -32,6 +32,8 @@ public:
 
 	void close() override;
 
+	void skip(uint64_t n) override;
+
 private:
 
 	friend class Socket;

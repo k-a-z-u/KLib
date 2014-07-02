@@ -7,6 +7,7 @@
 
 
 #include "SocketInputStream.h"
+#include "../streams/StreamException.h"
 #include "Socket.h"
 
 namespace K {
@@ -33,6 +34,10 @@ int SocketInputStream::read(uint8_t* data, unsigned int len) {
 
 void SocketInputStream::close() {
 	sck.close();
+}
+
+void SocketInputStream::skip(uint64_t n) {
+	throw StreamException("socket.skip() not yet implemented!");
 }
 
 }

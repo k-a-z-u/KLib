@@ -95,4 +95,86 @@ TEST(Buffer, remove) {
 
 }
 
+TEST(Buffer, insertRemove) {
+
+	Buffer<uint8_t> buf;
+
+	ASSERT_EQ(0, buf.getNumUsed());
+	for (unsigned int i = 0; i < 0xFFFF; ++i) {
+		uint8_t b = (uint8_t) i;
+		buf.add(b);
+		ASSERT_EQ(1, buf.getNumUsed());
+		ASSERT_EQ(b, buf.get());
+		ASSERT_EQ(0, buf.getNumUsed());
+	}
+
+}
+
+
+TEST(Buffer, insertRemove2) {
+
+	Buffer<uint8_t> buf;
+
+	ASSERT_EQ(0, buf.getNumUsed());
+	for (unsigned int i = 0; i < 0xFFFF; ++i) {
+		uint8_t b = (uint8_t) i;
+		buf.add(b);	ASSERT_EQ(1, buf.getNumUsed());
+		buf.add(b);	ASSERT_EQ(2, buf.getNumUsed());
+		buf.add(b);	ASSERT_EQ(3, buf.getNumUsed());
+		ASSERT_EQ(b, buf.get());	ASSERT_EQ(2, buf.getNumUsed());
+		ASSERT_EQ(b, buf.get());	ASSERT_EQ(1, buf.getNumUsed());
+		ASSERT_EQ(b, buf.get());	ASSERT_EQ(0, buf.getNumUsed());
+	}
+
+}
+
+TEST(Buffer, insertRemove3) {
+
+	Buffer<uint8_t> buf;
+
+	ASSERT_EQ(0, buf.getNumUsed());
+	for (unsigned int i = 0; i < 0xFFFF; ++i) {
+		uint8_t b = (uint8_t) i;
+		buf.add(b);	ASSERT_EQ(i+1, buf.getNumUsed());
+	}
+
+	for (unsigned int i = 0; i < 0xFFFF; ++i) {
+		uint8_t b = (uint8_t) i;
+		ASSERT_EQ(b, buf[i]);
+	}
+
+	// remove byte after byte and ensure the array operator works
+	unsigned int max = 0x4FFF;
+	unsigned int cnt = max;
+	for (unsigned int i = 3; i <= cnt; i+=3) {
+		buf.get();
+		buf.get();
+		buf.get();
+		for (unsigned int j = 0; j < max - i; ++j) {
+			uint8_t b = (uint8_t) (j+i);
+			ASSERT_EQ(b, buf[j]);
+		}
+	}
+
+}
+
+TEST(Buffer, sizeChange) {
+
+	Buffer<uint8_t> buf;
+
+	buf.add(123);
+	ASSERT_EQ(123, buf[0]);
+	ASSERT_EQ(1, buf.getNumUsed());
+
+	buf.setNumUsed(0);
+	ASSERT_EQ(0, buf.getNumUsed());
+	ASSERT_EQ(123, buf[0]);
+
+	buf.add(99);
+	ASSERT_EQ(1, buf.getNumUsed());
+	ASSERT_EQ(99, buf[0]);
+
+}
+
+
 #endif

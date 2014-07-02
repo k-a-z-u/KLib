@@ -8,7 +8,7 @@
 #include "InputStream.h"
 #include "OutputStream.h"
 #include "Buffer.h"
-
+#include "StreamException.h"
 
 namespace K {
 
@@ -52,7 +52,7 @@ public:
 		buffer.add(data);
 	}
 
-	void write(uint8_t* data, unsigned int len) override {
+	void write(const uint8_t* data, unsigned int len) override {
 		buffer.add(data, len);
 	}
 
@@ -60,6 +60,16 @@ public:
 	void close() override {;}
 
 	void flush() override {;}
+
+	void skip(const uint64_t n) override {
+		buffer.remove((uint32_t) n);
+		//throw StreamException("ByteArrayInOutStream.skip() not yet implemented");
+	}
+
+	/** get the number of available bytes */
+	uint32_t length() const {
+		return buffer.getNumUsed();
+	}
 
 private:
 

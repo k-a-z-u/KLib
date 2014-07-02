@@ -33,7 +33,7 @@ public:
 		checkFull();
 	}
 
-	virtual void write(uint8_t* data, unsigned int len) {
+	virtual void write(const uint8_t* data, unsigned int len) override {
 		buffer.add(data, len);
 		checkFull();
 	}

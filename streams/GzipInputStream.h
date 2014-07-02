@@ -12,6 +12,7 @@
 
 #include "GzipOutputStream.h"
 #include "InputStream.h"
+#include "StreamException.h"
 #include "Buffer.h"
 #include <zlib.h>
 
@@ -94,6 +95,11 @@ public:
 
 	void close() override {
 		is.close();
+	}
+
+	void skip(const uint64_t n) override {
+		(void) n;
+		throw StreamException("gzip.skip() not yet supported");
 	}
 
 private:

@@ -35,6 +35,12 @@ namespace K {
 			this->i = _i;
 		}
 
+		void operator *= ( const type other ) {
+			this->r *= other;
+			this->i *= other;
+		}
+
+
 		const Complex<type> operator * ( const Complex<type> other ) const {
 			Complex<type> cpy(*this);
 			cpy *= other;
@@ -53,12 +59,20 @@ namespace K {
 			return cpy;
 		}
 
+		const Complex<type> operator * (const type other) const {
+			Complex<type> cpy(*this);
+			cpy *= other;
+			return cpy;
+		}
+
 		void real(type r) {this->r = r;}
 		void imag(type i) {this->i = i;}
 
 		type real() const {return r;}
 		type imag() const {return i;}
 
+		type mag() const {return std::sqrt( (r*r)+(i*i) );}
+		type phase() const {return std::atan( i/r );}
 
 		/** the real part */
 		type r;

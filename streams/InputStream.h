@@ -48,6 +48,9 @@ public:
 		return bytes;
 	}
 
+	/** skip the next n bytes of the input */
+	virtual void skip(const uint64_t n) = 0;
+
 	/** close the input stream */
 	virtual void close() = 0;
 

@@ -36,7 +36,7 @@ public:
 		os.write(data);
 	}
 
-	void write(uint8_t* data, unsigned int len) override {
+	void write(const uint8_t* data, unsigned int len) override {
 		os.write(data, len);
 	}
 

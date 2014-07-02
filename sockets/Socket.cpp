@@ -147,7 +147,7 @@ SocketOutputStream Socket::getOutputStream() {
 }
 
 
-void Socket::write(uint8_t* data, unsigned int len) {
+void Socket::write(const uint8_t* data, unsigned int len) {
 	ssize_t ret = 0;
 	if (ssl.enabled) {
 #ifdef WITH_SSL

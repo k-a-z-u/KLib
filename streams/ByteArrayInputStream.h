@@ -9,6 +9,7 @@
 #define BYTEARRAYINPUTSTREAM_H_
 
 #include "InputStream.h"
+#include "StreamException.h"
 
 namespace K {
 
@@ -39,6 +40,12 @@ public:
 
 	void close() override {
 		;
+	}
+
+	void skip(uint64_t n) override {
+		if (this->len < n) {throw StreamException("out of bounds while trying to skip some bytes");}
+		this->data += n;
+		this->len -= n;
 	}
 
 	/** get the number of bytes available for reading */

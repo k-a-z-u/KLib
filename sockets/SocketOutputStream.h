@@ -27,7 +27,7 @@ public:
 
 	void write(uint8_t data) override;
 
-	void write(uint8_t* data, unsigned int len) override;
+	void write(const uint8_t* data, unsigned int len) override;
 
 	void flush() override;
 

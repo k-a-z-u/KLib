@@ -122,6 +122,19 @@ namespace K {
 
 	}
 
+	TEST(Complex, text4) {
+
+		std::complex<float> c1(5,7);
+		Complex<float> c2(5,7);
+
+		c1 *= 0.5f;
+		c2 *= 0.5f;
+
+		ASSERT_EQ(c1.real(), c2.real());
+		ASSERT_EQ(c1.imag(), c2.imag());
+
+	}
+
 }
 
 #endif

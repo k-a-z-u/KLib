@@ -63,7 +63,7 @@ public:
 		write(&data, 1);
 	}
 
-	void write(uint8_t* data, unsigned int len) override {
+	void write(const uint8_t* data, unsigned int len) override {
 
 		// what to compress
 		stream.next_in = (unsigned char*) data;

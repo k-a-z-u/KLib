@@ -29,7 +29,7 @@ public:
 		buffer.add(data);
 	}
 
-	void write(uint8_t* data, unsigned int len) override {
+	void write(const uint8_t* data, unsigned int len) override {
 		buffer.add(data, len);
 	}
 

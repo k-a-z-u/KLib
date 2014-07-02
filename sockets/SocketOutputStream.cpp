@@ -24,7 +24,7 @@ void SocketOutputStream::write(uint8_t data) {
 	write(&data, 1);
 }
 
-void SocketOutputStream::write(uint8_t* data, unsigned int len) {
+void SocketOutputStream::write(const uint8_t* data, unsigned int len) {
 	sck.write(data, len);
 }
 

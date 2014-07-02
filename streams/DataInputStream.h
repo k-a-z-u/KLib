@@ -10,6 +10,7 @@
 
 #include "Endian.h"
 #include "InputStream.h"
+#include "StreamException.h"
 
 namespace K {
 
@@ -36,7 +37,9 @@ public:
 	}
 
 	uint8_t readByte() {
-		return read();
+		int i = read();
+		if (i == -1) {throw StreamException("reading error");}
+		return (uint8_t) i;
 	}
 
 	uint16_t readShort() {
@@ -71,6 +74,10 @@ public:
 
 	void close() override {
 		is.close();
+	}
+
+	void skip(const uint64_t n) override {
+		is.skip(n);
 	}
 
 private:

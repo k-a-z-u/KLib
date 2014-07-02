@@ -84,6 +84,10 @@ namespace K {
 			is.close();
 		}
 
+		void skip(const uint64_t n) override {
+			is.skip(n);
+		}
+
 
 	private:
 

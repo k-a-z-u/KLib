@@ -16,12 +16,12 @@ namespace K {
 	public:
 
 		/** empty ctor */
-		Vector() : _values(), values(_values) {
+		Vector() : values() {
 			;
 		}
 
 		/** ctor from initializer value */
-		Vector(const std::initializer_list<type> list) : values(_values) {
+		Vector(const std::initializer_list<type> list) : values() {
 			assert(list.size() == dimension);
 			for (unsigned int i = 0; i < list.size(); ++i) {
 				values[i] = *(list.begin() + i);
@@ -31,6 +31,36 @@ namespace K {
 		/** wrap the vector around the given external data array */
 		Vector(type* data) : values(data) {
 			;
+		}
+
+		/** ctor from w*h parameters, separated by ',' */
+		template <typename... XX>
+		Vector(XX... val) : values{val...} {
+			;
+		}
+
+		/** copy ctor */
+		Vector(const Vector& other) : values() {
+			memcpy(values, other.values, sizeof(values));
+		}
+
+		/** copy ctor */
+		Vector(const type other[]) : values() {
+			memcpy(values, other, sizeof(values));
+		}
+
+
+
+		/** assign the given data to this vector (copy) */
+		Vector& operator = ( const type other[] ) {
+			memcpy(values, other, sizeof(values));
+			return *this;
+		}
+
+		/** assign the given data to this vector (copy) */
+		Vector& operator = ( const Vector& other ) {
+			memcpy(values, other.values, sizeof(values));
+			return *this;
 		}
 
 
@@ -190,6 +220,11 @@ namespace K {
 			return values[idx];
 		}
 
+		/** array operator */
+		const type& operator[] (unsigned int idx) const {
+			return values[idx];
+		}
+
 
 		/** get the underlying array */
 		type* getArray() const {
@@ -208,11 +243,11 @@ namespace K {
 		}
 
 
-	private:
+	protected:
 
 		/** store value for each coordinate */
-		type _values[dimension];
-		type* values;
+		type values[dimension];
+		//type* values;
 
 	};
 

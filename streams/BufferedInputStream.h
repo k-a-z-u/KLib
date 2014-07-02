@@ -13,6 +13,7 @@
 #include <cstring>
 #include "InputStream.h"
 #include "Buffer.h"
+#include "StreamException.h"
 
 namespace K {
 
@@ -52,6 +53,11 @@ public:
 
 	void close() override {
 		is.close();
+	}
+
+	void skip(const uint64_t n) override {
+		(void) n;
+		throw StreamException("BufferedInputStream.skip() not yet implemented");
 	}
 
 private:

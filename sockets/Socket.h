@@ -72,7 +72,7 @@ protected:
 	friend class SocketOutputStream;
 
 	/** write the given bytes */
-	void write(uint8_t* data, unsigned int len);
+	void write(const uint8_t* data, unsigned int len);
 
 	/** read the given number of bytes */
 	int read(uint8_t* data, unsigned int len);

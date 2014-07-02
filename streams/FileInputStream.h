@@ -9,6 +9,7 @@
 #define FILEINPUTSTREAM_H_
 
 #include "InputStream.h"
+#include "StreamException.h"
 #include "../fs/File.h"
 
 namespace K {
@@ -49,11 +50,16 @@ public:
 		if (fp) {fclose(fp); fp = nullptr;}
 	}
 
+	void skip(const uint64_t n) override {
+		int ret = fseek(fp, n, SEEK_CUR);
+		if (ret != 0) {throw StreamException("could not seek within file");}
+	}
+
 private:
 
 	void open(const std::string& file) {
 		fp = fopen(file.c_str(), "rb");
-		if (!fp) {throw std::string("could not open file: ") + file;}
+		if (!fp) {throw StreamException("could not open file: " + file);}
 	}
 
 	/** the file pointer */

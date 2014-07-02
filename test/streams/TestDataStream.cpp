@@ -40,6 +40,25 @@ TEST(DataStream, readWrite) {
 
 }
 
+TEST(DataStream, skip) {
+
+	ByteArrayInOutStream baios;
+	DataOutputStream dos(baios);
+	DataInputStream dis(baios);
+
+	dos.writeByte(1);
+	dos.writeByte(2);
+	dos.writeByte(3);
+	dos.writeByte(4);
+
+	ASSERT_EQ(1, dis.read());
+	ASSERT_EQ(2, dis.read());
+	dis.skip(1);
+	ASSERT_EQ(4, dis.read());
+}
+
+
+
 
 
 #endif

@@ -4,6 +4,7 @@
 
 #include "../../Test.h"
 #include "../../../math/vector/Matrix.h"
+#include "../../../math/vector/Matrix4.h"
 
 namespace K {
 
@@ -58,7 +59,21 @@ namespace K {
 
 	}
 
+	TEST(Matrix, rotate) {
 
+		Matrix4<float> m1; m1.identity(); m1 = m1.rotateX(1);
+		Matrix4<float> m2; m2.identity(); m2 = m2.rotateY(2);
+		Matrix4<float> m3; m3.identity(); m3 = m3.rotateZ(3);
+
+		// perform rotation in 3 steps
+		Matrix4<float> mm1 = m1*m2*m3;
+
+		// perform all steps combined
+		Matrix4<float> mm2; mm2.identity(); mm2 = mm2.rotateXYZ(1,2,3);
+
+		ASSERT_EQ(mm1, mm2);
+
+	}
 
 }
 

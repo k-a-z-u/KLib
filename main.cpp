@@ -11,7 +11,7 @@
 int main(int argc, char** argv) {
 
 #ifdef WITH_TESTS
-	::testing::GTEST_FLAG(filter) = "*Neural*";
+	::testing::GTEST_FLAG(filter) = "*Trie*";
 	//::testing::GTEST_FLAG(filter) = "*Vector*";
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();

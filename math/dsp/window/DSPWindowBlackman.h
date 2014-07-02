@@ -20,7 +20,7 @@ namespace K {
 		/** ctor. setup the window array */
 		DSPWindowBlackman() {
 			for (unsigned int i = 0; i < size; ++i) {
-				this->window[i] = (type) ( 0.42 - 0.5 * cos(2 * K::PI * i / size) + 0.08 * cos(4 * K::PI * i / size) );
+				this->window[i] = ( 0.42 - 0.5 * cos(2 * K::PI * i / size) + 0.08 * cos(4 * K::PI * i / size) );
 			}
 		}
 

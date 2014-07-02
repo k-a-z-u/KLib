@@ -16,7 +16,7 @@ namespace K {
 	protected:
 
 		/** subclasses precompute the window function here once */
-		type window[size];
+		float window[size];
 
 	};
 

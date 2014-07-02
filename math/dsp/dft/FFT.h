@@ -243,6 +243,34 @@ namespace K {
 		 */
 		template <typename type> type* getIFFT( CPLX* in ) {
 
+			// create convenience output array
+			type* out = new type[size];
+			getIFFT(in, out);
+			return out;
+
+		}
+
+		/**
+		 * @brief perform iFFT on the given complext data in the frequncy domain
+		 * this data will be modified inplace!
+		 */
+		template <typename type> void getIFFT( CPLX* in, type* out ) {
+
+			getIFFTinplace(in);
+
+			// create convenience output array
+			for (unsigned int i = 0; i < size; ++i) {
+				out[i] = in[i].real();
+			}
+
+		}
+
+		/**
+		  * @brief perform iFFT on the given complext data in the frequncy domain
+		  * this data will be modified inplace!
+		  */
+		template <typename type> void getIFFTinplace( CPLX* in ) {
+
 			// change sign of imaginary part
 			for (unsigned int i = 0; i < size; ++i) {
 				in[i].imag( -in[i].imag() );
@@ -256,13 +284,6 @@ namespace K {
 				in[i].real(  in[i].real() / size );
 				in[i].imag( -in[i].imag() / size );
 			}
-
-			// create convenience output array
-			type* out = new type[size];
-			for (unsigned int i = 0; i < size; ++i) {
-				out[i] = in[i].real();
-			}
-			return out;
 
 		}
 

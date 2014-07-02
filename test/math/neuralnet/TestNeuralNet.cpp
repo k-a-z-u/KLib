@@ -10,7 +10,7 @@
 #ifdef WITH_TESTS
 
 #include "../../Test.h"
-
+/*
 #include "../../../math/neuralnet/NeuralNetIHO.h"
 
 namespace K {
@@ -82,5 +82,7 @@ namespace K {
 	}
 
 }
+
+*/
 
 #endif
