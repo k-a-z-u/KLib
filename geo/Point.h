@@ -55,10 +55,18 @@ struct Point {
 
 	Point& operator += (const Point& right) {this->x += right.x; this->y += right.y; return *this;}
 
+	Point& operator -= (const Point& right) {this->x -= right.x; this->y -= right.y; return *this;}
+
 	Point& operator /= (double right) {this->x /= right; this->y /= right; return *this;}
+
+	Point& operator *= (double right) {this->x *= right; this->y *= right; return *this;}
 
 	Point operator + (const Point& right) const {
 		return Point(this->x+right.x, this->y+right.y);
+	}
+
+	Point operator - (const Point& right) const {
+		return Point(this->x-right.x, this->y-right.y);
 	}
 
 	Point operator * (double right) const {

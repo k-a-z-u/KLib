@@ -10,35 +10,48 @@
 
 
 #include "../streams/OutputStream.h"
+#include "Socket.h"
 
 namespace K {
 
-class Socket;
+	class Socket;
 
-class SocketOutputStream : public OutputStream {
+	class SocketOutputStream : public OutputStream {
 
-public:
+	public:
 
-	/** ctor */
-	SocketOutputStream(Socket& sck);
+		/** ctor */
+		SocketOutputStream(Socket& sck) : sck(sck) {
+			;
+		}
 
-	/** dtor */
-	~SocketOutputStream();
+		/** dtor */
+		~SocketOutputStream() {
+			;
+		}
 
-	void write(uint8_t data) override;
+		void write(uint8_t data) override {
+			write(&data, 1);
+		}
 
-	void write(const uint8_t* data, unsigned int len) override;
+		void write(const uint8_t* data, unsigned int len) override {
+			sck.write(data, len);
+		}
 
-	void flush() override;
+		void flush() override {
+			;
+		}
 
-	void close() override;
+		void close() override {
+			sck.close();
+		}
 
-private:
+	private:
 
-	/** the socket to write to */
-	Socket& sck;
+		/** the socket to write to */
+		Socket& sck;
 
-};
+	};
 
 }
 

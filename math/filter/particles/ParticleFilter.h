@@ -9,176 +9,109 @@
 #define PARTICLEFILTER_H_
 
 #include <vector>
-#include <cmath>
+#include <memory>
 
 #include "Particle.h"
-#include "ParticleModel.h"
-#include "ParticleSensor.h"
-#include "resampling/ParticleResampling.h"
 
+#include "resampling/ParticleFilterResampling.h"
+#include "estimation/ParticleFilterEstimation.h"
+#include "ParticleFilterTransition.h"
+#include "ParticleFilterEvaluation.h"
+#include "ParticleFilterInitializer.h"
 
-
-
-/**
- * the main-class for the particle filter
- * @param ParticleState the class (struct) describing the particles state
- */
-template <typename State> class ParticleFilter {
-
-public:
+namespace K {
 
 	/**
-	 * ctor
-	 * @param model the model to use for particle modification
+	 * the main-class for the particle filter
+	 * @param State the (user-defined) state for each particle
+	 * @param Observation the observation (sensor) data
 	 */
-	ParticleFilter(ParticleModel<State>& model, ParticleResampling<State>& resampler) :
-		model(model), resampler(resampler) {
+	template <typename State, typename Observation>
 
-	}
+	class ParticleFilter {
 
-	/** add a new sensor to the particle filter */
-	void addSensor(ParticleSensor<State>* sensor) {
-		sensors.push_back(sensor);
-	}
+	private:
 
-	/** initialize the filter */
-	void init(unsigned int num) {
-		particles.resize(num);
-		for (unsigned int i = 0; i < num; ++i) {
-			model.init(particles[i].state);
-			particles[i].probability = 1.0;
-		}
-	}
+		/** all used particles */
+		std::vector<Particle<State>> particles;
 
-	/**
-	 * perform one update step:
-	 * 	trigger model
-	 * 	get probability from sensors
-	 * 	resample
-	 */
-	void update() {
-		updateModel();
-		importance();			// get particle importance by comparing sensor-data and state
-		normalize();			// normalize probability-sum to 1 (needed for resampling to work)
-		resample();				// draw from particles by their probability (= remove weak particles)
-	}
+		/** the resampler to use */
+		std::unique_ptr<ParticleFilterResampling<State>> resampler;
 
-	/** get vector containing all particles */
-	const std::vector<Particle<State>>& getParticles() const {
-		return particles;
-	}
+		/** the estimation function to use */
+		std::unique_ptr<ParticleFilterEstimation<State>> estimation;
 
-	/**
-	 * get the mean state by suming-up all states,
-	 * multiplied by their probability
-	 */
-	State getMean() const {
+		/** the transition function to use */
+		std::unique_ptr<ParticleFilterTransition<State>> transition;
 
-		const size_t numParticles = particles.size();
+		/** the evaluation function to use */
+		std::unique_ptr<ParticleFilterEvaluation<State, Observation>> evaluation;
 
-		// we start with the first particle instead of an empty one (which would need less code)
-		// to avoid issues due to a missing or faulty empty-ctor,
-		// initializing all state-attributes with zero
-		State res = particles[0].state;
-		for (size_t i = 1; i < numParticles; ++i) {res += particles[i].state;}
-		res /= (double) numParticles;
-		return res;
+		/** the initialization function to use */
+		std::unique_ptr<ParticleFilterInitializer<State>> initializer;
 
-	}
 
-	/**
-	 * get the mean state by suming-up all states,
-	 * multiplied by their probability
-	 */
-	State getWeightedMean() const {
 
-		const size_t numParticles = particles.size();
+	public:
 
-		// we start with the first particle instead of an empty one (which would need less code)
-		// to avoid issues due to a missing or faulty empty-ctor,
-		// initializing all state-attributes with zero
-		double sum = particles[0].probability;
-		State res = particles[0].state * particles[0].probability;
-		for (size_t i = 1; i < numParticles; ++i) {
-			res += particles[i].state * particles[i].probability;
-			sum += particles[i].probability;
+		/** ctor */
+		ParticleFilter(const uint32_t numParticles, std::unique_ptr<ParticleFilterInitializer<State>> initializer) {
+			particles.resize(numParticles);
+			setInitializier(std::move(initializer));
+			init();
 		}
 
-		// normalize
-		res /= sum;
-		return res;
-
-	}
-
-private:
-
-	/** update the particles using the underlying model */
-	void updateModel() {
-		for (Particle<State>& particle : particles) {
-			model.modify(particle.state);
+		/** dtor */
+		~ParticleFilter() {
+			;
 		}
-	}
 
-	/**
-	 * perform importance calculation by matching the
-	 * sensor-data against the current state
-	 */
-	void importance() {
-		for (Particle<State>& particle : particles) {
-
-			// reset particles probability
-			particle.probability = 1.0;
-
-			// update probability using each sensor
-			for (const ParticleSensor<State>* sensor : sensors) {
-
-				// adjust probability for the current particle using the current sensor
-				double probability = sensor->getProbability(particle.state);
-				particle.probability *= probability;
-
-			}
+		/** access to all particles */
+		const std::vector<Particle<State>>& getParticles() {
+			return particles;
 		}
-	}
 
-	/** perform resampling */
-	void resample() {
-		resampler.resample(particles);
-	}
-
-	/** get a random probability between 0 and 1 */
-	double getRandomProbability() {
-		return (0 + rand() / (double) RAND_MAX * (1-0));
-	}
-
-	/**
-	 * normalize the weight of all particles.
-	 * this will ensure the sum of all weights is 1.
-	 * thus, the particles hereafter resemble a probability-density-function.
-	 */
-	void normalize() {
-
-		// get current sum of all probabilities
-		double sum = 0;
-		for (const Particle<State>& p : particles) {sum += p.probability;}
-
-		// normalize them
-		for (Particle<State>& p : particles) {p.probability = p.probability / sum;}
-
-	}
+		/** initialize/re-start the particle filter */
+		void init() {
+			initializer->initialize(particles);
+		}
 
 
-	/** the model to use for particle modification */
-	ParticleModel<State>& model;
+		/** set the resampling method to use */
+		void setResampling(std::unique_ptr<ParticleFilterResampling<State>> resampling) {
+			this->resampler = std::move(resampling);
+		}
 
-	/** the algorithm to use for resampling */
-	ParticleResampling<State>& resampler;
+		/** set the estimation method to use */
+		void setEstimation(std::unique_ptr<ParticleFilterEstimation<State>> estimation) {
+			this->estimation = std::move(estimation);
+		}
 
-	/** all sensors to peform importance analysis */
-	std::vector<ParticleSensor<State>*> sensors;
+		/** set the transition method to use */
+		void setTransition(std::unique_ptr<ParticleFilterTransition<State>> transition) {
+			this->transition = std::move(transition);
+		}
 
-	/** all particles to use */
-	std::vector<Particle<State>> particles;
+		/** set the evaluation method to use */
+		void setEvaluation(std::unique_ptr<ParticleFilterEvaluation<State, Observation>> evaluation) {
+			this->evaluation = std::move(evaluation);
+		}
 
-};
+		/** set the initialization method to use */
+		void setInitializier(std::unique_ptr<ParticleFilterInitializer<State>> initializer) {
+			this->initializer = std::move(initializer);
+		}
+
+		/** perform resampling -> transition -> evaluation -> estimation */
+		State update(const Observation& observation) {
+			resampler->resample(particles);
+			transition->transition(particles);
+			evaluation->evaluation(particles, observation);
+			return estimation->estimate(particles);
+		}
+
+	};
+
+}
 
 #endif /* PARTICLEFILTER_H_ */

@@ -10,38 +10,54 @@
 
 #include "../streams/InputStream.h"
 
+#include "../streams/StreamException.h"
+#include "Socket.h"
 
 namespace K {
 
-class Socket;
+	class SocketInputStream : public InputStream {
 
-class SocketInputStream : public InputStream {
+	public:
 
-public:
+		/** ctor */
+		SocketInputStream(Socket& sck) : sck(sck) {
+			;
+		}
 
-	/** ctor */
-	SocketInputStream(Socket& sck);
+		/** dtor */
+		~SocketInputStream() {
+			;
+		}
 
-	/** dtor */
-	~SocketInputStream();
 
+		int read() override {
+			uint8_t data;
+			int ret = read(&data, 1);
+			if (ret == -1) {return ret;}
+			return data;
+		}
 
-	int read() override;
+		int read(uint8_t* data, unsigned int len) override {
+			return sck.read(data, len);
+		}
 
-	int read(uint8_t* data, unsigned int len) override;
+		void close() override {
+			sck.close();
+		}
 
-	void close() override;
+		void skip(uint64_t n) override {
+			(void) n;
+			throw StreamException("socket.skip() not yet implemented!");
+		}
 
-	void skip(uint64_t n) override;
+	private:
 
-private:
+		friend class Socket;
 
-	friend class Socket;
+		/** the socket to read from */
+		Socket& sck;
 
-	/** the socket to read from */
-	Socket& sck;
-
-};
+	};
 
 }
 

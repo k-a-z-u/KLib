@@ -34,9 +34,22 @@ struct Line {
 	Line(const Point& p1, const Point& p2) : p1(p1), p2(p2) {;}
 
 	/** modify the line */
-	void set(double x1, double y1, double x2, double y2) {
+	void set(const double x1, const double y1, const double x2, const double y2) {
 		p1.set(x1,y1);
 		p2.set(x2,y2);
+	}
+
+	/** get a line, orthogonal to this one */
+	Line getOrthogonal() const {
+		return getOrthogonal(p1);
+	}
+
+	/** get a line, orthogonal to this one and starting at src */
+	Line getOrthogonal(const Point src) const {
+		const Point t1 = p2 - p1;	// move to origin of this line (0,0)
+		Point t2(t1.y, -t1.x);		// make orthogonal to this line
+		t2 += src;					// move to the desired src
+		return Line(src, t2);
 	}
 
 	//	/** get the incline of this line */
@@ -72,6 +85,13 @@ struct Line {
 	/** get the direction vector for this line */
 	Point getDirVec() const {
 		return Point(p2.x - p1.x, p2.y - p1.y);
+	}
+
+	/** scale the line by the given factor */
+	Line getScaled(float factor) {
+		Point t1 = p1; t1 -= p2; t1 *= factor; t1 += p2;
+		Point t2 = p2; t2 -= p1; t2 *= factor; t2 += p1;
+		return Line(t1, t2);
 	}
 
 	//	/** is this line parallel to another one? */

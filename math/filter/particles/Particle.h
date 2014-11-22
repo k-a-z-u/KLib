@@ -9,19 +9,40 @@
 #define PARTICLE_H_
 
 /**
- * extends a particle's state (some parameters, e.g. (x,y) position)
- * by a probability
+ * a particle consists of a (user-defined) state
+ * assigned with a weight (importance).
+ *
+ * depending on the particle filter's configuration,
+ * the (user-defined) state must provide several methods
+ * like:
+ *	assigning values from another state
+ *	multiplication
+ *	etc..
+ *
  */
 template <typename State> struct Particle {
 
-	/** ctor */
-	Particle() : probability(0) {;}
-
-	/** the (current) probability for this state */
-	double probability;
-
 	/** the particles state */
 	State state;
+
+	/** the (current) probability for this state */
+	double weight;
+
+
+	/** empty ctor */
+	Particle() : state(), weight(0) {;}
+
+	/** ctor */
+	Particle(const State& state, double weight) : state(state), weight(weight) {;}
+
+
+	/** assignment operator */
+	Particle& operator = (const Particle& other) {
+		this->state = other.state;
+		this->weight = other.weight;
+		return *this;
+	}
+
 
 };
 

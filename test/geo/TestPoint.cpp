@@ -22,6 +22,44 @@
 
 	}
 
+	TEST(Point, sub) {
+
+		Point p1(1,2);
+		Point p2(3,6);
+
+		Point p3 = p1-p2;
+		EXPECT_EQ(-2, p3.x);
+		EXPECT_EQ(-4, p3.y);
+
+		Point p4 = p2-p1;
+		EXPECT_EQ(2, p4.x);
+		EXPECT_EQ(4, p4.y);
+
+		p2 -= p1;
+		EXPECT_EQ(2, p2.x);
+		EXPECT_EQ(4, p2.y);
+
+	}
+
+	TEST(Point, add) {
+
+		Point p1(1,2);
+		Point p2(3,6);
+
+		Point p3 = p1+p2;
+		EXPECT_EQ(4, p3.x);
+		EXPECT_EQ(8, p3.y);
+
+		Point p4 = p2+p1;
+		EXPECT_EQ(4, p4.x);
+		EXPECT_EQ(8, p4.y);
+
+		p2 += p1;
+		EXPECT_EQ(4, p2.x);
+		EXPECT_EQ(8, p2.y);
+
+	}
+
 }
 
 #endif
