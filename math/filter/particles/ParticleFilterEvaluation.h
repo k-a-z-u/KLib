@@ -16,8 +16,11 @@ namespace K {
 
 	public:
 
-		/** evaluate all particles depending on their state and the current observation */
-		virtual void evaluation(std::vector<Particle<State>>& particles, const Observation& observation) = 0;
+		/**
+		 * evaluate all particles (update p.weight) depending on their state and the current observation.
+		 * this method MUST return the sum of all weights (used for normalization)
+		 */
+		virtual double evaluation(std::vector<Particle<State>>& particles, const Observation& observation) = 0;
 
 	};
 

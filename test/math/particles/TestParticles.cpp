@@ -42,8 +42,11 @@ namespace K {
 		}
 		double distance(const MyState& o) const {
 			return std::sqrt( (x-o.x)*(x-o.x) + (y-o.y)*(y-o.y) ) / 4.9;
-
 		}
+		bool belongsToRegion(const MyState& o) const {
+			return distance(o) <= 1.0;
+		}
+
 	};
 
 	struct MyObservation {
@@ -185,11 +188,14 @@ namespace K {
 	};
 
 	class MyEvaluation : public ParticleFilterEvaluation<MyState, MyObservation> {
-		void evaluation(std::vector<Particle<MyState>>& particles, const MyObservation& o) {
+		double evaluation(std::vector<Particle<MyState>>& particles, const MyObservation& o) {
+			double sum = 0;
 			for (Particle<MyState>& p : particles) {
 				p.weight =	NormalDistribution::getProbability(o.x, 3, p.state.x) *
 							NormalDistribution::getProbability(o.y, 3, p.state.y);
+				sum += p.weight;
 			}
+			return sum;
 		}
 	};
 

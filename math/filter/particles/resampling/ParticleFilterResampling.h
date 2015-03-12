@@ -16,16 +16,21 @@
  * within the particle filter
  * @param State the (user-defined) state
  */
-template <typename State> class ParticleFilterResampling {
 
-public:
+namespace K {
 
-	/**
-	 * perform resampling on the given particle-vector
-	 * @param particles the vector of all particles to resample
-	 */
-	virtual void resample(std::vector<Particle<State>>& particles) = 0;
+	template <typename State> class ParticleFilterResampling {
 
-};
+	public:
+
+		/**
+		 * perform resampling on the given particle-vector
+		 * @param particles the vector of all particles to resample
+		 */
+		virtual void resample(std::vector<K::Particle<State>>& particles) = 0;
+
+	};
+
+}
 
 #endif /* K_MATH_FILTER_PARTICLES_PARTICLEFILTERRESAMPLING_H_ */

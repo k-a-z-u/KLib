@@ -8,6 +8,7 @@
 #ifndef SVGELEMENT_H_
 #define SVGELEMENT_H_
 
+#include "SVGElementType.h"
 
 namespace K {
 
@@ -24,6 +25,9 @@ public:
 		(void)x;
 		(void)y;
 	}
+
+	/** get this element's type */
+	virtual SVGElementType getType() = 0;
 
 };
 

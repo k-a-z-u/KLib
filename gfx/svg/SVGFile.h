@@ -8,7 +8,7 @@
 #ifndef SVGFILE_H_
 #define SVGFILE_H_
 
-#include "SVGLoader.h"
+//#include "SVGLoader.h"
 #include "SVGComposite.h"
 
 namespace K {
@@ -17,9 +17,13 @@ class SVGFile {
 
 public:
 
-	SVGFile(const File& f) : width(0), height(0) {
+//	SVGFile(const File& f) : width(0), height(0) {
+//		layers = new SVGComposite();
+//		SVGLoader::load(f, this);
+//	}
+
+	SVGFile() : width(0), height(0) {
 		layers = new SVGComposite();
-		SVGLoader::load(f, this);
 	}
 
 	~SVGFile() {
@@ -30,6 +34,9 @@ public:
 	SVGComposite* getLayers() {
 		return layers;
 	}
+
+	double getWidth() const {return width;}
+	double getHeight() const {return height;}
 
 private:
 

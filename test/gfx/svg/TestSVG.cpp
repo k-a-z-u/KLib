@@ -12,6 +12,7 @@
 #include "../../Test.h"
 #include "../../../fs/File.h"
 #include "../../../gfx/svg/SVGFile.h"
+#include "../../../gfx/svg/SVGLoader.h"
 #include "../../../gfx/svg/SVGLayer.h"
 #include "../../../gfx/svg/SVGPath.h"
 
@@ -22,7 +23,9 @@ TEST(SVG, load) {
 
 	File folder = File(__FILE__).getParent();
 	File f(folder, "1.svg");
-	SVGFile file(f);
+	SVGFile file;
+	SVGLoader::load(f, &file);
+
 
 	SVGComposite* root = file.getLayers();
 

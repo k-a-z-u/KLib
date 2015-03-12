@@ -5,8 +5,8 @@
  *      Author: Frank Ebner
  */
 
-#ifndef PARTICLE_H_
-#define PARTICLE_H_
+#ifndef K_MATH_FILTER_PARTICLES_PARTICLE_H_
+#define K_MATH_FILTER_PARTICLES_PARTICLE_H_
 
 /**
  * a particle consists of a (user-defined) state
@@ -20,30 +20,34 @@
  *	etc..
  *
  */
-template <typename State> struct Particle {
+namespace K {
 
-	/** the particles state */
-	State state;
+	template <typename State> struct Particle {
 
-	/** the (current) probability for this state */
-	double weight;
+		/** the particles state */
+		State state;
 
-
-	/** empty ctor */
-	Particle() : state(), weight(0) {;}
-
-	/** ctor */
-	Particle(const State& state, double weight) : state(state), weight(weight) {;}
+		/** the (current) probability for this state */
+		double weight;
 
 
-	/** assignment operator */
-	Particle& operator = (const Particle& other) {
-		this->state = other.state;
-		this->weight = other.weight;
-		return *this;
-	}
+		/** empty ctor */
+		Particle() : state(), weight(0) {;}
+
+		/** ctor */
+		Particle(const State& state, double weight) : state(state), weight(weight) {;}
 
 
-};
+		/** assignment operator */
+		Particle& operator = (const Particle& other) {
+			this->state = other.state;
+			this->weight = other.weight;
+			return *this;
+		}
 
-#endif /* PARTICLE_H_ */
+
+	};
+
+}
+
+#endif /* K_MATH_FILTER_PARTICLES_PARTICLE_H_ */

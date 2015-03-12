@@ -3,9 +3,15 @@
 
 #include <iosfwd>
 #include <cstdio>
+#include <iostream>
+
 #include <exception>
 #include <fcntl.h>
 #include <sstream>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+
 
 namespace K {
 
@@ -33,7 +39,7 @@ namespace K {
 	public:
 
 		/** open the process using the given command */
-		Process(const std::string& cmd) : pid(0), pipeToProcess(), pipeFromProcess() {
+		Process(const std::string& cmd, const std::string& args) : pid(0), pipeToProcess(), pipeFromProcess() {
 
 			// create pipes
 			if ( pipe(pipeToProcess) != 0 ) {
@@ -68,7 +74,7 @@ namespace K {
 				//dup2(pipeFromProcessErr[WRITE], STDERR_FILENO);
 
 				// exec
-				int ret = execl(cmd.c_str(), "", (char*) NULL);
+				int ret = execl(cmd.c_str(), args.c_str(), (char*) NULL);
 
 				// check
 				if (ret < 0) {

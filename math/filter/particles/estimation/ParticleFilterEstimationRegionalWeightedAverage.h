@@ -14,10 +14,10 @@ namespace K {
 	 * by using the most probable particle and some near particles
 	 * combining them by their weight (weighted average)
 	 *
-	 * the checker whether a particle is near or not uses a special,
-	 * user-defined metric "distance()". It checks the "distance"
-	 * between each and the most probable particle. if the distance
-	 * is below 1.0, the particle is inclueded for the state estimation.
+	 * the checker, whether a particle is near or not, uses a special,
+	 * user-defined metric "belongsToRegion()". This user-method must
+	 * return a boolean, whether to include the provided particle
+	 * within the region around the maximum particle, or not.
 	 */
 	template <typename State>
 	class ParticleFilterEstimationRegionalWeightedAverage : public ParticleFilterEstimation<State> {
@@ -39,7 +39,7 @@ namespace K {
 			double cumWeight = 0;
 			State res;
 			for (const Particle<State>& p : particles) {
-				if (p.state.distance(max.state) > 1.0) {continue;}
+				if (!p.state.belongsToRegion(max.state)) {continue;}
 				cumWeight += p.weight;
 				res += p.state * p.weight;
 			}

@@ -5,6 +5,8 @@
  *      Author: Frank Ebner
  */
 
+#ifdef __OLD
+
 #include <string>
 
 #include "SVGFile.h"
@@ -22,33 +24,7 @@ namespace K {
 /** load floorplan from SVG */
 void SVGLoader::load(const File& f, SVGFile* svgFile) {
 
-	// sanity check
-	if (!f.exists()) {throw "error while loading file";} //throw Exception("could not open floorplan file: " + file.getAbsolutePath());}
 
-	// open map file
-	tinyxml2::XMLDocument doc;
-	doc.LoadFile(f.getAbsolutePath().c_str());
-
-	const tinyxml2::XMLElement* svg = doc.FirstChildElement("svg");
-
-	// load width/height and convert them to centimeters
-	svgFile->width = atof(svg->Attribute("width")) * PIXEL_TO_CM;
-	svgFile->height = atof(svg->Attribute("height")) * PIXEL_TO_CM;
-
-	// get the first layer
-	const tinyxml2::XMLElement* layer = svg->FirstChildElement("g");
-
-	// process all layers
-	while (layer) {
-
-		// load all paths
-		SVGComposite* c = loadPaths(svgFile, layer);
-		svgFile->layers->addChild(c);
-
-		// next layer
-		layer = layer->NextSiblingElement("g");
-
-	}
 
 }
 
@@ -209,3 +185,5 @@ void SVGLoader::applyTransform(const tinyxml2::XMLElement* node, SVGElement* dst
 }
 
 }
+
+#endif

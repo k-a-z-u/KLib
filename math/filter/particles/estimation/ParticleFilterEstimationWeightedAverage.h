@@ -6,6 +6,8 @@
 #include "../ParticleAssertions.h"
 #include "ParticleFilterEstimation.h"
 
+#include "../../../../Assertions.h"
+
 namespace K {
 
 	template <typename State>
@@ -28,6 +30,9 @@ namespace K {
 				tmp += p.state * p.weight;
 				weightSum += p.weight;
 			}
+
+			_assertTrue( (weightSum == weightSum), "the sum of particle weights is NaN!");
+			_assertTrue( (weightSum != 0), "the sum of particle weights is null!");
 
 			// normalize
 			tmp /= weightSum;

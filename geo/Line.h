@@ -125,26 +125,58 @@ struct Line {
 
 	}
 
-	/** get intersection between these two line-segments (limited length!) */
-	bool getSegmentIntersection(const Line& other, Point& result) const {
+	/**
+	 * get intersection between me and the given line-segment
+	 * (no rays are used, intersection is limited in length!)
+	 */
+	bool getSegmentIntersection(const Line& other) const {
 
-		double bx = p2.x - p1.x;
-		double by = p2.y - p1.y;
+		const double bx = p2.x - p1.x;
+		const double by = p2.y - p1.y;
 
-		double dx = other.p2.x - other.p1.x;
-		double dy = other.p2.y - other.p1.y;
+		const double dx = other.p2.x - other.p1.x;
+		const double dy = other.p2.y - other.p1.y;
 
-		double b_dot_d_perp = bx*dy - by*dx;
+		const double b_dot_d_perp = bx*dy - by*dx;
 
 		if(b_dot_d_perp == 0) {return false;}
 
-		double cx = other.p1.x - p1.x;
-		double cy = other.p1.y - p1.y;
+		const double cx = other.p1.x - p1.x;
+		const double cy = other.p1.y - p1.y;
 
-		double t = (cx * dy - cy * dx) / b_dot_d_perp;
+		const double t = (cx * dy - cy * dx) / b_dot_d_perp;
 		if(t < 0 || t > 1) {return false;}
 
-		double u = (cx * by - cy * bx) / b_dot_d_perp;
+		const double u = (cx * by - cy * bx) / b_dot_d_perp;
+		if(u < 0 || u > 1) {return false;}
+
+		return true;
+
+	}
+
+	/**
+	 * get intersection between me and the given line-segment
+	 * (no rays are used, intersection is limited in length!)
+	 */
+	bool getSegmentIntersection(const Line& other, Point& result) const {
+
+		const double bx = p2.x - p1.x;
+		const double by = p2.y - p1.y;
+
+		const double dx = other.p2.x - other.p1.x;
+		const double dy = other.p2.y - other.p1.y;
+
+		const double b_dot_d_perp = bx*dy - by*dx;
+
+		if(b_dot_d_perp == 0) {return false;}
+
+		const double cx = other.p1.x - p1.x;
+		const double cy = other.p1.y - p1.y;
+
+		const double t = (cx * dy - cy * dx) / b_dot_d_perp;
+		if(t < 0 || t > 1) {return false;}
+
+		const double u = (cx * by - cy * bx) / b_dot_d_perp;
 		if(u < 0 || u > 1) {return false;}
 
 		result.x = p1.x + t * bx;

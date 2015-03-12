@@ -1,6 +1,9 @@
 #ifndef K_MATH_FILTER_PARTICLES_PARTICLEFILTERINITIALIZER_H
 #define K_MATH_FILTER_PARTICLES_PARTICLEFILTERINITIALIZER_H
 
+#include <vector>
+#include "Particle.h"
+
 namespace K {
 
 	/**

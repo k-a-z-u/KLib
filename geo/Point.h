@@ -10,6 +10,7 @@
 
 #include <iosfwd>
 #include <math.h>
+#include <iostream>
 
 namespace K {
 
@@ -57,24 +58,26 @@ struct Point {
 
 	Point& operator -= (const Point& right) {this->x -= right.x; this->y -= right.y; return *this;}
 
-	Point& operator /= (double right) {this->x /= right; this->y /= right; return *this;}
+	Point& operator *= (const double right) {this->x *= right; this->y *= right; return *this;}
 
-	Point& operator *= (double right) {this->x *= right; this->y *= right; return *this;}
+	Point& operator /= (const double right) {this->x /= right; this->y /= right; return *this;}
 
-	Point operator + (const Point& right) const {
-		return Point(this->x+right.x, this->y+right.y);
-	}
 
-	Point operator - (const Point& right) const {
-		return Point(this->x-right.x, this->y-right.y);
-	}
+	Point operator + (const Point& right) const {return Point(this->x+right.x, this->y+right.y);}
 
-	Point operator * (double right) const {
-		return Point((this->x*right), (this->y*right));
-	}
+	Point operator - (const Point& right) const {return Point(this->x-right.x, this->y-right.y);}
 
-	bool operator == (const Point& other) const {
-		return (x == other.x) && (y == other.y);
+	Point operator * (const double right) const {return Point((this->x*right), (this->y*right));}
+
+	Point operator / (const double right) const {return Point((this->x/right), (this->y/right));}
+
+
+	bool operator == (const Point& other) const {return (x == other.x) && (y == other.y);}
+
+	/** printing */
+	friend std::ostream& operator << (std::ostream& out, const Point& p) {
+		std::cout << "Point\t" << p.x << " -> \t" << p.y;
+		return out;
 	}
 
 };

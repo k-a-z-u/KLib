@@ -55,6 +55,33 @@ namespace K {
 
 	};
 
+	/** cumulative density version of the normal distribution */
+	class NormalDistributionCDF {
+
+	private:
+
+		const double mu;
+		const double sigma;
+
+	public:
+
+		/** create a new normally distributed CDF */
+		NormalDistributionCDF(const double mu, const double sigma) : mu(mu), sigma(sigma) {
+			;
+		}
+
+		/** get the probability for val within the underlying CDF */
+		double getProbability(const double val) const {
+			return getProbability(mu, sigma, val);
+		}
+
+		/** calculate the probability within the underlying CDF */
+		static double getProbability(const double mu, const double sigma, const double val) {
+			return (1.0 + std::erf( (val - mu) / (sigma * std::sqrt(2)) ) ) / 2.0;
+		}
+
+	};
+
 }
 
 #endif // K_MATH_DISTRIBUTION_NORMAL_H

@@ -23,9 +23,16 @@ public:
 	/** ctor */
 	SVGLayer(const std::string& name) : name(name) {;}
 
+	/** dtor */
+	virtual ~SVGLayer() {;}
+
 	/** get the layer's name */
 	const std::string& getName() const {
 		return name;
+	}
+
+	virtual SVGElementType getType() override {
+		return SVGElementType::LAYER;
 	}
 
 private:

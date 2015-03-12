@@ -41,6 +41,11 @@ public:
 		return lineColor;
 	}
 
+
+	virtual SVGElementType getType() override {
+		return SVGElementType::PATH;
+	}
+
 private:
 
 

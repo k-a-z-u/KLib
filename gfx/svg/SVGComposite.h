@@ -17,6 +17,9 @@ class SVGComposite : public SVGElement {
 
 public:
 
+	/** dtor */
+	virtual ~SVGComposite() {;}
+
 	/** get all child elements */
 	const std::vector<SVGElement*>& getChilds() const {
 		return childs;
@@ -32,6 +35,11 @@ public:
 			e->transform(x,y);
 		}
 	}
+
+	virtual SVGElementType getType() override {
+		return SVGElementType::COMPOSITE;
+	}
+
 
 
 private:
