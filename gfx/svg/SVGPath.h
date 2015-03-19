@@ -42,7 +42,7 @@ public:
 	}
 
 
-	virtual SVGElementType getType() override {
+	virtual SVGElementType getType() const override {
 		return SVGElementType::PATH;
 	}
 

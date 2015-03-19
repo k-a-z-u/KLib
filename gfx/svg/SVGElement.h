@@ -21,13 +21,13 @@ public:
 	virtual ~SVGElement() {;}
 
 	/** move this element */
-	virtual void transform(double x, double y) {
+	virtual void transform(const double x, const double y) {
 		(void)x;
 		(void)y;
 	}
 
 	/** get this element's type */
-	virtual SVGElementType getType() = 0;
+	virtual SVGElementType getType() const = 0;
 
 };
 

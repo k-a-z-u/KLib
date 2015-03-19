@@ -12,36 +12,36 @@
 
 namespace K {
 
-/**
- * represents a layer within a svg file
- * containing several other layers or other elements
- */
-class SVGLayer : public SVGComposite {
+	/**
+	 * represents a layer within a svg file
+	 * containing several other layers or other elements
+	 */
+	class SVGLayer : public SVGComposite {
 
-public:
+	public:
 
-	/** ctor */
-	SVGLayer(const std::string& name) : name(name) {;}
+		/** ctor */
+		SVGLayer(const std::string& name) : name(name) {;}
 
-	/** dtor */
-	virtual ~SVGLayer() {;}
+		/** dtor */
+		virtual ~SVGLayer() {;}
 
-	/** get the layer's name */
-	const std::string& getName() const {
-		return name;
-	}
+		/** get the layer's name */
+		const std::string& getName() const {
+			return name;
+		}
 
-	virtual SVGElementType getType() override {
-		return SVGElementType::LAYER;
-	}
+		virtual SVGElementType getType() const override {
+			return SVGElementType::LAYER;
+		}
 
-private:
+	private:
 
 
-	/** the layer's name */
-	std::string name;
+		/** the layer's name */
+		std::string name;
 
-};
+	};
 
 }
 

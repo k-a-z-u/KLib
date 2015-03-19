@@ -75,7 +75,7 @@ namespace K {
 
 			// load all paths
 			SVGComposite* c = loadPaths(svgFile, layer);
-			svgFile->layers->addChild(c);
+			if (c) {svgFile->layers->addChild(c);}
 
 			// next layer
 			layer = layer->NextSiblingElement("g");
