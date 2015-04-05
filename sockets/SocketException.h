@@ -10,6 +10,8 @@
 
 #include <exception>
 #include <string>
+#include <errno.h>
+#include <string.h>
 
 /**
  * exception handling within the sockets backend
@@ -21,6 +23,12 @@ public:
 	/** ctor */
 	SocketException(const std::string& msg) : msg(msg) {
 		;
+	}
+
+	/** ctor with string and errno */
+	SocketException(const std::string& msg, const int errnum) : msg(msg) {
+		this->msg += ": ";
+		this->msg += strerror(errnum);
 	}
 
 	const char* what() const throw() override {

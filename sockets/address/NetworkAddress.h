@@ -38,11 +38,15 @@ namespace K {
 			struct hostent* he = gethostbyname( host.c_str() );
 			if (!he) {throw SocketException("error while retrieving IP for hostname: '" + host + "'");}
 
+			// sanity checks
+			// https://www.cs.rutgers.edu/~pxk/417/notes/sockets/udp.html
+
 			// build address struct
 			memset( &sockAddr, 0, sizeof(sockAddr) );
 			sockAddr.sin_family = AF_INET;
-			sockAddr.sin_addr = *((struct in_addr*)he->h_addr);
+			//sockAddr.sin_addr = *((struct in_addr*)he->h_addr);
 			sockAddr.sin_port = htons(port);
+			memcpy((void*)&sockAddr.sin_addr, he->h_addr_list[0], he->h_length);
 
 			ipFromAddressStruct();
 
@@ -88,6 +92,17 @@ namespace K {
 
 			ipFromAddressStruct();
 
+		}
+
+		/** get a NetworkAddress to broadcast to the given port */
+		static NetworkAddress getForBroadcast(const uint16_t port) {
+			NetworkAddress adr;
+			memset(&adr.sockAddr, 0, sizeof(adr.sockAddr));
+			adr.sockAddr.sin_family = AF_INET;
+			adr.sockAddr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+			adr.sockAddr.sin_port = htons(port);
+			adr.port = port;
+			return adr;
 		}
 
 		/** assignment operator */

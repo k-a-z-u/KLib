@@ -3,6 +3,7 @@
 
 #include <sys/socket.h>
 #include <vector>
+#include <errno.h>
 
 #include "SocketException.h"
 #include "address/NetworkAddress.h"
@@ -19,15 +20,24 @@ namespace K {
 	 */
 	class SocketUDP {
 
+	private:
+
 		/** the maximum allowed size for datagrams. this should be 64k for UDP over IPv4 */
 		static const int MAX_DATAGRAM_SIZE = 64*1024;
+
+		/** whether the socket is bound */
+		bool bound = false;
 
 
 	public:
 
 		/** ctor */
 		SocketUDP() : handle(0) {
-			;
+
+			// create socket
+			handle = socket(AF_INET, SOCK_DGRAM, 0);
+			if (handle == -1) {throw SocketException("error while creating socket", errno);}
+
 		}
 
 		/** dtor */
@@ -43,24 +53,34 @@ namespace K {
 
 		/**
 		 * @brief bind the socket to receive all datagrams sent to the given (local) port
+		 * a localPort of 0 will let the OS determine a free one.
 		 * @param localPort the local endpoint for datagrams sent from a remote
 		 */
-		void bind(uint16_t localPort) {
+		void bind(const uint16_t localPort) {
 
-			// local endpoint struct
+			if (bound) {throw new SocketException("socket already bound!");}
+
+			// local endpoint AF_INET struct
 			struct sockaddr_in srvAddr;
+			memset((char*)&srvAddr, 0, sizeof(srvAddr));
 			srvAddr.sin_family = AF_INET;
-			srvAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+			srvAddr.sin_addr.s_addr = htonl(INADDR_ANY);	// every interface
 			srvAddr.sin_port = htons(localPort);
 
-			// create socket
-			handle = socket(AF_INET, SOCK_DGRAM, 0);
-			if (handle == -1) {throw SocketException("error while creating socket");}
-
 			// bind the socket to the given port
-			int ret = ::bind(handle, (struct sockaddr*) &srvAddr, sizeof(struct sockaddr));
-			if (ret < 0) {throw new SocketException("error while binding socket");}
+			int ret = ::bind(handle, (struct sockaddr*) &srvAddr, sizeof(srvAddr));
+			if (ret < 0) {throw new SocketException("error while binding socket", errno);}
 
+			// mark as bound
+			bound = true;
+
+		}
+
+		/** allow to broadcast packets using this socket? */
+		void allowBroadcast(const bool allow) {
+			const int broadcastEnable = (allow) ? (1) : (0);
+			const int ret = setsockopt(handle, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable));
+			if (ret < 0) {throw SocketException("error while enabling broadcast", errno);}
 		}
 
 		/**
@@ -70,6 +90,9 @@ namespace K {
 		 * @param addr the destination address
 		 */
 		void sendDatagram(const uint8_t* data, uint32_t len, const NetworkAddress& addr) {
+
+			// sanity check
+			if (!bound) {throw new SocketException("bind() the socket first!");}
 
 			// ensure max datagram size
 			if (len > MAX_DATAGRAM_SIZE)	{throw SocketException("max datagram size is " + std::to_string(MAX_DATAGRAM_SIZE)+ " bytes!");}
@@ -81,7 +104,10 @@ namespace K {
 			// send datagram to the given destionation
 			const struct sockaddr_in& sockAddr = addr.getAsSocketAddress();
 			const int options = 0;
-			sendto(handle, data, len, options, (struct sockaddr*) &sockAddr, sizeof(struct sockaddr));
+			const int res = sendto(handle, data, len, options, (struct sockaddr*) &sockAddr, sizeof(sockaddr));
+
+			// check
+			if (res < 0) {throw SocketException("error while sending datagram", errno);}
 
 		}
 
@@ -125,6 +151,9 @@ namespace K {
 			const int flags = 0;
 			const int maxSize = MAX_DATAGRAM_SIZE;
 
+			// sanity check
+			if (!bound) {throw new SocketException("bind() the socket first!");}
+
 			// ensure the target buffer may hold the largest possible datagram
 			d.ensureSpace(maxSize);
 
@@ -134,7 +163,7 @@ namespace K {
 
 			// receive datagram from socket and store sender information
 			ssize_t len = recvfrom(handle, d.getDataWriteable(), maxSize, flags, (struct sockaddr*) &senderAddr, &senderLength);
-			if (len < 0) {throw new SocketException("error while receiving datagram");}
+			if (len < 0) {throw new SocketException("error while receiving datagram", errno);}
 
 			// store senders network-address in the datagram
 			NetworkAddress na(senderAddr);
