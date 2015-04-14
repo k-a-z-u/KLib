@@ -188,6 +188,11 @@ namespace K {
 
 		}
 
+		/** estimate the current state without update or transition just based on the current weights */
+		State estimate() {
+			return estimation->estimate(particles);
+		}
+
 	private:
 
 		/** normalize the weight of all particles to one */

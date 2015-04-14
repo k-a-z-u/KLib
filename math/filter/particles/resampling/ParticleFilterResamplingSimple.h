@@ -33,7 +33,8 @@ namespace K {
 		void resample(std::vector<Particle<State>>& particles) override {
 
 			// compile-time sanity checks
-			static_assert( HasOperatorAssign<State>::value, "your state needs an assignment operator!" );
+			// TODO: this solution requires EXPLICIT overloading which is bad...
+			//static_assert( HasOperatorAssign<State>::value, "your state needs an assignment operator!" );
 
 			const uint32_t cnt = (uint32_t) particles.size();
 
