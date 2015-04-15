@@ -37,6 +37,11 @@ namespace K {
 			return dist(gen);
 		}
 
+		/** set the seed to use */
+		void setSeed(const long seed) {
+			gen.seed(seed);
+		}
+
 
 		/** get the probability for the given value */
 		static double getProbability(const double mu, const double sigma, const double val) {
