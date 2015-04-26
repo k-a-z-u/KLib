@@ -12,6 +12,7 @@
 
 #include "ParticleFilterResampling.h"
 #include "../ParticleAssertions.h"
+#include "../../../../os/Time.h"
 
 namespace K {
 
@@ -38,7 +39,7 @@ namespace K {
 
 			const uint32_t cnt = (uint32_t) particles.size();
 
-			// egal weight for all particles. sums up to 1.0
+			// equal weight for all particles. sums up to 1.0
 			const double equalWeight = 1.0 / (double) cnt;
 
 			// ensure the copy vector has the same size as the real particle vector

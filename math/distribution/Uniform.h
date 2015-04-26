@@ -16,9 +16,19 @@ namespace K {
 
 	public:
 
+		/** empty ctor: (0,1) */
+		UniformDistribution() : gen(rd()), dist(0, 1) {
+			;
+		}
+
 		/** ctor */
 		UniformDistribution(const double min, const double max) : gen(rd()), dist(min, max) {
 			;
+		}
+
+		/** reconfigure min/max */
+		void reset(const double min, const double max) {
+			dist = std::uniform_real_distribution<double>(min, max);
 		}
 
 		/** get a normally distributed random number */
@@ -29,6 +39,13 @@ namespace K {
 		/** set the seed to use */
 		void setSeed(const long seed) {
 			gen.seed(seed);
+		}
+
+	public:
+
+		/** convenience method to just draw one random number between min and max */
+		template <typename T> static T draw(const T min, const T max) {
+			return min + (rand() * (max-min) / RAND_MAX);
 		}
 
 	};

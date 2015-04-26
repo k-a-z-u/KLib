@@ -3,6 +3,9 @@
 
 #include <vector>
 
+/**
+ * add entries to a list and be able to draw from them depending oh their probability
+ */
 namespace K {
 
 	/**
@@ -69,30 +72,30 @@ namespace K {
 
 
 		/** append a new entry to the end of the list */
-		void push_back(const Entry& entry, double probability) {
+		void push_back(const Entry& entry, const double probability) {
 			const DrawListEntry<Entry> dle(entry, probability);
 			entries.push_back(dle);
 			sumValid = false;
 		}
 
 		/** change the entry at the given position. ensure the vector is resized()! */
-		void set(uint32_t idx, const Entry& entry, double probability) {
+		void set(const uint32_t idx, const Entry& entry, const double probability) {
 			entries[idx].entry = entry;
 			entries[idx].probability = probability;
 			sumValid = false;
 		}
 
 		/** resize the underlying vector to hold the given number of entries */
-		void resize(uint32_t numEntries) {entries.resize(numEntries);}
+		void resize(const uint32_t numEntries) {entries.resize(numEntries);}
 
 		/** clear all currently inserted entries */
 		void clear() {entries.clear();}
 
 		/** does the underlying vector contain any entries? */
-		bool empty() {return entries.empty();}
+		bool empty() const {return entries.empty();}
 
 		/** the number of entries */
-		uint32_t size() {return entries.size();}
+		uint32_t size() const {return entries.size();}
 
 		/** draw a random entry from the draw list */
 		Entry& draw() {
