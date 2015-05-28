@@ -6,8 +6,8 @@
 #include "../../streams/BufferedInputStream.h"
 #include "../../streams/LineInputStream.h"
 
-#include "sockets/SocketOutputStream.h"
-#include "sockets/SocketInputStream.h"
+#include "../../sockets/SocketOutputStream.h"
+#include "../../sockets/SocketInputStream.h"
 
 #include "HttpServerListener.h"
 #include "HttpRequest.h"
