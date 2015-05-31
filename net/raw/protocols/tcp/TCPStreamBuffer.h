@@ -2,9 +2,11 @@
 #define K_NET_TCPSTREAMBUFFER_H
 
 #include "../Payload.h"
+#include "../../../../Exception.h"
 
 #include <vector>
 #include <cstdint>
+
 
 namespace K {
 
@@ -44,15 +46,19 @@ namespace K {
 		 */
 		Payload append(const uint32_t streamsSeqNr, const uint32_t packetsSeqNr, const Payload p) {
 
-			// new reassembly? set the buffers start to the streams last good seq-nr
+
+			// new reassembly starting (buffer empty)?
+			// set the buffer's start to the stream's last good seq-nr
 			if (startSeqNr == 0) {startSeqNr = streamsSeqNr;}
 
-			// append the give payload to its designated position within the buffer
+			// append the given payload to its designated position within the buffer
+			// (depending on the last good seq-nr)
 			const uint32_t offset = packetsSeqNr - startSeqNr;
+			if (offset + p.length > data.size()) {throw Exception("TCPStreamBuffer full. Lost track within connection?");}
 			memcpy(data.data() + offset, p.data, p.length);
 
 			// increment the buffers end (if necessary)
-			uint32_t packetsEndSeqNr = packetsSeqNr + p.length;
+			const uint32_t packetsEndSeqNr = packetsSeqNr + p.length;
 			if (packetsEndSeqNr > endSeqNr) {endSeqNr = packetsEndSeqNr;}
 
 			// update the number of used bytes within the buffer
@@ -60,7 +66,8 @@ namespace K {
 
 			debug(K_DBG_TCP_STREAM_BUFFER, "buffer used: " << bytesUsed << " from: " << startSeqNr << " to: " << endSeqNr);
 
-			// have we got all missing packets? then everything is reassembled. return the payload!
+			// have we got all missing packets between last good seq-nr and the end seq-nr?
+			// then everything is reassembled. return the payload!
 			if (bytesUsed == (endSeqNr - startSeqNr)) {
 				Payload pRes(data.data(), bytesUsed);
 				reset();

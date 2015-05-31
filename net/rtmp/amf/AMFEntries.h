@@ -32,6 +32,7 @@ namespace K {
 		void print(std::ostream& out) const {out << "null";}
 	};
 
+
 	/** boolean entry */
 	struct AMFEntryBoolean : AMFEntry {
 		bool b;
@@ -45,7 +46,7 @@ namespace K {
 		AMFEntry* val;
 		AMFEntryKeyVal(const AMFEntryKeyVal& o) = delete;
 		AMFEntryKeyVal(AMFEntryKeyVal&& o) {this->key = o.key; this->val = o.val; o.val = nullptr;}
-		AMFEntryKeyVal(std::string& key, AMFEntry* val) : key(key), val(val) {;}
+		AMFEntryKeyVal(const std::string& key, AMFEntry* val) : key(key), val(val) {;}
 		~AMFEntryKeyVal() {delete val;}
 		void print(std::ostream& out) const {out << key << ": " << *val;}
 	};
@@ -67,6 +68,21 @@ namespace K {
 			for (const AMFEntryKeyVal& e : entries) {if (e.key == key) {return e.val;}}
 			return nullptr;
 		}
+	};
+
+
+	/** ecma array */
+	struct AMFEcmaArray : AMFEntry {
+
+		/** all contained entries */
+		std::vector<AMFEntryKeyVal> entries;
+
+		AMFEcmaArray() {;}
+
+		void print(std::ostream& out) const {
+			for (const AMFEntryKeyVal& e : entries) {out << e << std::endl;}
+		}
+
 	};
 
 

@@ -33,11 +33,16 @@ namespace K {
 		int totalDataBytes;
 
 
+		// could not find a clear specification on this one...
+		/** the chunk-size used on the stream. usually 128 but may be set by a special command */
+		int curChunkSize;
+
+
 		/** empty ctor */
-		RTMPStream() : streamID(-1), lastTypeID(-1), lastPayloadSize(-1), lastMessageID(-1), totalDataBytes(0) {;}
+		RTMPStream() : streamID(-1), lastTypeID(-1), lastPayloadSize(-1), lastMessageID(-1), totalDataBytes(0), curChunkSize(128) {;}
 
 		/** ctor */
-		RTMPStream(const uint32_t streamID) : streamID(streamID), lastTypeID(-1), lastPayloadSize(-1), lastMessageID(-1), totalDataBytes(0) {;}
+		RTMPStream(const uint32_t streamID) : streamID(streamID), lastTypeID(-1), lastPayloadSize(-1), lastMessageID(-1), totalDataBytes(0), curChunkSize(128) {;}
 
 
 		/** reset the stream to an empty state */
@@ -64,6 +69,20 @@ namespace K {
 			if (lastPayloadSize >= 0) {totalDataBytes += lastPayloadSize;}
 
 		}
+
+		// could not find a clear specification on this one...
+//		// http://wiki.multimedia.cx/?title=RTMP
+//		/** get the byte that will divide all chunks within this stream */
+//		uint8_t getChunkDivider() const {
+//			return 0xC0 + streamID;
+//		}
+
+		// could not find a clear specification on this one...
+//		// http://www.actionscript.org/resources/articles/630/2/Low-level-AS3---Establishing-an-RTMP-connection-with-Socket-and-ByteArray/Page2.html
+//		/** it seems like the chunk dividers (usually 1 byte??) do NOT count as payload size?? */
+//		uint32_t getChunkedPayloadSize(const uint32_t len) const {
+//			return len + (len / curChunkSize);
+//		}
 
 		/** debug output */
 		friend std::ostream& operator << (std::ostream& out, const RTMPStream& s) {

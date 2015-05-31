@@ -23,8 +23,11 @@ namespace K {
 		/** the buffer used for reassembly */
 		TCPReassemblyBuffer buffer;
 
-		/** last seq nr */
-		uint32_t seqNr;
+		/** is this stream new? (no packets added) */
+		bool isNew;
+
+		/** the expected next seq-nr */
+		uint32_t nextSeqNr;
 
 		/** total number of added packets */
 		uint32_t numPacketsAdded;
@@ -35,10 +38,17 @@ namespace K {
 		/** total received payload (in bytes) */
 		uint32_t payloadSize;
 
+		/** ensure we are still talking on the same ports */
+		struct {
+			uint16_t src;
+			uint16_t dst;
+		} ports;
+
+
 	public:
 
 		/** ctor */
-		TCPStream() : seqNr(0), numPacketsAdded(0), numPacketsRetransmitted(0), payloadSize(0) {
+		TCPStream() : isNew(true), nextSeqNr(0), numPacketsAdded(0), numPacketsRetransmitted(0), payloadSize(0) {
 			;
 		}
 
@@ -75,35 +85,48 @@ namespace K {
 			// get the TCP's payload
 			Payload p = tcp.getPayload();
 
-			// allow start-within (without handshake)
-			if (this->seqNr == 0) {
+			// first packet added to this stream? -> set starting seq-nr
+			if (isNew) {
 				debug(K_DBG_TCP_STREAM, "starting TCP stream");
-				seqNr = tcp.getSeqNumber() + p.length;
+				isNew = false;
+				nextSeqNr = tcp.getSeqNumber() + getSeqNrInc(tcp);
+				ports.src = tcp.getSrcPort();
+				ports.dst = tcp.getDstPort();
 				return p;
 			}
 
+			// sanity check
+			if (tcp.getSrcPort() != ports.src || tcp.getDstPort() != ports.dst) {
+				throw Exception("tcp ports have changed?! are you trying to add packets from another connection into this tcp-stream?");
+			}
+
 			// retransmitted frame? -> drop
-			if (tcp.getSeqNumber() < seqNr) {
+			if (tcp.getSeqNumber() < nextSeqNr) {
 				debug(K_DBG_TCP_STREAM, "dropping retransmitted frame");
 				++numPacketsRetransmitted;
 				return Payload::empty();
 			}
 
 			// works without reassembly?
-			if (tcp.getSeqNumber() == seqNr && buffer.isEmpty()) {
+			if (tcp.getSeqNumber() == nextSeqNr && buffer.isEmpty()) {
 				debug(K_DBG_TCP_STREAM, "no reassembly needed");
-				seqNr = tcp.getSeqNumber() + p.length;
+				nextSeqNr += getSeqNrInc(tcp);
 				return p;
 			}
 
 			// frame(s) missing before this frame. update the reassembly buffer
 			debug(K_DBG_TCP_STREAM, "missing frames before this one. appending to buffer.");
-			Payload pRes = buffer.append(seqNr, tcp.getSeqNumber(), p);
-			seqNr += pRes.length;
+			Payload pRes = buffer.append(nextSeqNr, tcp.getSeqNumber(), p);
+			nextSeqNr += getSeqNrInc(tcp);
 			return pRes;
 
 		}
 
+	private:
+
+		uint32_t getSeqNrInc(const PacketTCP& tcp) const {
+			return tcp.getPayload().length + (tcp.isSyn() ? 1 : 0);
+		}
 
 
 	};

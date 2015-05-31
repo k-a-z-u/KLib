@@ -83,12 +83,22 @@ namespace K {
 			data.resize(curLen + p.length);
 			memcpy(data.data()+curLen, p.data, p.length);
 
-			// try to get the next full packet from the buffer and assign the stream to it
+			// try to get the next (full!!) packet from the buffer and get its corresponding stream
 			RTMPStream* stream;
-			const int len = tryToGetNextPacketFromBuffer(tmp, &stream);
 
-			// got a packet? -> parse it!
-			if (len) {parse(*stream, tmp, len);}
+			// there might be more than one packet within the buffer! fetch all!
+			while (true) {
+
+				const int len = tryToGetNextPacketFromBuffer(tmp, &stream);
+
+				// got a packet? -> parse it!
+				if (len) {
+					parse(*stream, tmp, len);
+				} else {
+					break;
+				}
+
+			};
 
 		}
 
@@ -117,8 +127,13 @@ namespace K {
 			// update the stream with the current values
 			(*stream)->update(pkt);
 
-			// full packet present?
+			// complete(!!) packet present?
 			const uint32_t totalLen = pkt.getHeaderLength() + (*stream)->lastPayloadSize;
+
+			// could not find a clear specification on this one...
+			// this is probaly a hack as i do not understand / can't find the protocol's specification
+			//if ((*stream)->lastTypeID == 0x14) {totalLen = (*stream)->getChunkedPayloadSize(totalLen);}
+
 			if ((*stream)->lastPayloadSize >= 0) {
 				if (data.size() >= totalLen) {
 					memcpy(dst, data.data(), totalLen);
@@ -151,8 +166,8 @@ namespace K {
 				case 0x01:										break;
 				case 0x04:	parseControl(stream, pkt, len);		break;
 				case 0x08:	parseAudio(stream, pkt, len);		break;
-				case 0x11:	parseAMF(stream, pkt, len);			break;	// AMF0
-				case 0x14:	parseAMF(stream, pkt, len);			break;	// AMF3 (TODO: has another format than AMF0!)
+                //case 0x11:	parseAMF3(stream, pkt, len);		break;	// AMF3
+                case 0x14:	parseAMF0(stream, pkt, len);		break;	// AMF0
 				default:	break;
 			}
 
@@ -176,13 +191,26 @@ namespace K {
 			}
 		}
 
-		void parseAMF(RTMPStream& stream, RTMPPacket& pkt, const uint32_t len) {
+		void parseAMF0(RTMPStream& stream, RTMPPacket& pkt, const uint32_t len) {
 			const uint8_t* data = pkt.getPayload();
+			//const int32_t dataLen = stream.getChunkedPayloadSize(stream.lastPayloadSize); // this is porbabily a hack.. cant find/understand the protocol specification on this one
+			//const std::vector<uint8_t> unchunked = unchunk(stream, data, dataLen);
+			//K::AMFResult res = K::AMF::parse(unchunked.data(), unchunked.size());
 			const int32_t dataLen = stream.lastPayloadSize;
-			K::AMFResult res = K::AMF::parse(data, dataLen);
+
+			bool errors;
+			K::AMF amf(data, dataLen);
+			K::AMFResult res = amf.parseErroneousData(errors);
 			std::cout << res << std::endl;
 			listener->onRTMPAMF(std::move(res));
+
+			// error occurred.. try to reset the stream
+			if (errors) {reset();}
+
 		}
+
+
+
 
 		/** reset the stream with the given ID */
 		void resetStream(const uint32_t streamID) {
@@ -206,7 +234,40 @@ namespace K {
 			streams.clear();
 			gotStart = false;
 			data.resize(0);
+			listener->onRTMPReset();
 		}
+
+
+		// could not find a clear specification on this one...
+//		/**
+//		 * RTMP chunks certain data types by adding an additonal byte every 128 bytes.
+//		 * this method removes those bytes
+//		 */
+//		static std::vector<uint8_t> unchunk(const RTMPStream& stream, const uint8_t* data, uint32_t len) {
+
+//			// the chunk size, depends on the streams current settings
+//			static int chunkSize = stream.curChunkSize;
+
+//			// copy all chunks
+//			std::vector<uint8_t> res(0);
+//			for (int i = 0; i < len; i+=chunkSize+1) {
+
+//				// destination for this chunk within the output (just append)
+//				const int dst = res.size();
+
+//				// how many bytes to copy. usually: chunkSize, at the end: what-is-left
+//				const int size = ((len - i) < chunkSize) ? (len - i) : (chunkSize);
+
+//				// resize and copy
+//				res.resize(res.size()+size);		// inefficient!
+//				memcpy(&res[dst], &data[i], size);
+
+//				// sanity check. ensure there actually is the correct chunking-byte after each chunk
+//				if (size == chunkSize) {assert(data[i+chunkSize] == stream.getChunkDivider());}
+
+//			}
+//			return res;
+//		}
 
 
 	};

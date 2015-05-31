@@ -44,8 +44,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		Sniffer(const std::string& dev) {
-			this->dev = dev;
+		Sniffer() {
 		}
 
 		/** set the listener to inform */
@@ -53,7 +52,10 @@ namespace K {
 			listener = l;
 		}
 
-		void open() {
+		/** open a device (e.g. eth0) for sniffing */
+		void openDev(const std::string& dev) {
+
+			this->dev = dev;
 
 			// open
 			handle = pcap_create(dev.c_str(), errbuf);
@@ -68,6 +70,16 @@ namespace K {
 			// open
 			int ret = pcap_activate(handle);
 			if (ret != 0) {throw Exception("error while opening device");}
+
+		}
+
+		/** open a pcap-ng capture file */
+		void openCaptureFile(const std::string& file) {
+
+			this->dev = file;
+
+			handle = pcap_open_offline(file.c_str(), errbuf);
+			if (handle == nullptr) {throw "error while opening capture file";}
 
 		}
 

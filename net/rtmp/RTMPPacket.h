@@ -50,8 +50,8 @@ namespace K {
 			// get the stream's ID (1-3 Bytes)
 			streamID = data[0] & 0b00111111;
 			int o = 0;
-			if (streamID == 0) {o = 1; streamID = (data[1]);}
-			if (streamID == 1) {o = 2; streamID = (data[1] << 8) | (data[2] << 0);}
+			if (streamID == 0) {o = 1; streamID = (data[1]);}							// streamID NOT YET CORRECT!
+			if (streamID == 1) {o = 2; streamID = (data[1] << 8) | (data[2] << 0);}		// streamID NOT YET CORRECT!
 
 			// depending on the chunk type, some parts of the packet are missing
 			// type 0: everything, type 1: messageID missing, type 2, ...

@@ -31,6 +31,9 @@ namespace K {
 		/** received AMF data */
 		virtual void onRTMPAMF(AMFResult res) = 0;
 
+		/** called when the transmission was completely reset (e.g. due to errors) */
+		virtual void onRTMPReset() = 0;
+
 	};
 
 }
