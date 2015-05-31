@@ -93,6 +93,7 @@ namespace K {
 
 				// got a packet? -> parse it!
 				if (len) {
+					stream->totalDataBytes += len;
 					parse(*stream, tmp, len);
 				} else {
 					break;

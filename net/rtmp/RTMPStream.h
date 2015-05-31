@@ -65,9 +65,6 @@ namespace K {
 			// update the messageID
 			if (pkt.getMessageID() >= 0) {lastMessageID = pkt.getMessageID();}
 
-			// update cumulative data
-			if (lastPayloadSize >= 0) {totalDataBytes += lastPayloadSize;}
-
 		}
 
 		// could not find a clear specification on this one...

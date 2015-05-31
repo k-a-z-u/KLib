@@ -35,21 +35,21 @@ namespace K {
 
 		/** ctor */
 		TCPReassemblyBuffer() {
-			data.resize(128 * 1024);
+			data.resize(512 * 1024);
 			reset();
 		}
 
 		/**
 		 * append the given payload (starting at packetsSeqNr)
-		 * to the reassembly buffer starting at the last seq-nr that was ok (streamsSeqNr)
+		 * to the reassembly buffer starting at the streams next expected seq-nr
 		 * and return payload as soon as something was (completely) reassembled
 		 */
-		Payload append(const uint32_t streamsSeqNr, const uint32_t packetsSeqNr, const Payload p) {
+		Payload append(const uint32_t nextExpectedSeqNr, const uint32_t packetsSeqNr, const Payload p) {
 
 
 			// new reassembly starting (buffer empty)?
 			// set the buffer's start to the stream's last good seq-nr
-			if (startSeqNr == 0) {startSeqNr = streamsSeqNr;}
+			if (startSeqNr == 0) {startSeqNr = nextExpectedSeqNr;}
 
 			// append the given payload to its designated position within the buffer
 			// (depending on the last good seq-nr)

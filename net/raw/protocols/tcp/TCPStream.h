@@ -35,6 +35,9 @@ namespace K {
 		/** total number of retransmitted packets */
 		uint32_t numPacketsRetransmitted;
 
+		/** total number of out-of-order packets */
+		uint32_t numPacketsOutOfOrder;
+
 		/** total received payload (in bytes) */
 		uint32_t payloadSize;
 
@@ -48,7 +51,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		TCPStream() : isNew(true), nextSeqNr(0), numPacketsAdded(0), numPacketsRetransmitted(0), payloadSize(0) {
+		TCPStream() : isNew(true), nextSeqNr(0), numPacketsAdded(0), numPacketsRetransmitted(0), numPacketsOutOfOrder(0), payloadSize(0) {
 			;
 		}
 
@@ -65,6 +68,9 @@ namespace K {
 
 		/** get the number of retransmitted packets */
 		int getNumPacketsRetransmitted() const {return numPacketsRetransmitted;}
+
+		/** get the number of ot-of-order packets */
+		int getNumPacketsOutOfOrder() const {return numPacketsOutOfOrder;}
 
 		/** append this tcp packet. will return usable payload as soon as something valid is available */
 		Payload add(const PacketTCP& tcp) {
@@ -117,7 +123,12 @@ namespace K {
 			// frame(s) missing before this frame. update the reassembly buffer
 			debug(K_DBG_TCP_STREAM, "missing frames before this one. appending to buffer.");
 			Payload pRes = buffer.append(nextSeqNr, tcp.getSeqNumber(), p);
-			nextSeqNr += getSeqNrInc(tcp);
+
+			if (!pRes.isEmpty()) {
+				++numPacketsOutOfOrder;
+				nextSeqNr += pRes.length;//getSeqNrInc(tcp);
+			}
+
 			return pRes;
 
 		}
