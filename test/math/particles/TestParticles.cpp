@@ -49,6 +49,10 @@ namespace K {
 
 	};
 
+	struct MyControl {
+
+	};
+
 	struct MyObservation {
 		double x;
 		double y;
@@ -175,11 +179,11 @@ namespace K {
 
 
 
-	class MyTransition : public ParticleFilterTransition<MyState> {
+	class MyTransition : public ParticleFilterTransition<MyState, MyControl> {
 	public:
 		NormalDistribution nd;
 		MyTransition() : nd(0, 4) {;}
-		void transition(std::vector<Particle<MyState>>& particles) {
+		void transition(std::vector<Particle<MyState>>& particles, const MyControl* ctrl) {
 			for (Particle<MyState>& p : particles) {
 				p.state.x += nd.draw();
 				p.state.y += nd.draw();
@@ -210,7 +214,7 @@ namespace K {
 
 	TEST(Particles, filter) {
 
-		ParticleFilter<MyState, MyObservation> pf(20000, std::unique_ptr<MyInitializer>(new MyInitializer));
+		ParticleFilter<MyState, MyControl, MyObservation> pf(20000, std::unique_ptr<MyInitializer>(new MyInitializer));
 		pf.setResampling(std::unique_ptr<ParticleFilterResamplingSimple<MyState>>(new ParticleFilterResamplingSimple<MyState>));
 		pf.setEstimation(std::unique_ptr<ParticleFilterEstimationWeightedAverage<MyState>>(new ParticleFilterEstimationWeightedAverage<MyState>));
 
@@ -227,7 +231,7 @@ namespace K {
 		// 1st run
 		pf.init();
 		o.set(50, 30);
-		for (int i = 0; i < 8; ++i) {s = pf.update(o);}
+		for (int i = 0; i < 8; ++i) {s = pf.update(nullptr, o);}
 		ASSERT_NEAR(50, s.x, 0.1);
 		ASSERT_NEAR(30, s.y, 0.1);
 

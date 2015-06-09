@@ -10,9 +10,9 @@ namespace K {
 
 	private:
 
-		double mu;
-		double sigma;
-		double _a;
+		const double mu;
+		const double sigma;
+		const double _a;
 
 		std::random_device rd;
 		std::mt19937 gen;
@@ -21,14 +21,15 @@ namespace K {
 	public:
 
 		/** ctor */
-		NormalDistribution(double mu, double sigma) : mu(mu), sigma(sigma), gen(rd()), dist(mu,sigma) {
-			_a = 1.0 / (sigma * std::sqrt(2.0 * 3.14159265359));
+		NormalDistribution(const double mu, const double sigma) :
+			mu(mu), sigma(sigma), _a(1.0 / (sigma * std::sqrt(2.0 * M_PI))), gen(rd()), dist(mu,sigma) {
+
 		}
 
 
 		/** get probability for the given value */
 		double getProbability(const double val) const {
-			double b = -0.5 * ((val-mu)/sigma) * ((val-mu)/sigma);
+			const double b = -0.5 * ((val-mu)/sigma) * ((val-mu)/sigma);
 			return _a * std::exp(b);
 		}
 
@@ -45,8 +46,8 @@ namespace K {
 
 		/** get the probability for the given value */
 		static double getProbability(const double mu, const double sigma, const double val) {
-			double a = 1.0 / (sigma * std::sqrt(2.0 * 3.14159265359));
-			double b = -0.5 * ((val-mu)/sigma) * ((val-mu)/sigma);
+			const double a = 1.0 / (sigma * std::sqrt(2.0 * M_PI));
+			const double b = -0.5 * ((val-mu)/sigma) * ((val-mu)/sigma);
 			return a * std::exp(b);
 		}
 

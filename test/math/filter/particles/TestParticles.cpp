@@ -6,7 +6,7 @@
  */
 
 
-
+#ifdef FIXME
 
 #ifdef WITH_TESTS
 
@@ -178,5 +178,6 @@ TEST(Particles, init) {
 
 }
 
+#endif
 
 #endif

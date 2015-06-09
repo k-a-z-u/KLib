@@ -76,6 +76,11 @@ namespace K {
 			return *(--values.end());
 		}
 
+		/** get the range between min an max */
+		double getRange() const {
+			return getMax() - getMin();
+		}
+
 		/** get the squared sum */
 		double getSquaredSum() const {
 			return sumSquared;
@@ -104,12 +109,14 @@ namespace K {
 
 		/** send to stream */
 		friend std::ostream& operator << (std::ostream& out, const Statistics<double>& s) {
+			out << "cnt(" << s.getCount() << ")\t";
 			out << "min(" << s.getMin() << ")\t";
 			out << "max(" << s.getMax() << ")\t";
+			out << "range(" << s.getRange() << ")\t";
 			out << "med(" << s.getMedian() << ")\t";
 			out << "avg(" << s.getAvg() << ")\t";
 			out << "stdDev(" << s.getStdDev() << ")\t";
-			out << "squared(" << s.getSquaredSum() << ")";
+			//out << "squared(" << s.getSquaredSum() << ")";
 			return out;
 		}
 

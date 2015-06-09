@@ -8,9 +8,10 @@
 #ifndef K_MATH_OPT_NUMOPTALGO_H_
 #define K_MATH_OPT_NUMOPTALGO_H_
 
-namespace K {
-
 #include "NumOptVector.h"
+#include "NumOptFunction.h"
+
+namespace K {
 
 	/**
 	 * interface for all algorithms providing numerical optimization

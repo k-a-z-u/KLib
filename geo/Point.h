@@ -53,6 +53,26 @@ struct Point {
 		return sqrt( (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) );
 	}
 
+	/** get the length when pretending the point to be a vector from (0,0) */
+	double getLength() const {
+		return std::sqrt( x*x + y*y );
+	}
+
+	/** treat this point as a vector from (0,0) and rotate it by the angle theta */
+	void rotate(const float theta) {
+		const float _x = (x*std::cos(theta)) - (y*std::sin(theta));
+		const float _y = (x*std::sin(theta)) + (y*std::cos(theta));
+		this->x = _x;
+		this->y = _y;
+	}
+
+	/** treat this point as a vector from (0,0) and return a version rotated by the angle theta */
+	Point getRotated(const float theta) const {
+		const float _x = (x*std::cos(theta)) - (y*std::sin(theta));
+		const float _y = (x*std::sin(theta)) + (y*std::cos(theta));
+		return Point(_x, _y);
+	}
+
 
 	Point& operator += (const Point& right) {this->x += right.x; this->y += right.y; return *this;}
 

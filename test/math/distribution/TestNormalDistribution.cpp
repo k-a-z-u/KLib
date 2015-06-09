@@ -37,6 +37,34 @@ namespace K {
 
 	}
 
+	TEST(Distribution, normalCDF1) {
+
+		NormalDistributionCDF nd(0,1);
+		ASSERT_NEAR(0.5, nd.getProbability(0), 0.00001);
+		ASSERT_NEAR(0.5, NormalDistributionCDF::getProbability(0, 1, 0), 0.00001);
+
+		ASSERT_NEAR(1.0, nd.getProbability(5), 0.00001);
+		ASSERT_NEAR(1.0, NormalDistributionCDF::getProbability(0, 1, 5), 0.00001);
+
+		ASSERT_NEAR(0.0, nd.getProbability(-5), 0.00001);
+		ASSERT_NEAR(0.0, NormalDistributionCDF::getProbability(0, 1, -5), 0.00001);
+
+	}
+
+	TEST(Distribution, normalCDF2) {
+
+		NormalDistributionCDF nd(3,1);
+		ASSERT_NEAR(0.5, nd.getProbability(3), 0.00001);
+		ASSERT_NEAR(0.5, NormalDistributionCDF::getProbability(3, 1, 3), 0.00001);
+
+		ASSERT_NEAR(1.0, nd.getProbability(3+5), 0.00001);
+		ASSERT_NEAR(1.0, NormalDistributionCDF::getProbability(3, 1, 3+5), 0.00001);
+
+		ASSERT_NEAR(0.0, nd.getProbability(3-5), 0.00001);
+		ASSERT_NEAR(0.0, NormalDistributionCDF::getProbability(3, 1, 3-5), 0.00001);
+
+	}
+
 }
 
 

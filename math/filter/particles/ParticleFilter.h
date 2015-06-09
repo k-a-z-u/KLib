@@ -28,7 +28,7 @@ namespace K {
 	 * @param State the (user-defined) state for each particle
 	 * @param Observation the observation (sensor) data
 	 */
-	template <typename State, typename Observation>
+	template <typename State, typename Control, typename Observation>
 
 	class ParticleFilter {
 
@@ -44,7 +44,7 @@ namespace K {
 		std::unique_ptr<ParticleFilterEstimation<State>> estimation;
 
 		/** the transition function to use */
-		std::unique_ptr<ParticleFilterTransition<State>> transition;
+		std::unique_ptr<ParticleFilterTransition<State, Control>> transition;
 
 		/** the evaluation function to use */
 		std::unique_ptr<ParticleFilterEvaluation<State, Observation>> evaluation;
@@ -96,13 +96,13 @@ namespace K {
 		}
 
 		/** set the transition method to use */
-		void setTransition(std::unique_ptr<ParticleFilterTransition<State>> transition) {
+		void setTransition(std::unique_ptr<ParticleFilterTransition<State, Control>> transition) {
 			_assertNotNull(transition, "setTransition() MUST not be called with a nullptr!");
 			this->transition = std::move(transition);
 		}
 
 		/** get the used transition method */
-		ParticleFilterTransition<State>* getTransition() {
+		ParticleFilterTransition<State, Control>* getTransition() {
 			return this->transition.get();
 		}
 
@@ -124,7 +124,7 @@ namespace K {
 		}
 
 		/** perform resampling -> transition -> evaluation -> estimation */
-		State update(const Observation& observation) {
+		State update(const Control* control, const Observation& observation) {
 
 			// sanity checks (if enabled)
 			_assertNotNull(resampler, "resampler MUST not be null! call setResampler() first!");
@@ -133,7 +133,7 @@ namespace K {
 			_assertNotNull(estimation, "estimation MUST not be null! call setEstimation() first!");
 
 			// perform the transition step
-			transition->transition(particles);
+			transition->transition(particles, control);
 
 			// perform the evaluation step and calculate the sum of all particle weights
 			const double weightSum = evaluation->evaluation(particles, observation);
@@ -153,13 +153,13 @@ namespace K {
 		}
 
 		/** perform only the transition step */
-		void updateTransitionOnly() {
+		void updateTransitionOnly(const Control* control) {
 
 			// sanity checks (if enabled)
 			_assertNotNull(transition, "transition MUST not be null! call setTransition() first!");
 
 			// perform the transition step
-			transition->transition(particles);
+			transition->transition(particles, control);
 
 		}
 
@@ -173,6 +173,10 @@ namespace K {
 
 			// perform the evaluation step and calculate the sum of all particle weights
 			const double weightSum = evaluation->evaluation(particles, observation);
+
+			// sanity check
+			_assertNotNAN(weightSum, "sum of all particle weights (returned from eval) is NAN!");
+			_assertNot0(weightSum, "sum of all particle weights (returned from eval) is 0.0!");
 
 			// normalize the particle weights and thereby calculate N_eff
 			const double neff = normalize(weightSum);
@@ -190,7 +194,12 @@ namespace K {
 
 		/** estimate the current state without update or transition just based on the current weights */
 		State estimate() {
+
+			// sanity checks (if enabled)
+			_assertNotNull(estimation, "estimation MUST not be null! call setEstimation() first!");
+
 			return estimation->estimate(particles);
+
 		}
 
 	private:
