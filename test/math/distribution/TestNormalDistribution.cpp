@@ -37,6 +37,32 @@ namespace K {
 
 	}
 
+	TEST(Distribution, normal3) {
+
+		NormalDistribution nd(0, std::sqrt(0.2));
+		double d1 = nd.getProbability( 0);
+		double d2 = nd.getProbability(+1);
+		double d3 = nd.getProbability(-1);
+
+		ASSERT_EQ(d2,d3);
+		ASSERT_NEAR(0.8920620580763857, d1, 0.00001);
+		ASSERT_NEAR(0.07322491280963242, d2, 0.00001);
+		ASSERT_NEAR(0.07322491280963242, d3, 0.00001);
+
+	}
+
+	TEST(Distribution, normal4) {
+
+		NormalDistribution nd(0, 2);
+		double d1 = nd.getProbability( 0);
+		double d2 = nd.getProbability(+1);
+		double d3 = nd.getProbability(-1);
+
+		ASSERT_EQ(d2,d3);
+		ASSERT_NEAR(0.19947114020071635, d1, 0.00001);
+
+	}
+
 	TEST(Distribution, normalCDF1) {
 
 		NormalDistributionCDF nd(0,1);

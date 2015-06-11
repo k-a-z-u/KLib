@@ -7,6 +7,7 @@ enum class SVGElementType {
 	LAYER,
 	PATH,
 	LINE,
+	TEXT,
 
 };
 
