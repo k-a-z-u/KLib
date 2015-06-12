@@ -160,8 +160,8 @@ namespace K {
 		layer->addChild(text);
 
 		// set values
-		text->pos.x = std::stof( elem->Attribute("x") );
-		text->pos.y = std::stof( elem->Attribute("y") );
+		text->pos.x =					std::stof( elem->Attribute("x") );
+		text->pos.y = svgFile->height -	std::stof( elem->Attribute("y") );
 		const tinyxml2::XMLElement* elText = elem->FirstChildElement("tspan");
 		if (elText && !elText->NoChildren()) { text->text = elText->GetText(); }
 
