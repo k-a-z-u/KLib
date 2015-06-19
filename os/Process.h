@@ -182,7 +182,7 @@ namespace K {
 	public:
 
 		/** open the process using the given command */
-		Process(const std::string& cmd, const std::string& args) s{
+		Process(const std::string& cmd, const std::string& args) {
 			;
 		}
 
