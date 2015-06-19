@@ -5,7 +5,8 @@
 
 #if defined(__linux__)
 #include <sys/time.h>
-#elif defined(__WIN32__)
+#elif defined(__WIN32__) || defined(_WINDOWS)
+#define NOMINMAX
 #include <windows.h>
 #else
 #error "TODO"
@@ -27,7 +28,7 @@ namespace K {
 			struct timeval tv;
 			gettimeofday(&tv, NULL);
 			return tv.tv_sec * 1000 + tv.tv_usec / 1000;
-#elif defined(__WIN32__)
+#elif defined(__WIN32__) || defined(_WINDOWS)
             return GetTickCount();
 #else
 #error "TODO"

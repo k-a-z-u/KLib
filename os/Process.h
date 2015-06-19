@@ -1,17 +1,7 @@
 #ifndef K_OS_PROCESS_H
 #define K_OS_PROCESS_H
 
-#include <iosfwd>
-#include <cstdio>
-#include <iostream>
-
 #include <exception>
-#include <fcntl.h>
-#include <sstream>
-#include <signal.h>
-#include <unistd.h>
-#include <sys/types.h>
-
 
 namespace K {
 
@@ -25,6 +15,23 @@ namespace K {
 		std::string str;
 	};
 
+}
+
+#if defined(__linux__)
+
+#include <iosfwd>
+#include <cstdio>
+#include <iostream>
+
+
+#include <fcntl.h>
+#include <sstream>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+
+namespace K {
 
 	/**
 	 * @brief start an external process and communicate
@@ -157,5 +164,56 @@ namespace K {
 	};
 
 }
+
+#elif defined(_WINDOWS)
+
+
+namespace K {
+
+	/**
+	 * @brief start an external process and communicate
+	 * via stream operators
+	 */
+	class Process {
+
+		/** send data to the process */
+		std::stringstream ss;
+
+	public:
+
+		/** open the process using the given command */
+		Process(const std::string& cmd, const std::string& args) s{
+			;
+		}
+
+		/** dtor */
+		~Process() {
+			;
+		}
+
+		/** send command to process */
+		template <typename type> Process& operator << (type data) {
+			ss << data;
+			return *this;
+		}
+
+		/** TODO read one line */
+		Process& operator >> (std::string& str) {
+			return *this;
+		}
+
+		/** flush to process */
+		void flush() {
+			ss.str("");
+		}
+
+
+
+
+	};
+
+}
+
+#endif
 
 #endif // K_OS_PROCESS_H
