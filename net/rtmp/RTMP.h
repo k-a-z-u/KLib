@@ -67,6 +67,7 @@ namespace K {
 		void append(K::Payload p) {
 
 			// sanity checks
+			if (p.length == 0) {return;}
 			assert(listener != nullptr);
 
 			// sync in the middle of a stream

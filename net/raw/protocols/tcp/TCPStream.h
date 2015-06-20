@@ -6,6 +6,7 @@
 
 #include "PacketTCP.h"
 #include "TCPStreamBuffer.h"
+#include "TCPStreamQueue.h"
 
 namespace K {
 
@@ -20,11 +21,15 @@ namespace K {
 
 	private:
 
-		/** the buffer used for reassembly */
-		TCPReassemblyBuffer buffer;
+		///** the buffer used for reassembly */
+		//TCPReassemblyBuffer buffer;
 
-		/** is this stream new? (no packets added) */
-		bool isNew;
+		/** the queue used for reassembly */
+		TCPStreamQueue queue;
+
+
+//		/** is this stream new? (no packets added) */
+//		bool isNew;
 
 		/** the expected next seq-nr */
 		uint32_t nextSeqNr;
@@ -47,12 +52,20 @@ namespace K {
 			uint16_t dst;
 		} ports;
 
+		/** user defined something that may be attached to the stream (e.g. a handler) */
+		void* userPtr;
+
 
 	public:
 
 		/** ctor */
-		TCPStream() : isNew(true), nextSeqNr(0), numPacketsAdded(0), numPacketsRetransmitted(0), numPacketsOutOfOrder(0), payloadSize(0) {
-			;
+		TCPStream(const PacketTCP& tcp) :
+			numPacketsAdded(0), numPacketsRetransmitted(0), numPacketsOutOfOrder(0), payloadSize(0) {
+
+			nextSeqNr = tcp.getSeqNumber() + getSeqNrInc(tcp);
+			ports.src = tcp.getSrcPort();
+			ports.dst = tcp.getDstPort();
+
 		}
 
 		/** dtor */
@@ -72,34 +85,38 @@ namespace K {
 		/** get the number of ot-of-order packets */
 		int getNumPacketsOutOfOrder() const {return numPacketsOutOfOrder;}
 
+		/** attach a user-defined something to this stream. e.g. a handler or something that belongs to it */
+		void setUserPointer(void* userPtr) {this->userPtr = userPtr;}
+
+		/** get the user-defined something attached to this stream */
+		void* getUserPointer() const {return userPtr;}
+
 		/** append this tcp packet. will return usable payload as soon as something valid is available */
-		Payload add(const PacketTCP& tcp) {
-			const Payload p = get(tcp);
-			payloadSize += p.length;
-			return p;
+		std::vector<PacketTCP> add(const PacketTCP& tcp) {
+			std::vector<PacketTCP> packets = get(tcp);
+			for (const PacketTCP& pkt : packets) {payloadSize += pkt.getPayloadLength();}
+			return packets;
 		}
+
+		/** get this stream's dst port */
+		uint16_t getDstPort() const {return ports.dst;}
+
+		/** get this stream's src port */
+		uint16_t getSrcPort() const {return ports.src;}
+
 
 	private:
 
-		/** see add() */
-		Payload get(const PacketTCP& tcp) {
+		/** see: add() */
+		std::vector<PacketTCP> get(const PacketTCP& tcp) {
 
 			++numPacketsAdded;
+			std::vector<PacketTCP> packets;
 
 			debug(K_DBG_TCP_STREAM, "adding TCP frame. seqNr: " << tcp.getSeqNumber());
 
 			// get the TCP's payload
-			Payload p = tcp.getPayload();
-
-			// first packet added to this stream? -> set starting seq-nr
-			if (isNew) {
-				debug(K_DBG_TCP_STREAM, "starting TCP stream");
-				isNew = false;
-				nextSeqNr = tcp.getSeqNumber() + getSeqNrInc(tcp);
-				ports.src = tcp.getSrcPort();
-				ports.dst = tcp.getDstPort();
-				return p;
-			}
+			//Payload p = tcp.getPayload();
 
 			// sanity check
 			if (tcp.getSrcPort() != ports.src || tcp.getDstPort() != ports.dst) {
@@ -110,28 +127,45 @@ namespace K {
 			if (tcp.getSeqNumber() < nextSeqNr) {
 				debug(K_DBG_TCP_STREAM, "dropping retransmitted frame");
 				++numPacketsRetransmitted;
-				return Payload::empty();
+				return packets;
+				//return Payload::empty();
 			}
 
 			// works without reassembly?
-			if (tcp.getSeqNumber() == nextSeqNr && buffer.isEmpty()) {
+			if (tcp.getSeqNumber() == nextSeqNr && queue.isEmpty()) {
 				debug(K_DBG_TCP_STREAM, "no reassembly needed");
 				nextSeqNr += getSeqNrInc(tcp);
-				return p;
+				packets.push_back(tcp);
+				return packets;
 			}
 
 			// frame(s) missing before this frame. update the reassembly buffer
 			debug(K_DBG_TCP_STREAM, "missing frames before this one. appending to buffer.");
-			Payload pRes = buffer.append(nextSeqNr, tcp.getSeqNumber(), p);
+			//Payload pRes = q.append(nextSeqNr, tcp.getSeqNumber(), p);
+//			if (!pRes.isEmpty()) {
+//				++numPacketsOutOfOrder;
+//				nextSeqNr += pRes.length;//getSeqNrInc(tcp);
+//			}
 
-			if (!pRes.isEmpty()) {
-				++numPacketsOutOfOrder;
-				nextSeqNr += pRes.length;//getSeqNrInc(tcp);
+			// append the current packet into the queue
+			queue.append(tcp);
+
+			// stats
+			if (!queue.hasNext(nextSeqNr)) {++numPacketsOutOfOrder;}
+
+			// check whether the queue contains usable data
+			while(queue.hasNext(nextSeqNr)) {
+				const PacketTCP next = queue.next();
+				packets.push_back(next);
+				nextSeqNr += getSeqNrInc(next);
 			}
 
-			return pRes;
+			// done
+			return packets;
 
 		}
+
+
 
 	private:
 

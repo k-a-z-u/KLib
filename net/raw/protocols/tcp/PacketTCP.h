@@ -36,6 +36,9 @@ namespace K {
 
 	public:
 
+		/** empty ctor */
+		PacketTCP() {;}
+
 		/** helper method */
 		static PacketTCP wrap(uint8_t* data, const uint32_t len) {
 			return PacketTCP(data, len);
@@ -107,9 +110,24 @@ namespace K {
 			d->offsetAndFlags[0] |= ((length >> 2) << 4);
 		}
 
+		/** get the packet's payload length */
+		uint32_t getPayloadLength() const {
+			return len - getHeaderLength();
+		}
+
+		/** get the packet's total length (header+payload) */
+		uint32_t getLength() const {
+			return len;
+		}
+
 		/** get the payload of this TCP packet */
-		Payload getPayload() const{
-			return Payload( (uint8_t*) d + getHeaderLength(), len - getHeaderLength());
+		Payload getPayload() const {
+			return Payload( (uint8_t*) d + getHeaderLength(), getPayloadLength());
+		}
+
+		/** get the complete packet (header+payload) as raw pointer */
+		const uint8_t* getRaw() const {
+			return (uint8_t*) d;
 		}
 
 		/** dump info of this packet */
