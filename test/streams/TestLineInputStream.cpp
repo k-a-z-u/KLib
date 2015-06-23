@@ -35,7 +35,7 @@ TEST(LineInputStream, readLines) {
 
 	ByteArrayInputStream bais((uint8_t*) data, len);
 	BufferedInputStream bis(bais);
-	LineInputStream lis(bis);
+	LineInputStream lis(&bis);
 
 
 	ASSERT_TRUE(s1 == lis.readLine());

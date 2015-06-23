@@ -44,10 +44,15 @@ struct Line {
 		return getOrthogonal(p1);
 	}
 
+	/** get the line's center point */
+	Point getCenter() const {
+		return (p1 + p2) / 2;
+	}
+
 	/** get a line, orthogonal to this one and starting at src */
 	Line getOrthogonal(const Point src) const {
 		const Point t1 = p2 - p1;	// move to origin of this line (0,0)
-		Point t2(t1.y, -t1.x);		// make orthogonal to this line
+		Point t2(+t1.y, -t1.x);		// make orthogonal to this line
 		t2 += src;					// move to the desired src
 		return Line(src, t2);
 	}

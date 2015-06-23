@@ -30,12 +30,12 @@ struct Point {
 	Point() : x(0), y(0) {;}
 
 	/** ctor */
-	Point(double x, double y) : x(x), y(y) {;}
+	Point(const double x, const double y) : x(x), y(y) {;}
 
 	/** is this point a multiple of another point? */
 	bool isMultipleOf(const Point& other) const {
-		double factX = x / other.x;
-		double factY = y / other.y;
+		const double factX = x / other.x;
+		const double factY = y / other.y;
 		return factX == factY;
 	}
 

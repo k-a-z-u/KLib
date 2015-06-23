@@ -16,7 +16,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		LineInputStream(InputStream& is) : is(is), lastChar(0) {
+		LineInputStream(InputStream* is) : is(is), lastChar(0) {
 			;
 		}
 
@@ -47,7 +47,7 @@ namespace K {
 			while (true) {
 
 				// get next byte
-				byte = is.read();
+				byte = is->read();
 
 				// check for EOF
 				if (byte == -1) {break;}
@@ -73,26 +73,26 @@ namespace K {
 		}
 
 		int read() override {
-			return is.read();
+			return is->read();
 		}
 
 		int read(uint8_t* data, unsigned int len) override {
-			return is.read(data, len);
+			return is->read(data, len);
 		}
 
 		void close() override {
-			is.close();
+			is->close();
 		}
 
 		void skip(const uint64_t n) override {
-			is.skip(n);
+			is->skip(n);
 		}
 
 
 	private:
 
 		/** input stream. should be buffered! */
-		InputStream& is;
+		InputStream* is;
 
 		/** used to detect \r\n */
 		int lastChar;

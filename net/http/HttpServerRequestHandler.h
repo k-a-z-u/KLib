@@ -43,7 +43,7 @@ namespace K {
 
 			// create streams
 			BufferedInputStream bis(is);
-			LineInputStream lis(bis);
+			LineInputStream lis(&bis);
 
 			// read request line
 			std::string first = lis.readLine();

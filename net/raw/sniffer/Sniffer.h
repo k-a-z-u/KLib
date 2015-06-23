@@ -11,7 +11,7 @@
 #include "../../../Exception.h"
 
 #define RING_BUFFER_SIZE	(32*1024*1024)
-#define CAPTURE_BUFFER_SIZE 4096
+#define CAPTURE_BUFFER_SIZE (64*1024)
 #define USE_PROMISCIOUS_MODE	0
 #define DBG_SNIFFER
 
@@ -62,7 +62,7 @@ namespace K {
 			if (handle == nullptr) {throw "error while creating device";}
 
 			// configure some options
-			pcap_set_snaplen(handle, CAPTURE_BUFFER_SIZE);
+			//pcap_set_snaplen(handle, CAPTURE_BUFFER_SIZE);
 			pcap_set_buffer_size(handle, RING_BUFFER_SIZE);
 			pcap_set_promisc(handle, USE_PROMISCIOUS_MODE);
 			pcap_set_timeout(handle, 500);

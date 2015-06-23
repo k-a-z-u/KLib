@@ -73,7 +73,7 @@ namespace K {
 
 		FFT fft(size);
 
-		Process gp("/usr/bin/gnuplot");
+		Process gp("/usr/bin/gnuplot", "");
 		//gp << "set yrange[-0.1:0.1]\n";
 		gp << "plot '-' with lines\n";
 		float x = 0;
