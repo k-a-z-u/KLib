@@ -8,6 +8,10 @@
 
 namespace K {
 
+	/**
+	 * just use the particle with the maximum weight
+	 * as the currently sestimated state
+	 */
 	template <typename State>
 	class ParticleFilterEstimationMax : public ParticleFilterEstimation<State> {
 
