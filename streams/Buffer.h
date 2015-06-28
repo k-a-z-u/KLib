@@ -87,6 +87,12 @@ namespace K {
 			return ret;
 		}
 
+		/** peek into the next byte */
+		T peek() {
+			T ret = firstUsed[0];
+			return ret;
+		}
+
 
 		/**
 		 * remove the given number of entries from
@@ -95,7 +101,9 @@ namespace K {
 		void remove (unsigned int numEntries) {
 			if (numEntries == 0) {return;}
 			if (numEntries == usedEntries) {clear(); return;}
-			if (usedEntries < numEntries) {throw "out of bounds";}
+			if (usedEntries < numEntries) {
+				throw "out of bounds during Buffer.remove()";
+			}
 			usedEntries -= numEntries;
 			freeAtFront += numEntries;
 			firstUsed += numEntries;

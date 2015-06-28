@@ -9,14 +9,16 @@
 #define LINEINPUTSTREAM_H_
 
 #include "InputStream.h"
+#include "BufferedInputStream.h"
 
 namespace K {
 
 	class LineInputStream : public InputStream {
+
 	public:
 
 		/** ctor */
-		LineInputStream(InputStream* is) : is(is), lastChar(0) {
+		LineInputStream(BufferedInputStream* is) : is(is), lastChar(0) {
 			;
 		}
 
@@ -50,22 +52,29 @@ namespace K {
 				byte = is->read();
 
 				// check for EOF
-				if (byte == -1) {break;}
+				if (byte == ERR_FAILED) {break;}
+
+				// check no-data-yet
+				if (byte == ERR_TRY_AGAIN) {continue;}
 
 				// split?
-				if (byte == '\r') {break;}
-				if (byte == '\n') {
-					if (lastChar == '\r') {lastChar = byte; continue;}
+				if (byte == '\r') {
+					if (is->peek() == '\n') {is->read();}
 					break;
-				}
+				} else if (byte == '\n') {break;}
+				//				if (byte == '\r') {break;}
+//				if (byte == '\n') {
+//					if (lastChar == '\r') {lastChar = byte; continue;}
+//					break;
+//				}
 
 				// append current char
 				ret += (char) byte;
-				lastChar = byte;
+				//lastChar = byte;
 
 			}
 
-			lastChar = byte;
+			//lastChar = byte;
 
 			// done
 			return ret;
@@ -92,7 +101,7 @@ namespace K {
 	private:
 
 		/** input stream. should be buffered! */
-		InputStream* is;
+		BufferedInputStream* is;
 
 		/** used to detect \r\n */
 		int lastChar;

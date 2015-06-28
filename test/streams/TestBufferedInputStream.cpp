@@ -21,7 +21,7 @@ TEST(BufferedInputStream, readBytes) {
 	unsigned int len = (unsigned int)  strlen(data);
 
 	ByteArrayInputStream bais((uint8_t*) data, len);
-	BufferedInputStream bis(bais,1);
+	BufferedInputStream bis(&bais,1);
 
 
 	for (unsigned int i = 0; i < len; ++i) {
@@ -40,7 +40,7 @@ TEST(BufferedInputStream, readBlocks) {
 	for (unsigned int size = 1; size < 127; ++size) {
 
 		ByteArrayInputStream bais((uint8_t*) data, len);
-		BufferedInputStream bis(bais, size);
+		BufferedInputStream bis(&bais, size);
 
 		unsigned int bs = 11;
 		uint8_t buf[bs];

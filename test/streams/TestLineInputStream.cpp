@@ -34,7 +34,7 @@ TEST(LineInputStream, readLines) {
 	unsigned int len = (unsigned int) str.length();
 
 	ByteArrayInputStream bais((uint8_t*) data, len);
-	BufferedInputStream bis(bais);
+	BufferedInputStream bis(&bais);
 	LineInputStream lis(&bis);
 
 

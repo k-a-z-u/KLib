@@ -44,21 +44,10 @@ namespace K {
 			// create streams
 			BufferedInputStream bis(is);
 			LineInputStream lis(&bis);
-
-			// read request line
-			std::string first = lis.readLine();
-			HttpRequest req(first);
-
-			// read the HTTP header
-			HttpHeader header;
-			while (true) {
-				std::string line = lis.readLine();
-				if (line.empty()) {break;}
-				header.addLine(line);
-			}
+			HttpRequest req(lis);
 
 			// call listener
-			listener->onHttpRequest(this, req, header, bis);
+			listener->onHttpRequest(this, req, bis);
 
 		}
 
@@ -68,11 +57,11 @@ namespace K {
 
 			// send response header
 			const std::string s1 = resp.getAsString();
-			os.write( (uint8_t*) s1.data(), s1.length());
+			os->write( (uint8_t*) s1.data(), s1.length());
 			const std::string s2 = header.getAsString();
-			os.write( (uint8_t*) s2.data(), s2.length());
-			os.write( nl, 2);
-			os.flush();
+			os->write( (uint8_t*) s2.data(), s2.length());
+			os->write( nl, 2);
+			os->flush();
 
 			// send response payload (if any)
 			if (is) {
@@ -81,9 +70,9 @@ namespace K {
 					uint8_t buf[4096];
 					const int read = is->read(buf, 4096);
 					if (read == -1) {break;}
-					os.write(buf, read);
+					os->write(buf, read);
 				}
-				os.flush();
+				os->flush();
 
 			}
 
@@ -97,8 +86,8 @@ namespace K {
 		/** the listener to inform after parsing the request */
 		HttpServerListener* listener;
 
-		SocketInputStream is;
-		SocketOutputStream os;
+		SocketInputStream* is;
+		SocketOutputStream* os;
 
 
 	};

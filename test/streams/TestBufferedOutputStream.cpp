@@ -34,7 +34,7 @@ TEST(BufferedOutputStream, writeBytes) {
 	ASSERT_EQ(size, baos.getDataLength());
 
 	ByteArrayInputStream bais(baos.getData(), baos.getDataLength());
-	BufferedInputStream bis(bais);
+	BufferedInputStream bis(&bais);
 
 	int cnt = 0;
 	while(true) {
@@ -68,7 +68,7 @@ TEST(BufferedOutputStream, writeBlock) {
 	ASSERT_EQ(size, baos.getDataLength());
 
 	ByteArrayInputStream bais(baos.getData(), baos.getDataLength());
-	BufferedInputStream bis(bais);
+	BufferedInputStream bis(&bais);
 
 	int cnt = 0;
 	while(true) {

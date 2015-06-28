@@ -19,13 +19,29 @@ class InputStream {
 
 public:
 
+	/** reading failed completely */
+	static constexpr int ERR_FAILED = -1;
+
+	/** reading failed as nothing is available. try again */
+	static constexpr int ERR_TRY_AGAIN = -2;
+
+
 	/** dtor */
 	virtual ~InputStream() {;}
 
-	/** read one byte from the underlying device. returns -1 if nothin is available */
+	/**
+	 * read one byte from the underlying device.
+	 * returns ERR_FAILED if reading failed
+	 * returns ERR_TRY_AGAIN if nothing was available (but could be in the future)
+	 */
 	virtual int read() = 0;
 
-	/** read the given number of bytes into the buffer */
+	/**
+	 * read the given number of bytes into the buffer.
+	 * returns the number of read bytes (if everything was fine)
+	 * returns 0 if nothing was available for reading (but could be in the future)
+	 * returns ERR_FAILED if reading failed
+	 */
 	virtual int read(uint8_t* data, unsigned int len) {
 		unsigned int bytesRead = 0;
 		while (--len) {
@@ -38,11 +54,17 @@ public:
 		return bytesRead;
 	}
 
-	int readFully(uint8_t* data, unsigned int len) {
+	/**
+	 * try the read the given number of bytes.
+	 * will block until everything could be read.
+	 * returns the number of read bytes (if everything was fine)
+	 * returns ERR_FAILED if reading failed
+	 */
+	int readFully(uint8_t* data, const unsigned int len) {
 		unsigned int bytes = 0;
 		while (bytes < len) {
-			int numRead =  read(data+bytes, len-bytes);
-			if (numRead == -1) {return -1;}
+			const int numRead = read(data+bytes, len-bytes);
+			if (numRead == ERR_FAILED) {return ERR_FAILED;}
 			bytes += numRead;
 		}
 		return bytes;

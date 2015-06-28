@@ -222,7 +222,7 @@ TEST(GzipStream, compressDecompressFileBuffered) {
 
 	// decompress
 	FileInputStream fis(ftmp);
-	BufferedInputStream bis(fis, 4*1024);
+	BufferedInputStream bis(&fis, 4*1024);
 	GzipInputStream gis(bis);
 	bs = 1024;
 	uint8_t buf[bs];

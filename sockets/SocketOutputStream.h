@@ -21,7 +21,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		SocketOutputStream(Socket& sck) : sck(sck) {
+		SocketOutputStream(Socket* sck) : sck(sck) {
 			;
 		}
 
@@ -35,7 +35,7 @@ namespace K {
 		}
 
 		void write(const uint8_t* data, unsigned int len) override {
-			sck.write(data, len);
+			sck->write(data, len);
 		}
 
 		void flush() override {
@@ -43,13 +43,13 @@ namespace K {
 		}
 
 		void close() override {
-			sck.close();
+			sck->close();
 		}
 
 	private:
 
 		/** the socket to write to */
-		Socket& sck;
+		Socket* sck;
 
 	};
 

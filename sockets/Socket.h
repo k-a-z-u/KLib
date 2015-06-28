@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <fcntl.h>
 
 //http://svn.netlabs.org/repos/ports/hermes/trunk/src/Socket.cpp
 //	private key:		openssl genrsa -out privkey.pem 2048
@@ -39,26 +40,45 @@ namespace K {
 	class SocketOutputStream;
 
 	/**
-	 * socket for network IO
+	 * TCP socket implementation for network IO.
+	 * this socket is either created by a server that accepted an incoming connection
+	 * or by explicitly connecting to a server.
+	 *
+	 * The socket provides and input- and an output-stream.
+	 * The socket uses non-blocking IO and will e.g. return zero bytes
+	 * when nothing is available for reading
 	 */
 	class Socket {
 
+	private:
+
+		friend class ServerSocket;
+
+		SocketInputStream* is;
+		SocketOutputStream* os;
+
+		/**
+		 * ctor called from the ServerSocket.
+		 * called when the server accepted an incoming connection
+		 */
+		inline Socket(const int handle);
+
 	public:
 
-		/** ctor */
-		Socket() : handle(0) {
-			;
-		}
+		/**
+		 * ctor to create an "empty" socket.
+		 * use connect() to connect to a server
+		 */
+		inline Socket();
 
 		/** dtor */
-		~Socket() {
-			close();
-		}
+		inline ~Socket();
 
 
 		/** connect to the given NetworkAddress */
 		void connect(const NetworkAddress& target) {
 
+			// ensure the socket is closed
 			close();
 
 			// create socket
@@ -73,6 +93,9 @@ namespace K {
 			if (ret == -1) {
 				throw SocketException("error while connecting to: " + target.getHostIP() + ":" + std::to_string(target.getPort()));
 			}
+
+			// switch to non-blocking mode
+			makeNonBlocking();
 
 		}
 
@@ -168,10 +191,10 @@ namespace K {
 
 
 		/** get an InputStream to read from this socket */
-		inline SocketInputStream getInputStream();
+		inline SocketInputStream* getInputStream();
 
 		/** get an OutputStream to write to this socket */
-		inline SocketOutputStream getOutputStream();
+		inline SocketOutputStream* getOutputStream();
 
 
 	protected:
@@ -182,7 +205,7 @@ namespace K {
 		friend class SocketOutputStream;
 
 		/** write the given bytes */
-		void write(const uint8_t* data, unsigned int len) {
+		void write(const uint8_t* data, const unsigned int len) {
 
 			ssize_t ret = 0;
 
@@ -204,7 +227,7 @@ namespace K {
 		}
 
 		/** read the given number of bytes */
-		int read(uint8_t* data, unsigned int len) {
+		int read(uint8_t* data, const unsigned int len) {
 
 			//if (!handle) {return -1;}
 			ssize_t ret = 0;
@@ -216,10 +239,15 @@ namespace K {
 				ret = ::recv(handle, data, (size_t) len, MSG_NOSIGNAL);
 			}
 		#else
-			ret = ::recv(handle, data, (size_t) len, MSG_NOSIGNAL);
+			ret = ::recv(handle, data, (size_t) len, 0);//MSG_NOSIGNAL);
 		#endif
 
-			if (ret < 0) {throw SocketException("error while writing reading from socket");}
+			if (ret < 0) {
+				if		(errno == EAGAIN)		{return 0;}
+				else if (errno == EWOULDBLOCK)	{return 0;}
+				else							{throw SocketException("error while writing reading from socket");}
+			}
+
 			return (int) ret;
 
 		}
@@ -227,11 +255,11 @@ namespace K {
 
 	private:
 
-		friend class ServerSocket;
-
-		/** create socket from existing handle */
-		Socket(int handle) : handle(handle) {
-			;
+		/** switch the socket to non-blocking mode */
+		void makeNonBlocking() {
+			if (fcntl(handle, F_SETFL, fcntl(handle, F_GETFL) | O_NONBLOCK) < 0) {
+				throw SocketException("error while switching to non-blocking mode");
+			}
 		}
 
 
@@ -255,19 +283,41 @@ namespace K {
 }
 
 
+
 #include "SocketInputStream.h"
 #include "SocketOutputStream.h"
 
+K::Socket::Socket(const int handle) : handle(handle) {
+
+	// switch to non-blocking mode
+	makeNonBlocking();
+
+	is = new SocketInputStream(this);
+	os = new SocketOutputStream(this);
+
+}
+
+K::Socket::Socket() : handle(0) {
+	is = new SocketInputStream(this);
+	os = new SocketOutputStream(this);
+}
+
+K::Socket::~Socket() {
+	close();
+	delete is; is = nullptr;
+	delete os; os = nullptr;
+}
 
 /** get an InputStream to read from this socket */
-K::SocketInputStream K::Socket::getInputStream() {
-	return K::SocketInputStream(*this);
+K::SocketInputStream* K::Socket::getInputStream() {
+	//return K::SocketInputStream(*this);
+	return is;
 }
 
 /** get an OutputStream to write to this socket */
-K::SocketOutputStream K::Socket::getOutputStream() {
-	return K::SocketOutputStream(*this);
+K::SocketOutputStream* K::Socket::getOutputStream() {
+	//return K::SocketOutputStream(*this);
+	return os;
 }
-
 
 #endif /* K_SOCKETS_SOCKET_H_ */

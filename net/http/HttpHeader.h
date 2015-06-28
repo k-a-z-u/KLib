@@ -25,10 +25,10 @@ namespace K {
 		}
 
 		/** get the value behind the provided key (if any) */
-		std::string get(const std::string& key) {
+		const std::string& get(const std::string& key) const {
 			const std::string keyLower = HttpHelper::toLower(key);
 			auto it = values.find(keyLower);
-			return (it == values.end()) ? ("") : (it->second);
+			return (it == values.end()) ? (EMPTY) : (it->second);
 		}
 
 		/** add a header line to the header: "Connection: close\r\n" */
@@ -59,6 +59,8 @@ namespace K {
 
 		/** key -> value mapping */
 		std::unordered_map<std::string, std::string> values;
+
+		const std::string EMPTY = "";
 
 	};
 

@@ -36,7 +36,7 @@ namespace K {
 		virtual ~HttpServerListener() {;}
 
 		/** called for every incoming request */
-		virtual void onHttpRequest(HttpServerRequestHandler* handler, HttpRequest& req, const HttpHeader& header, InputStream& is) = 0;
+		virtual void onHttpRequest(HttpServerRequestHandler* handler, HttpRequest& req, InputStream& is) = 0;
 
 	};
 

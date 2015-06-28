@@ -20,7 +20,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		SocketInputStream(Socket& sck) : sck(sck) {
+		SocketInputStream(Socket* sck) : sck(sck) {
 			;
 		}
 
@@ -29,23 +29,23 @@ namespace K {
 			;
 		}
 
-
 		int read() override {
 			uint8_t data;
-			int ret = read(&data, 1);
-			if (ret == -1) {return ret;}
+			const int numRead = read(&data, 1);
+			if (numRead == 0)			{return ERR_TRY_AGAIN;}
+			if (numRead == ERR_FAILED)	{return ERR_FAILED;}
 			return data;
 		}
 
 		int read(uint8_t* data, unsigned int len) override {
-			return sck.read(data, len);
+			return sck->read(data, len);
 		}
 
 		void close() override {
-			sck.close();
+			sck->close();
 		}
 
-		void skip(uint64_t n) override {
+		void skip(const uint64_t n) override {
 			(void) n;
 			throw StreamException("socket.skip() not yet implemented!");
 		}
@@ -55,7 +55,7 @@ namespace K {
 		friend class Socket;
 
 		/** the socket to read from */
-		Socket& sck;
+		Socket* sck;
 
 	};
 

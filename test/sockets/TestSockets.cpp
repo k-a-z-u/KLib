@@ -31,21 +31,21 @@ TEST(Sockets, data) {
 	uint8_t* data = (uint8_t*) lipsum.data();
 	unsigned int len = (unsigned int) lipsum.size();
 
-	SocketInputStream s1in = sck1.getInputStream();
-	SocketOutputStream s2out = sck2->getOutputStream();
+	SocketInputStream* s1in = sck1.getInputStream();
+	SocketOutputStream* s2out = sck2->getOutputStream();
 
-	s2out.write(128);
-	ASSERT_EQ(128, s1in.read());
+	s2out->write(128);
+	ASSERT_EQ(128, s1in->read());
 
-	s2out.write(data, len);
+	s2out->write(data, len);
 	for (unsigned int i = 0; i < len; ++i) {
-		ASSERT_EQ(data[i], s1in.read());
+		ASSERT_EQ(data[i], s1in->read());
 	}
 
-	s1in.close();
-	ASSERT_THROW(s1in.read(), SocketException);
-	s2out.write(128);
-	ASSERT_THROW(s2out.write(128), SocketException);
+	s1in->close();
+	ASSERT_THROW(s1in->read(), SocketException);
+	s2out->write(128);
+	ASSERT_THROW(s2out->write(128), SocketException);
 
 	//ASSERT_EQ(-1, s1in.read());
 

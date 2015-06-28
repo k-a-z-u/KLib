@@ -43,6 +43,15 @@ namespace K {
 			handle = socket(AF_INET, SOCK_STREAM, 0);
 			if (!handle) {throw SocketException("error creating server socket");}
 
+			// some settings
+			{
+				const int opt = 1;
+				if (setsockopt(handle, SOL_SOCKET, SO_REUSEADDR, (char*)&opt, sizeof(opt)) < 0) {
+					throw SocketException("error while setting SO_REUSEPORT/SO_REUSEADDR");
+				}
+			}
+
+
 			// bind to the given port
 			struct sockaddr_in srvAddr;
 			srvAddr.sin_family = AF_INET;
