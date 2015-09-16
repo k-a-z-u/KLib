@@ -8,7 +8,17 @@
 
 namespace K {
 
+	static const std::string EMPTY;
+
 	class HttpHeader {
+
+	private:
+
+		/** key -> value mapping */
+		std::unordered_map<std::string, std::string> values;
+
+		/** empty-string (for return-by-ref) */
+		//static const std::string EMPTY;
 
 	public:
 
@@ -22,6 +32,12 @@ namespace K {
 		void add(const std::string& key, const std::string& value) {
 			const std::string keyLower = HttpHelper::toLower(key);
 			values[keyLower] = value;
+		}
+
+		/** remove the value for the given key (if any) */
+		void remove(const std::string& key) {
+			const std::string keyLower = HttpHelper::toLower(key);
+			values.erase(keyLower);
 		}
 
 		/** get the value behind the provided key (if any) */
@@ -42,8 +58,8 @@ namespace K {
 			add(key, val);
 		}
 
-		/** format the contents as http header */
-		std::string getAsString() {
+		/** get the header as a formatted string */
+		std::string getAsString() const {
 			std::string ret; ret.reserve(1024);
 			for (auto it = values.begin(); it != values.end(); ++it) {
 				ret += it->first;
@@ -53,14 +69,6 @@ namespace K {
 			}
 			return ret;
 		}
-
-
-	private:
-
-		/** key -> value mapping */
-		std::unordered_map<std::string, std::string> values;
-
-		const std::string EMPTY = "";
 
 	};
 

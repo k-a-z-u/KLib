@@ -53,7 +53,7 @@ namespace K {
 
 		}
 
-		void write(const uint8_t* data, unsigned int len) {
+		void write(const uint8_t* data, const size_t len) override {
 			for (unsigned int i = 0; i < len; ++i) {
 				write(data[i]);
 			}

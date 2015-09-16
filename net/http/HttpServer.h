@@ -7,9 +7,11 @@
 #include "HttpServerListener.h"
 #include "HttpServerRequestHandler.h"
 
+#include "../../log/Logger.h"
 
 #include <thread>
-
+#include <list>
+#include <mutex>
 
 namespace K {
 
@@ -19,76 +21,10 @@ namespace K {
 	 */
 	class HttpServer {
 
-	public:
-
-		/** ctor. given the port to work on */
-		HttpServer(const int port) : port(port) {
-			;
-		}
-
-		/** start the HTTP server and listen for incoming requests */
-		void start() {
-			srvSck.bind(port);
-			thread = std::thread(&HttpServer::accept, this);
-		}
-
-		/** stop the HTTP server */
-		void stop() {
-			port = 0;
-			srvSck.close();
-			thread.join();
-			std::cout << "thread joined" << std::endl;
-		}
-
-		/** set the listener to call for every request */
-		void setListener(HttpServerListener* listener) {
-			this->listener = listener;
-		}
-
-	private:
-
-		/** accept incoming connections within a thread */
-		void accept() {
-
-			std::cout << "starting" << std::endl;
-
-			while (port != 0) {
-
-				try {
-
-					std::cout << "waiting to accept" << std::endl;
-					Socket* sck = srvSck.accept();
-					std::cout << "ACCEPTED!" << std::endl;
-
-					// create a handling thread and detach it from the std::thread
-					// the thread will continue to run in the background and the
-					// wrapping std::thread will be removed from the stack at the
-					// end of the try{}
-					std::thread tHandle(&HttpServer::handleConnection, this, sck);
-					tHandle.detach();
-
-				} catch (...) {
-					if (port == 0) {return;}		// exception due to server shutdown?
-					throw;
-				}
-
-			}
-
-			std::cout << "thread done" << std::endl;
-
-		}
-
-		/** handle an incoming connection */
-		void handleConnection(Socket* sck) {
-			HttpServerRequestHandler h(sck, listener);
-			h.handle();
-		}
-
-
 	private:
 
 		/** the port we are listening on */
-		int port;
+		SckPort port;
 
 		/** the socket to listen for incoming connections */
 		ServerSocket srvSck;
@@ -98,6 +34,145 @@ namespace K {
 
 		/** listen for connections? */
 		HttpServerListener* listener;
+
+		/** used for debug and request logging */
+		Logger* log;
+		static constexpr const char* logName = "HTTPs";
+
+		/** keep track of all handling threads */
+		std::list<HttpServerRequestHandler*> threads;
+		std::mutex mtx;
+
+	public:
+
+		/** ctor. given the port to work on */
+		HttpServer(const SckPort port) : port(port), listener(nullptr), log(nullptr) {
+			;
+		}
+
+		/** dtor. will ensure the server is stopped */
+		~HttpServer() {
+			stop();
+		}
+
+		/** no copy */
+		HttpServer(const HttpServer& o) = delete;
+
+
+		/** start the HTTP server and listen for incoming requests */
+		void start() {
+			if (log) {log->add(logName, LogLevel::INFO, "starting HTTP server on port " + std::to_string(port));}
+			srvSck.bind(port);
+			thread = std::thread(&HttpServer::accept, this);
+		}
+
+		/** stop the HTTP server */
+		void stop() {
+
+			// stop the thread handling incoming connections
+			if (port) {
+				if (log) {log->add(logName, LogLevel::INFO, "stopping HTTP server on port " + std::to_string(port));}
+				port = 0;
+				srvSck.close();
+				if (thread.joinable()) {thread.join();}
+			}
+
+			// stop all currently open connections
+			stopAllAndJoin();
+
+		}
+
+		/** set the logger to use (if any) */
+		void setLogger(Logger* log) {
+			this->log = log;
+		}
+
+		/** set the listener to call for every request */
+		void setListener(HttpServerListener* listener) {
+			this->listener = listener;
+		}
+
+	private:
+
+		/** stop all currently running handler threads and "join" them */
+		void stopAllAndJoin() {
+
+			// call cancel() on each handler
+			mtx.lock();
+			for (HttpServerRequestHandler* hsrh : threads) { hsrh->cancel(); }
+			mtx.unlock();
+
+			// wait for all handlers to terminate (see: done())
+			while (!threads.empty()) {usleep(1000*10);}
+
+		}
+
+		/** called form a handler when its handling-loop is complete */
+		void done(HttpServerRequestHandler* hsrh) {
+
+			// handler is done -> delete it and remove it from the list of all handlers
+			mtx.lock();
+			threads.remove(hsrh);
+			delete hsrh;
+			mtx.unlock();
+
+		}
+
+		/**
+		 * accept incoming connections on the server socket
+		 * runs within a thread
+		 */
+		void accept() {
+
+			while (port != 0) {
+
+				try {
+
+					// wait for the next incoming connection
+					if (log) {log->add(logName, LogLevel::DEBUG, "waiting for an incoming connection");}
+					Socket* sck = srvSck.accept();
+
+					// handle the new HTTP connection
+					handleConnection(sck);
+
+				} catch (...) {
+					if (port == 0) {return;}					// exception due to server shutdown?
+					throw;
+				}
+
+			}
+
+			std::cout << "thread done" << std::endl;
+
+		}
+
+		/**
+		 * handle an incoming connection:
+		 * - parse and respond to all HTTP requests
+		 * this loop runs within its own thread and
+		 * calls done() as soon as it finishes
+		 */
+		void handleConnection(Socket* sck) {
+
+			// the handling loop, running in a thread
+			auto loop = [this] (HttpServerRequestHandler* hsrh) {
+				if (log) {log->add(logName, LogLevel::INFO, "handling incoming connection");}
+				hsrh->handle();
+				if (log) {log->add(logName, LogLevel::INFO, "connection handled -> closing");}
+				done(hsrh);
+			};
+
+			// create a new handler and enqueue it (for later cleanup
+			HttpServerRequestHandler* hsrh = new HttpServerRequestHandler(sck, listener, log);
+			mtx.lock();
+			threads.push_back(hsrh);
+			mtx.unlock();
+
+			// start the handler in a (detached) background thread
+			std::thread thread(loop, hsrh);
+			thread.detach();
+
+		}
 
 	};
 

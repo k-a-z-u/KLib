@@ -119,11 +119,11 @@ namespace K {
 			double bestP = 0;
 			NumOptVector<numParams> bestParams;
 
-			simplex.setMaxIterations(15);
-			simplex.setNumRestarts(1);
+			simplex.setMaxIterations(20);
+			simplex.setNumRestarts(3);
 
 
-			for (int i = 0; i < 15; ++i) {
+			for (int i = 0; i < 25; ++i) {
 
 				int idx = rand() % particles.size();
 

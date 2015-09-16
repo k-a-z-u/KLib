@@ -45,29 +45,29 @@ public:
 	int read() override {
 		uint8_t data;
 		while(true) {
-			int ret = read(&data, 1);
-			if (ret == -1) {return -1;}
-			if (ret != 0) {break;}
+			const ssize_t ret = read(&data, 1);
+			if (ret < 0) {return (int) ret;}			// error condition
+			if (ret > 0) {break;}
 		}
 		return data;
 	}
 
-	int read(uint8_t* data, unsigned int len) {
+	ssize_t read(uint8_t* data, const size_t len) {
 
 		// fill the input buffer
 		if (bufferIn.getNumUsed() < 1024 && !eof) {
-			int read = is.read(bufferIn.getFirstFree(), bufferIn.getNumFree());
+			const ssize_t read = is.read(bufferIn.getFirstFree(), bufferIn.getNumFree());
 			if (read > 0) {bufferIn.setNumUsed(bufferIn.getNumUsed() + read);}
-			if (read == -1) {eof = true;}
+			if (read == ERR_FAILED) {eof = true;}
 		}
 
 		// what to decompress
 		stream.next_in = &bufferIn[0];
-		stream.avail_in = bufferIn.getNumUsed();
+		stream.avail_in = (uInt) bufferIn.getNumUsed();
 
 		// where to decompress to
 		stream.next_out = data;//bufferDst.getFirstFree();
-		stream.avail_out = len;//bufferDst.getNumFree();
+		stream.avail_out = (uInt) len;//bufferDst.getNumFree();
 
 		// perform decompresion
 		int ret = inflate(&stream, Z_NO_FLUSH);
@@ -76,7 +76,7 @@ public:
 		if (ret != Z_OK && ret != Z_STREAM_END) {throw "error while decompressing data";}
 
 		// number of decompressed bytes
-		unsigned int decompressed = len - stream.avail_out;//bufferDst.getNumFree() - stream.avail_out;
+		const size_t decompressed = len - stream.avail_out;//bufferDst.getNumFree() - stream.avail_out;
 
 		// end of stream?
 		if (ret == Z_STREAM_END && decompressed == 0) {	return -1; }
@@ -85,7 +85,7 @@ public:
 		if (decompressed == 0 && ret == Z_OK) {throw "decompression buffer too small";}
 
 		// update input buffer
-		unsigned int usedInput = bufferIn.getNumUsed() - stream.avail_in;
+		const size_t usedInput = bufferIn.getNumUsed() - stream.avail_in;
 		bufferIn.remove(usedInput);
 
 		// done

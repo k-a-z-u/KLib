@@ -34,7 +34,7 @@ namespace K {
 			write(&data, 1);
 		}
 
-		void write(const uint8_t* data, unsigned int len) override {
+		void write(const uint8_t* data, const size_t len) override {
 			sck->write(data, len);
 		}
 

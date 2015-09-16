@@ -63,11 +63,11 @@ public:
 		write(&data, 1);
 	}
 
-	void write(const uint8_t* data, unsigned int len) override {
+	void write(const uint8_t* data, const size_t len) override {
 
 		// what to compress
 		stream.next_in = (unsigned char*) data;
-		stream.avail_in = len;
+		stream.avail_in = (uInt) len;
 
 		compress(Z_NO_FLUSH);
 

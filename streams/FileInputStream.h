@@ -40,7 +40,7 @@ public:
 		return fgetc(fp);
 	}
 
-	int read(uint8_t* data, unsigned int len) override {
+	ssize_t read(uint8_t* data, const size_t len) override {
 		if (feof(fp)) {return -1;}
 		unsigned int read = (unsigned int) fread(data, 1, len, fp);
 		return read;
@@ -50,7 +50,7 @@ public:
 		if (fp) {fclose(fp); fp = nullptr;}
 	}
 
-	void skip(const uint64_t n) override {
+	void skip(const size_t n) override {
 		int ret = fseek(fp, n, SEEK_CUR);
 		if (ret != 0) {throw StreamException("could not seek within file");}
 	}

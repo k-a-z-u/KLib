@@ -27,7 +27,7 @@ namespace K {
 			send(false);
 		}
 
-		void write(const uint8_t* data, uint32_t len) override {
+		void write(const uint8_t* data, const size_t len) override {
 			for (uint32_t i = 0; i < len; ++i) {
 				write(data[i]);
 			}

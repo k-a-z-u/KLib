@@ -11,7 +11,7 @@
 #include <vector>
 #include <cstdint>
 #include <cstring>
-#include "InputStream.h"
+#include "InputStreamPeek.h"
 #include "Buffer.h"
 #include "StreamException.h"
 
@@ -20,7 +20,7 @@ namespace K {
 /**
  * adds additional buffering to an input stream
  */
-class BufferedInputStream : public InputStream {
+class BufferedInputStream : public InputStreamPeek {
 
 public:
 
@@ -56,15 +56,10 @@ public:
 
 	}
 
-	int peek() {
-		return buffer.peek();
-	}
+	int peek() override {
 
-	/** read the given number of bytes into the buffer */
-	int read(uint8_t* data, const unsigned int len) override {
-
-		// try to fill the buffer (at least len bytes)
-		fillBuffer(len);
+		// try to fill the buffer (at least 1 byte)
+		fillBuffer(1);
 
 		// buffer empty even if we tried to fill it?
 		if (buffer.empty()) {
@@ -78,7 +73,28 @@ public:
 		}
 
 		// everything fine
-		const int toRead = (len < buffer.getNumUsed()) ? (len) : (buffer.getNumUsed());
+		return buffer.peek();
+
+	}
+
+	/** read the given number of bytes into the buffer */
+	ssize_t read(uint8_t* data, const size_t len) override {
+
+		// try to fill the buffer (at least len bytes)
+		fillBuffer(len);
+
+		// buffer empty even if we tried to fill it?
+		if (buffer.empty()) {
+
+			// detected EOF? -> we failed
+			if (eof) {return ERR_FAILED;}
+
+			return 0;
+
+		}
+
+		// everything fine
+		const size_t toRead = (len < buffer.getNumUsed()) ? (len) : (buffer.getNumUsed());
 		memcpy(data, &buffer[0], toRead);
 		buffer.remove(toRead);
 		return toRead;
@@ -97,19 +113,19 @@ public:
 private:
 
 	/** ensure the buffer contains the given number of bytes */
-	void fillBuffer(const unsigned int needed) {
+	void fillBuffer(const size_t needed) {
 
-		// buffer already contains enough bytes
+		// buffer already contains enough bytes? -> nothing to do
 		if (buffer.getNumUsed() >= needed) {return;}
 
 		// how many bytes to fetch
-		const int toFetch = (needed < blockSize) ? (blockSize) : (needed);
+		const size_t toFetch = (needed < blockSize) ? (blockSize) : (needed);
 
 		// make space for those bytes
 		buffer.resize(buffer.getNumUsed() + toFetch);
 
 		// try to fetch from underlying layer
-		const int fetched = is->read(buffer.getFirstFree(), toFetch);
+		const ssize_t fetched = is->read(buffer.getFirstFree(), toFetch);
 		if (fetched == ERR_FAILED)		{eof = true; return;}
 		if (fetched == ERR_TRY_AGAIN)	{return;}
 

@@ -38,19 +38,19 @@ namespace K {
 	public:
 
 		/** ctor: null-value */
-		explicit JSONValue() : type(EMPTY) {;}
+		explicit JSONValue() : type(JSONValueType::EMPTY) {;}
 		/** ctor: boolean-value */
-		explicit JSONValue(const bool b) : type(BOOLEAN), b(b) {;}
+		explicit JSONValue(const bool b) : type(JSONValueType::BOOLEAN), b(b) {;}
 		/** ctor: double-value */
-		explicit JSONValue(const double d): type(DOUBLE), d(d) {;}
+		explicit JSONValue(const double d): type(JSONValueType::DOUBLE), d(d) {;}
 		/** ctor: integer-value */
-		explicit JSONValue(const int64_t i) : type(INT), i(i) {;}
+		explicit JSONValue(const int64_t i) : type(JSONValueType::INT), i(i) {;}
 		/** ctor: json-object */
-		explicit JSONValue(JSONObject* obj) : type(JSON_OBJECT), obj(obj) {;}
+		explicit JSONValue(JSONObject* obj) : type(JSONValueType::JSON_OBJECT), obj(obj) {;}
 		/** ctor: json-array */
-		explicit JSONValue(JSONArray* arr) : type(JSON_ARRAY), arr(arr) {;}
+		explicit JSONValue(JSONArray* arr) : type(JSONValueType::JSON_ARRAY), arr(arr) {;}
 		/** ctor: string-value */
-		explicit JSONValue(const std::string& str) : type(STRING) {
+		explicit JSONValue(const std::string& str) : type(JSONValueType::STRING) {
 			s = new char[str.size()+1];
 			strcpy(s, str.c_str());
 		}

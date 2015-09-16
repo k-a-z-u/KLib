@@ -29,7 +29,7 @@ public:
 		buffer.add(data);
 	}
 
-	void write(const uint8_t* data, unsigned int len) override {
+	void write(const uint8_t* data, const size_t len) override {
 		buffer.add(data, len);
 	}
 
@@ -47,7 +47,7 @@ public:
 	}
 
 	/** get the number of available bytes */
-	unsigned int getDataLength() {
+	size_t getDataLength() {
 		return buffer.getNumUsed();
 	}
 

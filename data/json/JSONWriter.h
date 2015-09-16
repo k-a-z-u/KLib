@@ -48,13 +48,13 @@ namespace K {
 
 		void switchEl(const std::string& key, const JSONValue& e, const int lvl) const {
 			switch (e.type) {
-				case EMPTY:			writeNull(key, lvl); break;
-				case BOOLEAN:		writeBool(key, e, lvl); break;
-				case DOUBLE:		writeDouble(key, e, lvl); break;
-				case INT:			writeInt(key, e, lvl); break;
-				case STRING:		writeString(key, e, lvl); break;
-				case JSON_OBJECT:	writeObject(key, *e.obj, lvl); break;
-				case JSON_ARRAY:	writeArray(key, *e.arr, lvl); break;
+				case JSONValueType::EMPTY:			writeNull(key, lvl); break;
+				case JSONValueType::BOOLEAN:		writeBool(key, e, lvl); break;
+				case JSONValueType::DOUBLE:			writeDouble(key, e, lvl); break;
+				case JSONValueType::INT:			writeInt(key, e, lvl); break;
+				case JSONValueType::STRING:			writeString(key, e, lvl); break;
+				case JSONValueType::JSON_OBJECT:	writeObject(key, *e.obj, lvl); break;
+				case JSONValueType::JSON_ARRAY:		writeArray(key, *e.arr, lvl); break;
 			}
 		}
 

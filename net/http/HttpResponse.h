@@ -2,14 +2,15 @@
 #define K_NET_HTTP_HTTPRESPONSE_H
 
 #include <string>
-#include "HttpVersion.h"
+#include "HttpEnums.h"
 #include "HttpHeader.h"
+#include "HttpRequestResponse.h"
 
 #include "../../streams/LineInputStream.h"
 
 namespace K {
 
-	class HttpResponse {
+	class HttpResponse : public HttpRequestResponse {
 
 	private:
 
@@ -21,9 +22,6 @@ namespace K {
 
 		/** the message after the response code */
 		std::string codeMsg;
-
-		/** the response header */
-		HttpHeader header;
 
 
 	public:
@@ -72,8 +70,8 @@ namespace K {
 		void setVersion(const HttpVersion version) {this->version = version;}
 
 
-		/** get the response line as string: HTTP 200 OK */
-		std::string getAsString() const {
+		/** get the response header's first line as string: HTTP 200 OK */
+		std::string getFirstLine() const {
 
 			std::string ret; ret.reserve(32);
 			ret += "HTTP/";
@@ -86,14 +84,16 @@ namespace K {
 
 			ret += ' ';
 			ret += std::to_string(code);
-			ret += " TODO";
-			ret += "\r\n";
+			ret += ' ';
+			ret += codeMsg;
 			return ret;
 
 		}
 
-		/** get the response header */
-		HttpHeader& getHeader() {return header;}
+		/** get the complete response header as string */
+		std::string getResponseHeader() const {
+			return getFirstLine() + "\r\n" + header.getAsString() + "\r\n";
+		}
 
 	private:
 

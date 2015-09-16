@@ -101,7 +101,11 @@ namespace K {
 
 		/** close the socket */
 		void close() {
-			if (handle) {::close(handle); handle = 0;}
+			if (handle) {
+				::shutdown(handle, SHUT_RDWR);
+				::close(handle);
+				handle = 0;
+			}
 		}
 
 
@@ -205,13 +209,13 @@ namespace K {
 		friend class SocketOutputStream;
 
 		/** write the given bytes */
-		void write(const uint8_t* data, const unsigned int len) {
+		void write(const uint8_t* data, const size_t len) {
 
 			ssize_t ret = 0;
 
 		#ifdef WITH_SSL
 			if (ssl.enabled) {
-				ret = SSL_write(ssl.handle, data, len);
+				ret = SSL_write(ssl.handle, data, (int) len);
 			} else {
 				ret = ::send(handle, data, (size_t) len, MSG_NOSIGNAL);
 			}
@@ -227,16 +231,16 @@ namespace K {
 		}
 
 		/** read the given number of bytes */
-		int read(uint8_t* data, const unsigned int len) {
+		ssize_t read(uint8_t* data, const size_t len) {
 
 			//if (!handle) {return -1;}
 			ssize_t ret = 0;
 
 		#ifdef WITH_SSL
 			if (ssl.enabled) {
-				ret = SSL_read(ssl.handle, data, len);
+				ret = SSL_read(ssl.handle, data, (int) len);
 			} else {
-				ret = ::recv(handle, data, (size_t) len, MSG_NOSIGNAL);
+				ret = ::recv(handle, data, (size_t) len, 0);//MSG_NOSIGNAL);
 			}
 		#else
 			ret = ::recv(handle, data, (size_t) len, 0);//MSG_NOSIGNAL);
@@ -245,7 +249,9 @@ namespace K {
 			if (ret < 0) {
 				if		(errno == EAGAIN)		{return 0;}
 				else if (errno == EWOULDBLOCK)	{return 0;}
-				else							{throw SocketException("error while writing reading from socket");}
+				else							{return -1;}		// throw SocketException("error while reading from socket");}
+			} else if (ret == 0) {
+				return -1;						// shutdown by the remote
 			}
 
 			return (int) ret;

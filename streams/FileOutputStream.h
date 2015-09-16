@@ -39,7 +39,7 @@ public:
 		write(&data, 1);
 	}
 
-	void write(const uint8_t* data, unsigned int len) override {
+	void write(const uint8_t* data, const size_t len) override {
 		if (!len) {return;}
 		if (!fp) {throw "file not open!";}
 		fwrite(data, len, 1, fp);

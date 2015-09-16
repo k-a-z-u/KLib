@@ -38,10 +38,10 @@ public:
 		return bufferDecomp.get();
 	}
 
-	int read(uint8_t* data, unsigned int len) override {
+	ssize_t read(uint8_t* data, const size_t len) override {
 		if (bufferDecomp.empty()) {decompressBlock();}
 		if (bufferDecomp.empty()) {return -1;}
-		int toRead = (len <= bufferDecomp.getNumUsed()) ? (len) : (bufferDecomp.getNumUsed());
+		const size_t toRead = (len <= bufferDecomp.getNumUsed()) ? (len) : (bufferDecomp.getNumUsed());
 		memcpy(data, bufferDecomp.getData(), toRead);
 		bufferDecomp.remove(toRead);
 		return toRead;
@@ -51,7 +51,8 @@ public:
 		is.close();
 	}
 
-	void skip(const uint64_t n) override {
+	void skip(const size_t n) override {
+		(void) n;
 		throw StreamException("LZ4.skip() not yet implemented");
 	}
 

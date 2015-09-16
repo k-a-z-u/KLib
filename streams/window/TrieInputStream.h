@@ -45,14 +45,14 @@ namespace K {
 
 		}
 
-		int read(uint8_t* data, uint32_t len) override {
+		ssize_t read(uint8_t* data, const size_t len) override {
 
 			// ensure we have something to read
 			if (!fillIfNeeded()) {return -1;}
 
 			// send the whole current word
 			if (len >= cur.size()) {
-				uint32_t s = cur.size();
+				const size_t s = cur.size();
 				memcpy(data, cur.data(), s);
 				cur.clear();
 				return s;
@@ -67,7 +67,7 @@ namespace K {
 
 		}
 
-		void skip(uint64_t n) override {
+		void skip(const size_t n) override {
 			;
 			// TODO
 			;
