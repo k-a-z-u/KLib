@@ -39,9 +39,9 @@ public:
 		return ret;
 	}
 
-	int read(uint8_t* data, unsigned int len) override {
+	ssize_t read(uint8_t* data, const size_t len) override {
 		if (buffer.empty()) {return -1;}
-		int toRead = (buffer.getNumUsed() >= len) ? (len) : (buffer.getNumUsed());
+		const ssize_t toRead = (buffer.getNumUsed() >= len) ? (len) : (buffer.getNumUsed());
 		memcpy(data, buffer.getData(), toRead);
 		buffer.remove(toRead);
 		return toRead;
@@ -52,7 +52,7 @@ public:
 		buffer.add(data);
 	}
 
-	void write(const uint8_t* data, unsigned int len) override {
+	void write(const uint8_t* data, const size_t len) override {
 		buffer.add(data, len);
 	}
 
@@ -67,7 +67,7 @@ public:
 	}
 
 	/** get the number of available bytes */
-	uint32_t length() const {
+	size_t length() const {
 		return buffer.getNumUsed();
 	}
 

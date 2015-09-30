@@ -23,7 +23,7 @@ public:
 	virtual void write(uint8_t data) = 0;
 
 	/** write multiple bytes */
-	virtual void write(const uint8_t* data, unsigned int len) = 0;
+	virtual void write(const uint8_t* data, const size_t len) = 0;
 
 	/** flush the given data to the underlying layer */
 	virtual void flush() = 0;

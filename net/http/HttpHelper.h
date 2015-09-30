@@ -1,5 +1,5 @@
-#ifndef HTTPHELPER_H
-#define HTTPHELPER_H
+#ifndef K_NET_HTTP_HTTPHELPER_H
+#define K_NET_HTTP_HTTPHELPER_H
 
 #include <string>
 #include <algorithm>

@@ -22,7 +22,7 @@ namespace K {
 
 	}
 
-	TEST(Httpheader, contains) {
+	TEST(HttpHeader, contains) {
 
 		HttpHeader h;
 		h.add("Connection", "close");
@@ -40,7 +40,7 @@ namespace K {
 
 	}
 
-	TEST(Httpheader, get) {
+	TEST(HttpHeader, get) {
 
 		HttpHeader h;
 		h.add("Connection", "close");
@@ -53,7 +53,7 @@ namespace K {
 
 	}
 
-	TEST(Httpheader, addLine) {
+	TEST(HttpHeader, addLine) {
 
 		HttpHeader h;
 		h.addLine("Connection: close\r");
@@ -67,6 +67,31 @@ namespace K {
 		ASSERT_EQ("text/html", h.get("content-TYPE"));
 
 	}
+
+	TEST(HttpHeader, remove) {
+
+		HttpHeader h;
+		h.add("Abc", "Def");
+		h.add("dEF", "gHi");
+		h.add("jKl", "mnO");
+
+		ASSERT_EQ("Def", h.get("abC"));
+		ASSERT_EQ("gHi", h.get("Def"));
+		ASSERT_EQ("mnO", h.get("jkL"));
+
+		h.remove("abc");
+		ASSERT_FALSE(h.contains("abc"));
+
+		h.remove("def");
+		ASSERT_FALSE(h.contains("def"));
+
+		h.remove("jKl");
+		ASSERT_FALSE(h.contains("jkl"));
+
+		ASSERT_EQ("", h.getAsString());
+
+	}
+
 
 }
 

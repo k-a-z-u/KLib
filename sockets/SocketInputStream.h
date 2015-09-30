@@ -31,13 +31,13 @@ namespace K {
 
 		int read() override {
 			uint8_t data;
-			const int numRead = read(&data, 1);
+			const ssize_t numRead = read(&data, 1);
 			if (numRead == 0)			{return ERR_TRY_AGAIN;}
 			if (numRead == ERR_FAILED)	{return ERR_FAILED;}
 			return data;
 		}
 
-		int read(uint8_t* data, unsigned int len) override {
+		ssize_t read(uint8_t* data, const size_t len) override {
 			return sck->read(data, len);
 		}
 
@@ -45,7 +45,7 @@ namespace K {
 			sck->close();
 		}
 
-		void skip(const uint64_t n) override {
+		void skip(const size_t n) override {
 			(void) n;
 			throw StreamException("socket.skip() not yet implemented!");
 		}

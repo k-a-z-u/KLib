@@ -39,7 +39,7 @@ namespace K {
 			if (w == this->width && h == this->height) {return;}
 			this->width = w;
 			this->height = h;
-			(*this) << "set terminal wxt dashed noraise size " << w << "," << h << "\n";
+			//(*this) << "set terminal wxt dashed noraise size " << w << "," << h << "\n";
 		}
 
 		void close() {

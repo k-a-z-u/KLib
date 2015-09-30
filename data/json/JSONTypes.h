@@ -4,7 +4,7 @@
 namespace K {
 
 	/** enum of all supported value-types within JSON */
-	enum JSONValueType {
+	enum class JSONValueType {
 		EMPTY,
 		BOOLEAN,
 		DOUBLE,

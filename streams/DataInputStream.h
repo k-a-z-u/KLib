@@ -32,7 +32,7 @@ public:
 		return is.read();
 	}
 
-	int read(uint8_t* data, unsigned int len) override {
+	ssize_t read(uint8_t* data, const size_t len) override {
 		return is.read(data, len);
 	}
 
@@ -76,7 +76,7 @@ public:
 		is.close();
 	}
 
-	void skip(const uint64_t n) override {
+	void skip(const size_t n) override {
 		is.skip(n);
 	}
 

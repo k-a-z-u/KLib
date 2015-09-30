@@ -9,7 +9,9 @@
 #define LINEINPUTSTREAM_H_
 
 #include "InputStream.h"
+#include "InputStreamPeek.h"
 #include "BufferedInputStream.h"
+#include "IOException.h"
 
 namespace K {
 
@@ -18,7 +20,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		LineInputStream(BufferedInputStream* is) : is(is), lastChar(0) {
+		LineInputStream(InputStreamPeek* is) : is(is), lastChar(0) {
 			;
 		}
 
@@ -32,8 +34,8 @@ namespace K {
 			std::string s = "";
 			while(true) {
 				uint8_t buf[4096];
-				int len = read(buf, 4096);
-				if (len == -1) {break;}
+				const ssize_t len = read(buf, 4096);
+				if (len == ERR_FAILED) {break;}
 				s += std::string( (const char*) buf, len );
 			}
 			return s;
@@ -52,7 +54,11 @@ namespace K {
 				byte = is->read();
 
 				// check for EOF
-				if (byte == ERR_FAILED) {break;}
+				if (byte == ERR_FAILED) {
+					if (ret.empty())	{
+						throw IOException("error while reading next line from stream");}
+					else				{break;}
+				}
 
 				// check no-data-yet
 				if (byte == ERR_TRY_AGAIN) {continue;}
@@ -85,7 +91,7 @@ namespace K {
 			return is->read();
 		}
 
-		int read(uint8_t* data, unsigned int len) override {
+		ssize_t read(uint8_t* data, const size_t len) override {
 			return is->read(data, len);
 		}
 
@@ -93,7 +99,7 @@ namespace K {
 			is->close();
 		}
 
-		void skip(const uint64_t n) override {
+		void skip(const size_t n) override {
 			is->skip(n);
 		}
 
@@ -101,7 +107,7 @@ namespace K {
 	private:
 
 		/** input stream. should be buffered! */
-		BufferedInputStream* is;
+		InputStreamPeek* is;
 
 		/** used to detect \r\n */
 		int lastChar;

@@ -8,6 +8,7 @@
 #ifndef BUFFER_H_
 #define BUFFER_H_
 
+#include "../Exception.h"
 
 
 namespace K {
@@ -19,6 +20,8 @@ namespace K {
 	 * in order to speed things up, free memory is only reclaimed after
 	 * a certain number of free bytes is reached. otherwise we would move
 	 * the memory every time we remove a byte, which is quite awful...
+	 *
+	 * thus, this is somehow a tradeoff between raw memory operations and linked lists
 	 *
 	 */
 	template <typename T> class Buffer {
@@ -35,16 +38,16 @@ namespace K {
 		T* firstFree;
 
 		/** index of the oldest available entry */
-		unsigned int freeAtFront;
+		size_t freeAtFront;
 
 		/** the number of used entries */
-		unsigned int usedEntries;
+		size_t usedEntries;
 
 		/** the total number of slots within the buffer */
-		unsigned int totalEntries;
+		size_t totalEntries;
 
 
-		/** reclaim free space at the buffer's left side, after at least 4096 bytes are free */
+		/** reclaim free space at the buffer's left side, after at least X bytes are free */
 		static const unsigned int FREE_LIMIT = 4096;
 
 
@@ -65,7 +68,7 @@ namespace K {
 		}
 
 		/** add the given elements */
-		void add(const T* elems, unsigned int numElems) {
+		void add(const T* elems, const size_t numElems) {
 			ensureSpace(numElems);
 			memcpy(getFirstFree(), elems, numElems * sizeof(T));
 			firstFree += numElems;
@@ -88,7 +91,7 @@ namespace K {
 		}
 
 		/** peek into the next byte */
-		T peek() {
+		T peek() const {
 			T ret = firstUsed[0];
 			return ret;
 		}
@@ -98,12 +101,17 @@ namespace K {
 		 * remove the given number of entries from
 		 * the front of the buffer
 		 */
-		void remove (unsigned int numEntries) {
+		void remove (const size_t numEntries) {
+
+			// nothing to do?
 			if (numEntries == 0) {return;}
+
+			// completely clear the buffer?
 			if (numEntries == usedEntries) {clear(); return;}
-			if (usedEntries < numEntries) {
-				throw "out of bounds during Buffer.remove()";
-			}
+
+			// sanity check
+			if (usedEntries < numEntries) { throw Exception("out of bounds during Buffer.remove()"); }
+
 			usedEntries -= numEntries;
 			freeAtFront += numEntries;
 			firstUsed += numEntries;
@@ -114,8 +122,8 @@ namespace K {
 		 * manually overwrite the number of used entries e.g.
 		 * when using memset to write to the buffer
 		 */
-		void setNumUsed(unsigned int numUsed) {
-			if (numUsed > totalEntries - freeAtFront) {throw "out of bounds";}
+		void setNumUsed(const size_t numUsed) {
+			if (numUsed > totalEntries - freeAtFront) {throw Exception("out of bounds");}
 			int32_t delta = (int32_t) numUsed - (int32_t) usedEntries;
 			usedEntries += delta;
 			firstFree += delta;
@@ -126,7 +134,7 @@ namespace K {
 		 * the occupied memory depends on the number of entries
 		 * and the size of the buffered data-type.
 		 */
-		unsigned int getNumUsed() const {
+		size_t getNumUsed() const {
 			return usedEntries;
 		}
 
@@ -139,7 +147,7 @@ namespace K {
 		/**
 		 * get the number of free entries available for writing
 		 */
-		unsigned int getNumFree() const {
+		size_t getNumFree() const {
 			return totalEntries - usedEntries - freeAtFront;
 		}
 
@@ -157,18 +165,18 @@ namespace K {
 		}
 
 		/** get the memory consumption (in bytes) */
-		unsigned int getMemoryConsumption() const {
+		size_t getMemoryConsumption() const {
 			return totalEntries * (unsigned int) sizeof(T);
 		}
 
 		/** get the number of allocated entries */
-		unsigned int getSize() const {
+		size_t getSize() const {
 			return totalEntries;
 		}
 
 
 		/** resize the buffer to hold the given number of elements */
-		void resize(unsigned int numElements) {
+		void resize(const size_t numElements) {
 
 			// ensure we remove the free-space at the beginning first
 			removeFreeAtFront();
@@ -193,13 +201,13 @@ namespace K {
 		 * if the buffer is already larger than the given number, nothing
 		 * will happen. if the buffer is smaller, it will be resized.
 		 */
-		void ensureMinSize(unsigned int numElements) {
+		void ensureMinSize(const size_t numElements) {
 			if (totalEntries - freeAtFront >= numElements) {return;}
 			resize(numElements);
 		}
 
 		/** access elements by array index */
-		T& operator[] (const unsigned int index) {
+		T& operator[] (const size_t index) {
 			return firstUsed[index];
 		}
 
@@ -222,7 +230,6 @@ namespace K {
 
 		/** remove the free bytes at the left side of the buffer to reclaim the free memory */
 		void removeFreeAtFront() {
-			//std::cout << "removing free front space" << std::endl;
 			memmove(&_buf[0], &firstUsed[0], (usedEntries) * sizeof(T));
 			firstUsed -= freeAtFront;
 			firstFree -= freeAtFront;
@@ -230,13 +237,13 @@ namespace K {
 		}
 
 		/** ensure the buffer can pack the given number of elements */
-		void ensureSpace(unsigned int numElems) {
+		void ensureSpace(const size_t numElems) {
 
 			// already enough space?
 			if ((totalEntries - usedEntries - freeAtFront) > numElems) {return;}
 
 			// try doubling the buffer's size
-			unsigned int newSize = (unsigned int) totalEntries * 2;
+			size_t newSize = (unsigned int) totalEntries * 2;
 			if (newSize - usedEntries - freeAtFront < numElems) {newSize = usedEntries + numElems + freeAtFront;}
 
 			// resize the buffer

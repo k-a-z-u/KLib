@@ -102,16 +102,16 @@ namespace K {
  */
 K::JSONValue::~JSONValue() {
 	switch(type) {
-		case EMPTY:
-		case BOOLEAN:
-		case INT:
-		case DOUBLE:
+		case JSONValueType::EMPTY:
+		case JSONValueType::BOOLEAN:
+		case JSONValueType::INT:
+		case JSONValueType::DOUBLE:
 			break;
-		case STRING:
+		case JSONValueType::STRING:
 			delete[] s; s = nullptr; break;
-		case JSON_OBJECT:
+		case JSONValueType::JSON_OBJECT:
 			delete obj; obj = nullptr; break;
-		case JSON_ARRAY:
+		case JSONValueType::JSON_ARRAY:
 			delete arr; arr = nullptr; break;
 	}
 }
