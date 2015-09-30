@@ -42,10 +42,10 @@ namespace K {
 		NumOptVector() : data() {;}
 
 		/** ctor with data */
-	//	NumOptVector(NumOptVectorData<size> init) {
-	//		//assert(vals.size() == size);
-	//		std::copy(init.values, values.values+(size-1), data);
-	//	}
+                NumOptVector(NumOptVectorData<size> init) {
+                        //assert(vals.size() == size);
+                        std::copy(init.values, init.values+size, data);
+                }
 
 
 		/** get the length (euclid) of this vector */

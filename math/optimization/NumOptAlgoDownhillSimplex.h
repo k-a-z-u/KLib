@@ -49,6 +49,8 @@ namespace K {
 		/** optimize the functions only parameter until epsilon is reached */
 		void calculateOptimum(NumOptFunction<numArgs>& func, NumOptVector<numArgs>& param) override {
 
+			const auto& lambda = [] (const SimplexEntry& a, const SimplexEntry& b) {return a.value < b.value;};
+
 			const int IDX_BEST = 0;
 			const int IDX_WORST = numArgs;
 			const int IDX_2ND_WORST = numArgs - 1;
@@ -67,31 +69,24 @@ namespace K {
 
 					// for each following entry, slightly adjust one of the n parameters
 					if (set[i].param[i-1] == 0) {
-						set[i].param[i-1] += 1.1;
+						set[i].param[i-1] = 1.0;
 					} else {
-						set[i].param[i-1] *= 1.1;
+						set[i].param[i-1] *= 1.10;
 					}
 
 				}
 
 				// the maximum number of iterations to use
-				unsigned int iter;
-				for (iter = 0; iter < maxIterations; ++iter) {
+				for (unsigned int iter = 0; iter < maxIterations; ++iter) {
 
 					// calculate f(param) = y for each of the n+1 entries
 					for (unsigned int i = 0; i < numArgs+1; ++i) {
 						set[i].value = func(set[i].param);
 					}
 
-					// sort n+1 entries by their result
-					// set[0] = minimum
-					// set[n] = maximum
-					const auto& lambda = [] (const SimplexEntry& a, const SimplexEntry& b) {return a.value < b.value;};
+					// now sort the n+1 entries by their result (= function value)
 					std::sort(std::begin(set), std::end(set), lambda);
 
-					//			for (unsigned int i = 0; i < numArgs+1; ++i) {
-					//				std::cout << "params:\t" << set[i].param << "\t-> " << set[i].value << std::endl;
-					//			}
 
 					// -------------------------------- REFLECTION --------------------------------
 
@@ -102,8 +97,8 @@ namespace K {
 					center /= numArgs;
 
 					// get reflection point
-					NumOptVector<numArgs> reflect = set[0].param + (set[0].param - set[IDX_WORST].param) * alpha;
-					double reflectValue = func(reflect);
+					const NumOptVector<numArgs> reflect = set[0].param + (set[0].param - set[IDX_WORST].param) * alpha;
+					const double reflectValue = func(reflect);
 
 
 					if (set[0].value <= reflectValue && reflectValue < set[IDX_2ND_WORST].value) {
@@ -120,8 +115,8 @@ namespace K {
 						// reflect is better than the current best
 						//std::cout << "expansion" << std::endl;
 
-						NumOptVector<numArgs> expand = set[0].param + (set[0].param - set[IDX_WORST].param) * gamma;
-						double expandValue = func(expand);
+						const NumOptVector<numArgs> expand = set[0].param + (set[0].param - set[IDX_WORST].param) * gamma;
+						const double expandValue = func(expand);
 
 						// is expansion better than reflection?
 						if (expandValue < reflectValue) {
@@ -136,8 +131,8 @@ namespace K {
 						// reflection is worst than second worst
 						//std::cout << "contraction" << std::endl;
 
-						NumOptVector<numArgs> contract = set[0].param + (set[0].param - set[IDX_WORST].param) * rho;
-						double contractValue = func(contract);
+						const NumOptVector<numArgs> contract = set[0].param + (set[0].param - set[IDX_WORST].param) * rho;
+						const double contractValue = func(contract);
 
 						// contraction better than worst? -> replace worst
 						if (contractValue < set[IDX_WORST].value) {
@@ -156,10 +151,6 @@ namespace K {
 
 					}
 
-					//std::cout << "center:\t" << center << std::endl;
-					//std::cout << "ref-p:\t" << ref << "\t-> " << value << std::endl;
-					//std::cout << "------------------------------------------" << std::endl;
-
 					// done?
 					if ((set[IDX_BEST].param - set[IDX_WORST].param).getLength() < abortAt) {
 						break;
@@ -167,10 +158,8 @@ namespace K {
 
 				}
 
-				//std::cout << std::endl << std::endl<<iter << std::endl;
 				// the best result
 				param = set[IDX_BEST].param;
-				//std::cout << "best: " << set[IDX_BEST].param << std::endl;
 
 			}
 

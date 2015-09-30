@@ -8,6 +8,7 @@
 #ifndef K_MATH_OPT_NUMOPTFUNCTION_H_
 #define K_MATH_OPT_NUMOPTFUNCTION_H_
 
+#include "../../Assertions.h"
 #include "NumOptVector.h"
 
 namespace K {
@@ -58,11 +59,13 @@ namespace K {
 
 				// calculate at slight offset f(x + delta)
 				tmp[i] = x[i] + delta;
-				double v1 = getValue(tmp);
+				const double v1 = getValue(tmp);
+				_assertNotNAN(v1, "to-be-optimized function returned NaN");
 
 				// calculate original f(x)
 				tmp[i] = x[i];
-				double v2 = getValue(tmp);
+				const double v2 = getValue(tmp);
+				_assertNotNAN(v1, "to-be-optimized function returned NaN");
 
 				// get gradient component
 				gradient[i] = (v1 - v2) / delta;

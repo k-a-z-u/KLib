@@ -48,7 +48,7 @@ namespace K {
 		}
 
 		/** get the given quantile (e.g. 0.5 for median) */
-		double getQuantile(double q) const {
+		double getQuantile(const double q) const {
 			if (q < 0 || q >= 1.0) {return -1;}
 			uint32_t pos = cnt * q;
 			uint32_t curPos = 0;
@@ -108,14 +108,14 @@ namespace K {
 		}
 
 		/** send to stream */
-		friend std::ostream& operator << (std::ostream& out, const Statistics<double>& s) {
-			out << "cnt(" << s.getCount() << ")\t";
-			out << "min(" << s.getMin() << ")\t";
-			out << "max(" << s.getMax() << ")\t";
-			out << "range(" << s.getRange() << ")\t";
-			out << "med(" << s.getMedian() << ")\t";
-			out << "avg(" << s.getAvg() << ")\t";
-			out << "stdDev(" << s.getStdDev() << ")\t";
+		inline std::ostream& operator << (std::ostream& out) {
+			out << "cnt(" << getCount() << ")\t";
+			out << "min(" << getMin() << ")\t";
+			out << "max(" << getMax() << ")\t";
+			out << "range(" << getRange() << ")\t";
+			out << "med(" << getMedian() << ")\t";
+			out << "avg(" << getAvg() << ")\t";
+			out << "stdDev(" << getStdDev() << ")\t";
 			//out << "squared(" << s.getSquaredSum() << ")";
 			return out;
 		}
