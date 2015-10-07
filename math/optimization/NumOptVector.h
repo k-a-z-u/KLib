@@ -183,10 +183,7 @@ namespace K {
 		}
 
 
-	//private:
-
-
-
+	private:
 
 		/** the data array */
 		double data[size];

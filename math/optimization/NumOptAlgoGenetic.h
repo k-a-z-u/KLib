@@ -5,7 +5,10 @@
 #include "NumOptAlgo.h"
 #include "NumOptVector.h"
 
+#include "../statistics/Statistics.h"
+
 #include <vector>
+#include <random>
 
 namespace K {
 
@@ -19,15 +22,29 @@ namespace K {
 		/** the maximum number of iterations */
 		int maxIterations = 500;
 
+		/** the best x% of each population survive without modification */
+		float elitism = 0.02f;
+
+		/** chance of mutating a gene during crossover */
+		float mutation = 0.02f;
+
 		/** the random value range for mutation */
-		float valRange = 15.0f;
+		NumOptVector<numArgs> valRange;
+
+		/** random number generator */
+		std::minstd_rand gen;
+
+		/** an exponential distribution for picking random parents */
+		std::exponential_distribution<float> expDist = std::exponential_distribution<float>(10.0);
 
 
 	public:
 
 		/** ctor */
 		NumOptAlgoGenetic() {
-			;
+			_assertEqual(1, gen.min(), "random number generator's minimum is invalid");
+			gen.seed(1234);
+			setValRange(1.0);
 		}
 
 		/** abort after the given number of iterations */
@@ -35,99 +52,135 @@ namespace K {
 			this->maxIterations = max;
 		}
 
-		/** set the random-value-range used for mutation */
-		void setValRange(const float range) {
-			valRange = range;
-		}
-
 		/** set the population size to use */
 		void setPopulationSize(const int num) {
 			populationSize = num;
 		}
 
+		/** configure whether to use elitism: (unmodified!) survival of the fittest. [0.0:1.0] */
+		void setElitism(const float elitism) {
+			this->elitism = elitism;
+		}
+
+		/** set the chance of mutation [0.0:1.0] */
+		void setMutation(const float mutation) {
+			this->mutation = mutation;
+		}
+
+		/** set the random-value-range used for mutation */
+		void setValRange(const float range) {
+			for (int i = 0; i < numArgs; ++i) {valRange[i] = range;}
+		}
+
+		/** set the random-value-range used for mutation */
+		void setValRange(const NumOptVector<numArgs>& range) {
+			this->valRange = range;
+		}
+
+
+		/** represents one entry within the population */
+		struct Entity {
+			NumOptVector<numArgs> genes;
+			float fitness;					// fitness (here: negative fitness: error)
+		};
 
 		/**
 		 * how it works:
 		 * 1) start with X entites filled with Y random values
 		 * 2) calculate their fitness (here: error)
 		 * 3) sort by error (least error = best)
-		 * 4) remove the worst elements and replace them by
-		 * 5) a crossover between the two of the best element (50:50 chance to get field x from either A or B) with an additional chance of mutation!
-		 * 6) goto 2 until x new creatures were born
+		 * 4) create a new population by
+		 *		a crossover between two current parents (genes), depending on their fitness
+		 *		and a slight chance of mutation
+		 * 6) repeat until X populations were created
 		 */
 		void calculateOptimum(NumOptFunction<numArgs>& func, NumOptVector<numArgs>& dst) override {
 
-			// represents one entry within the population
-			struct Entity {
-				NumOptVector<numArgs> genes;
-				float fitness;					// fitness (here: negative fitness: error)
-			};
+			// allocate space for the whole population (twice: current and next)
+			std::vector<Entity> currentPopulation;		currentPopulation.resize(populationSize);
+			std::vector<Entity> nextPopulation;			nextPopulation.resize(populationSize);
 
-			// allocate space for the whole population
-			std::vector<Entity> population;
-			population.resize(populationSize);
+			// number of children to survive within each generation
+			const int toSurvive = (int) std::ceil(elitism * populationSize);	// ceil: round up to at-least 1
 
-			// initialize the poulation
+			// initialize the 1st poulation
 			for (int p = 0; p < populationSize; ++p) {
 
 				// start with the given initial genes (if any)
-				population[p].genes = dst;
+				currentPopulation[p].genes = dst;
 
-				// add random mutation to ALL genes
-				mutate(population[p].genes);
+				// the first entry of the population remains as-is (elitism) the others are mutated
+				if (p > 0) {
+
+					// add random mutation to all genes
+					mutate(currentPopulation[p].genes);
+
+				}
 
 				// calculate the fitness
-				population[p].fitness = getFitness(func, population[p].genes);
+				currentPopulation[p].fitness = getFitness(func, currentPopulation[p].genes);
 
 			}
 
+			// sort by fitness
+			sort(currentPopulation);
 
+			// generate X new popultions
 			for (int iter = 0; iter < maxIterations; ++iter) {
 
-				float test = 0;
+				int childIdx = 0;
+
+				// if configured: let the best x percent survive without recombination / mutation
+				for (; childIdx < toSurvive; ++childIdx) {
+					nextPopulation[childIdx] = currentPopulation[childIdx];			// copy into the new population
+				}
+
+				// create the new population by crossing and mutating the current one
+				while (childIdx < populationSize) {
+
+					// find two parents
+					const int p1 = randomParent();		// the new childs 1st parent
+					const int p2 = randomParent();		// the new childs 2nd parent
+
+					// evoluation: crossing and mutation
+					crossAndMutate(currentPopulation[p1].genes, currentPopulation[p2].genes, nextPopulation[childIdx].genes);
+
+					// calculate the new child's fitness
+					nextPopulation[childIdx].fitness = getFitness(func, nextPopulation[childIdx].genes);
+
+					// next
+					++childIdx;
+
+				}
+
+				// swap current and next generation
+				currentPopulation.swap(nextPopulation);
+
+				// sort by fitness
+				sort(currentPopulation);
+
+
+				K::Statistics<float> stats;
 				for (int xx = 0; xx < populationSize; ++xx) {
-					test += population[xx].fitness;
+					//test += currentPopulation[xx].fitness;
+					stats.add(currentPopulation[xx].fitness);
 				}
-				std::cout << "avg: " << (test / populationSize) << std::endl;
-
-				const int numParents = populationSize * 0.25;
-				const int numChildren = populationSize * 0.75;
-
-				// replace the bad ones with new children by crossing good genes
-				for (int cnt = 0; cnt < numChildren; ++cnt) {
-
-					const int idx = populationSize - 1 - cnt;	// the child to create (the to-be-replaced bad-ones come last)
-					const int p1 = randI(0, numParents);		// the childs 1st parent
-					const int p2 = randI(0, numParents);		// the childs 2nd parent
-
-//					if (spawn()) {
-
-//						initRandom(population[idx].genes);
-
-//					} else {
-
-						// evoluation (and mutation)
-						cross(population[p1].genes, population[p2].genes, population[idx].genes);
-
-						// calculate the child's fitness
-						population[idx].fitness = getFitness(func, population[idx].genes);
-
-//					}
-
-
-				}
-
-				// sort by fitness (better ones (higher fitness) come first)
-				auto lambda = [] (const Entity& e1, Entity& e2) {return e1.fitness > e2.fitness;};
-				std::sort(std::begin(population), std::end(population), lambda);
+				stats.out(std::cout) << std::endl;
+				std::cout << currentPopulation[0].genes << std::endl;
+				//std::cout << "avg: " << (test / populationSize) << std::endl;
 
 			}
 
 			// use the best chromosome as final result
-			dst = population[0].genes;
-
-
-
+			dst = currentPopulation[0].genes;
+			std::cout << dst << std::endl;
+			std::cout << currentPopulation[0].fitness << std::endl;
+			std::cout << getFitness(func, dst) << std::endl;
+			std::cout << getFitness(func, currentPopulation[0].genes) << std::endl;
+			std::cout << getFitness(func, currentPopulation[0].genes) << std::endl;
+			std::cout << getFitness(func, currentPopulation[0].genes) << std::endl;
+			std::cout << getFitness(func, currentPopulation[0].genes) << std::endl;
+			std::cout << getFitness(func, currentPopulation[0].genes) << std::endl;
 
 		}
 
@@ -135,10 +188,23 @@ namespace K {
 
 	private:
 
+		/** sort population by fitness (better ones [higher fitness] come first) */
+		inline void sort(std::vector<Entity>& population) {
+			static auto lambda = [] (const Entity& e1, const Entity& e2) {return e1.fitness > e2.fitness;};
+			std::sort(std::begin(population), std::end(population), lambda);
+		}
+
+		/** get a random parent index using an exponential distribution favoring lower indicies */
+		inline int randomParent() {
+			const float r01 = expDist(gen);
+			const int idx = r01 * populationSize;
+			return (idx >= populationSize) ? (populationSize-1) : (idx);
+		}
+
 		/** mutate all of the given genes */
 		inline void mutate(NumOptVector<numArgs>& genes) {
 			for (int x = 0; x < numArgs; ++x) {
-				genes[x] += randGene();
+				genes[x] += randGene(x);
 			}
 		}
 
@@ -147,49 +213,43 @@ namespace K {
 			return - func.getValue(genes); // negative value to convert from "error" to "fitness"
 		}
 
-		/** cross the given two parent's genes to create an new child */
-		void cross(const NumOptVector<numArgs>& parent1, const NumOptVector<numArgs>& parent2, NumOptVector<numArgs>& child) {
+		/** cross the given two parent's genes and apply random mutation to create an new child */
+		inline void crossAndMutate(const NumOptVector<numArgs>& parent1, const NumOptVector<numArgs>& parent2, NumOptVector<numArgs>& child) {
 
 			// process each gene
 			for (int i = 0; i < numArgs; ++i) {
-				if (mutate()) {
-					//  mutate this gene
-					child[i] += randGene();
-				} else {
-					// take this gene from either parent1 or parent2
-					child[i] = (randB()) ? (parent1[i]) : (parent2[i]);
-				}
+
+				// take this gene from either parent1 or parent2
+				child[i] = (randB()) ? (parent1[i]) : (parent2[i]);
+
+				//  mutate this gene?
+				if (doMutate()) {child[i] += randGene(i);}
+
 			}
 
 		}
 
-		/** get a random gene */
-		inline float randGene() {
-			return randF(-valRange, +valRange);
+		/** get a random genetic change depending on the index and thus allowed variance for this gene */
+		inline float randGene(const int idx) {
+			return randF(-valRange[idx], +valRange[idx]);
 		}
 
 		/** true in 2.0% of all runs */
-		inline bool mutate() {
-			return rand() < (RAND_MAX * 0.02);
+		inline bool doMutate() {
+			//return rand() < (RAND_MAX * 0.05);
+			return gen() < (gen.max() * mutation);
 		}
 
-		/** true in 2.0% of all runs */
-		inline bool spawn() {
-			return rand() < (RAND_MAX * 0.02);
-		}
-				const float children = 0.9;
 		/** random true/false (50:50) */
 		inline bool randB() {
-			return rand() < (RAND_MAX/2);
-		}
-
-		inline int randI(const int min, const int max) {
-			return min + (uint64_t) rand() * (max-min) / RAND_MAX;
+			//return rand() < (RAND_MAX/2);
+			return gen() < (gen.max() / 2);
 		}
 
 		/** random value between min and max */
 		inline float randF(const float min, const float max) {
-			return min + rand() * (max-min) / RAND_MAX;
+			//return min + rand() * (max-min) / RAND_MAX;
+			return min + (gen() * (max-min) / gen.max());
 		}
 
 
