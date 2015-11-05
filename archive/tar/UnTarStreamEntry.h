@@ -22,10 +22,10 @@ namespace K {
 		InputStream* is;
 
 		/** the total size of the entry */
-		uint32_t size;
+		size_t size;
 
 		/** the number of bytes remaining for reading */
-		uint32_t remaining;
+		size_t remaining;
 
 
 
@@ -45,7 +45,7 @@ namespace K {
 		virtual int read() {
 
 			// anything to read?
-			if (remaining == 0) {return -1;}
+			if (remaining == 0) {return ERR_FAILED;}
 
 			// read one byte
 			--remaining;
@@ -53,21 +53,21 @@ namespace K {
 
 		}
 
-		virtual int read(uint8_t* data, unsigned int len) override {
+		virtual ssize_t read(uint8_t* data, const size_t len) override {
 
-			uint32_t max = (len < remaining) ? (len) : (remaining);
-			uint32_t numRead = is->read(data, max);
+			size_t max = (len < remaining) ? (len) : (remaining);
+			size_t numRead = is->read(data, max);
 			remaining -= numRead;
 			std::cout << "read " << numRead << " bytes. remaining is " << remaining << std::endl;
 			return numRead;
 
 		}
 
-		virtual void skip(const uint64_t n) override {
+		virtual void skip(const size_t n) override {
 
 			// check whether there are enough bytes remaining to skip
-			uint32_t _n = (uint32_t) n;
-			uint32_t max = (_n < remaining) ? (_n) : (remaining);
+			size_t _n = (uint32_t) n;
+			size_t max = (_n < remaining) ? (_n) : (remaining);
 			remaining -= max;
 			is->skip(max);
 
@@ -83,7 +83,7 @@ namespace K {
 			remaining = 0;
 
 			// skip all zero padding bytes
-			uint32_t padding = TarHelper::getPadding(size, TarHelper::BLOCKSIZE);
+			size_t padding = TarHelper::getPadding(size, TarHelper::BLOCKSIZE);
 			is->skip(padding);
 
 			// ensure we close only once

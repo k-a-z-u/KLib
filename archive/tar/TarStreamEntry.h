@@ -21,10 +21,10 @@ namespace K {
 		OutputStream* os;
 
 		/** the total size of the entry */
-		uint32_t size;
+		size_t size;
 
 		/** the number of remaining bytes to write */
-		uint32_t remaining;
+		size_t remaining;
 
 
 	private:
@@ -46,7 +46,7 @@ namespace K {
 			os->write(data);
 		}
 
-		virtual void write(const uint8_t* data, unsigned int len) override {
+		virtual void write(const uint8_t* data, const size_t len) override {
 			std::cout << remaining << std::endl;
 			if (len > remaining) {throw StreamException("can not write more bytes than specified in the header");}
 			remaining -= len;
@@ -63,7 +63,7 @@ namespace K {
 			if (size == 0xFFFFFFFF) {return;}
 
 			// write the padding bytes after the file
-			uint32_t padding = TarHelper::getPadding(size, TarHelper::BLOCKSIZE);
+			const size_t padding = TarHelper::getPadding(size, TarHelper::BLOCKSIZE);
 			os->write(TarHelper::ZERO_PADDING, padding);
 
 			// ensure we close only once!
