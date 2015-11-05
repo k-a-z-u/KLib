@@ -36,7 +36,7 @@ namespace K {
 			}
 		}
 
-		void write(const uint8_t *data, unsigned int len) {
+		void write(const uint8_t *data, const size_t len) {
 			for (uint32_t i = 0; i < len; ++i) {
 				write(data[i]);
 			}

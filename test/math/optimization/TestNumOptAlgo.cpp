@@ -73,8 +73,8 @@ namespace K {
 
 		ASSERT_EQ(2, data[0]);
 		ASSERT_EQ(2, data[1]);
-		ASSERT_EQ(2, data.data[0]);
-		ASSERT_EQ(2, data.data[1]);
+//		ASSERT_EQ(2, data.data[0]);
+//		ASSERT_EQ(2, data.data[1]);
 
 		NumOptAlgoHillClimb<2> opt(0.5);
 		opt.calculateOptimum(TNOAfunc1, data);

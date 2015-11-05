@@ -39,6 +39,16 @@ IF(WITH_7Z)
 	SET(EXTRA_SOURCES ${EXTRA_SOURCES} ./inc/7z/*.c)
 ENDIF()
 
+OPTION(WITH_PNG "Build with PNG image support" OFF)
+IF(WITH_PNG)
+	MESSAGE(STATUS "PNG image support: ENABLED")
+	add_definitions(-DWITH_PNG)
+	SET(EXTRA_LIBS ${EXTRA_LIBS} png)
+ELSE()
+	MESSAGE(STATUS "PNG image support: DISABLED")
+ENDIF()
+
+
 
 FILE(GLOB HEADERS
 	./*.h
@@ -88,4 +98,8 @@ TARGET_LINK_LIBRARIES(
 )
 
 
-
+find_package(OpenMP)
+if (OPENMP_FOUND)
+	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
