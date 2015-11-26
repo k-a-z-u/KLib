@@ -49,6 +49,16 @@ ELSE()
 ENDIF()
 
 
+OPTION(WITH_JPEG "Build with JPEG image support" OFF)
+IF(WITH_JPEG)
+	MESSAGE(STATUS "JPEG image support: ENABLED")
+	add_definitions(-DWITH_JPEG)
+	SET(EXTRA_LIBS ${EXTRA_LIBS} jpeg)
+ELSE()
+	MESSAGE(STATUS "JPEG image support: DISABLED")
+ENDIF()
+
+
 
 FILE(GLOB HEADERS
 	./*.h
