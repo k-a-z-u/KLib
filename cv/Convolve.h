@@ -12,18 +12,22 @@ namespace K {
 
 	public:
 
-
+		/**
+		 * convolve the given image with the provided kernel.
+		 * returns a newly created image.
+		 */
 		static ImageChannel run(const ImageChannel& src, const Kernel& k) {
 
 			ImageChannel dst(src.getWidth(), src.getHeight());
 
+			#pragma omp parallel for
 			for (int y = 0; y < src.getHeight(); ++y) {
 				for (int x = 0; x < src.getWidth(); ++x) {
 
 					const int dx = k.getWidth() / 2;
 					const int dy = k.getHeight() / 2;
 
-					float val = 0;		// the convoluted value
+					float val = 0;		// the value after convolving all pixels
 					float sum = 0;		// used for normalization (unnormalized kernels / edges [less values ues])
 
 					// convolve the current pixel with the kernel
@@ -44,7 +48,9 @@ namespace K {
 
 						}
 					}
-					dst.set(x,y,val/sum);
+
+					// set the normalized, convolved value
+					dst.set(x, y, val/sum);
 
 				}
 			}

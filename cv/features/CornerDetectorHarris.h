@@ -4,8 +4,7 @@
 #include "Corner.h"
 #include "../ImageChannel.h"
 #include "../Derivative.h"
-#include "../KernelFactory.h"
-#include "../Convolve.h"
+#include "../filter/Gauss.h"
 #include "../ImageFactory.h"
 #include "../LocalMaxima.h"
 
@@ -36,7 +35,6 @@ namespace K {
 
 	private:
 
-		float k;
 		float threshold;
 		float sigma;
 
@@ -47,18 +45,18 @@ namespace K {
 
 
 		/** ctor */
-		CornerDetectorHarris(const float k = 0.02f, const float threshold = 0.001f, const float sigma = 1.0f) :
-			k(k), threshold(threshold), sigma(sigma), lMax(2) {
+		CornerDetectorHarris(const float threshold = 0.001f, const float sigma = 1.0f) :
+			threshold(threshold), sigma(sigma), lMax( int(sigma*2) ) {
 			;
 		}
 
 
 		/** find all corners within the provided image-channel */
-		std::vector<Corner> getCorners(const ImageChannel& img) {
+		std::vector<Corner> getCorners(const ImageChannel& src) {
 
-			Kernel kernel = KernelFactory::gauss2D(1, 5);
-
-			//const ImageChannel img = Convolve::run(_img, kernel);
+			// slightly blur the input (remove noise)
+			Gauss g1(0.75);
+			ImageChannel img = g1.filter(src);
 
 			// derive the input image in x and y direction -> Ix and Iy
 			ImageChannel imgX = Derivative::getX(img);
@@ -74,9 +72,13 @@ namespace K {
 			imgY.forEachModify(lambda);
 
 			// apply guassian to the derived images
-			imgX =Convolve::run(imgX, kernel);
-			imgY = Convolve::run(imgY, kernel);
-			imgXY = Convolve::run(imgXY, kernel);
+			Gauss g2(sigma);
+			imgX = g2.filter(imgX);
+			imgY = g2.filter(imgY);
+			imgXY = g2.filter(imgXY);
+			//imgX =Convolve::run(imgX, kernel);
+			//imgY = Convolve::run(imgY, kernel);
+			//imgXY = Convolve::run(imgXY, kernel);
 
 			// calculate R image
 			ImageChannel imgR(imgX.getWidth(), imgX.getHeight());
@@ -93,9 +95,8 @@ namespace K {
 			// find local maxima within the image
 			std::vector<Corner> found;
 			ImageChannel imgC(imgX.getWidth(), imgX.getHeight()); imgC.zero();
-			const int s = 1;
-			lMax.forEach(imgR, [&] (const int x, const int y) {
 
+			lMax.forEach(imgR, [&] (const int x, const int y) {
 				found.push_back(Corner(x,y,0));
 				imgC.set(x,y,1);
 			});

@@ -13,6 +13,11 @@ namespace K {
 
 	public:
 
+		/** empty ctor */
+		Kernel() : DataMatrix() {
+			;
+		}
+
 		/** ctor */
 		Kernel(const float* data, const int width, const int height) : DataMatrix(data, width, height) {
 			;
@@ -21,6 +26,13 @@ namespace K {
 		/** ctor */
 		Kernel(const int width, const int height) : DataMatrix(width, height) {
 			;
+		}
+
+		/** swap width and height */
+		void tilt() {
+			int t = this->width;
+			this->width = this->height;
+			this->height = t;
 		}
 
 

@@ -16,14 +16,14 @@
 #define _getMethod()						std::string(__PRETTY_FUNCTION__)
 #define _throwAssertion(errorString)		throw K::Exception( "in:\t" + _getMethod() + "\nerror:\t" + errorString )
 
-#define _assertEqual(val1, val2, errorString)		if (val1 != val2) {_throwAssertion(errorString);}
-#define _assertTrue(val, errorString)				if (!(val)) {_throwAssertion(errorString);}
-#define _assertFalse(val, errorString)				if (val) {_throwAssertion(errorString);}
-#define _assertNotNull(val, errorString)			if (!(val)) {_throwAssertion(errorString);}
-#define _assertNotNAN(val, errorString)				if (val != val) {_throwAssertion(errorString);}
-#define _assertNotEmpty(str, errorString)			if (str.empty()) {_throwAssertion(errorString);}
-#define _assertNot0(val, errorString)				if (val == 0) {_throwAssertion(errorString);}
-#define _assertBetween(val, min, max, errorString)	if (val < min || val > max) {_throwAssertion(errorString);}
+#define _assertEqual(val1, val2, errorString)			if (val1 != val2) {_throwAssertion(errorString);}
+#define _assertTrue(val, errorString)					if (!(val)) {_throwAssertion(errorString);}
+#define _assertFalse(val, errorString)					if (val) {_throwAssertion(errorString);}
+#define _assertNotNull(val, errorString)				if (!(val)) {_throwAssertion(errorString);}
+#define _assertNotNAN(val, errorString)					if (val != val) {_throwAssertion(errorString);}
+#define _assertNotEmpty(str, errorString)				if (str.empty()) {_throwAssertion(errorString);}
+#define _assertNot0(val, errorString)					if (val == 0) {_throwAssertion(errorString);}
+#define _assertBetween(val, min, max, errorString)		if (val < min || val > max) {_throwAssertion(errorString+ " (" + std::to_string(min) + " <= " + std::to_string(val) + " <= " + std::to_string(max) + ")");}
 
 #else
 

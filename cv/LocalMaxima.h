@@ -9,16 +9,16 @@ namespace K {
 
 	private:
 
-		/** the minimum value to allow for local-maxima-checking */
-		float threshold;
-
 		/** the neighborhood-size to search for other maxima */
 		int size;
+
+		/** the minimum value to allow for local-maxima-checking */
+		float threshold;
 
 	public:
 
 		/** ctor */
-		LocalMaxima(const int size = 1, const float threshold = 0.00001) : size(size), threshold(threshold) {
+		LocalMaxima(const int size = 1, const float threshold = 0.00001f) : size(size), threshold(threshold) {
 			;
 		}
 
