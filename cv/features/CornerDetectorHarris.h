@@ -13,18 +13,20 @@ namespace K {
 
 	class CornerDetectorHarris {
 
+		/** helper-class to calculate the eigenvalues of a 2x2 matrix */
+		struct Eigenvalues2 {float e1, e2;};
+
+		/** helper-class to calculate the eigenvalues of a 2x2 matrix */
 		struct Matrix2 {
 
-			float a,b,c,d;
-			struct Eigenvalues {float e1, e2;};
+			const float a,b,c,d;
 
-			Matrix2() : a(0), b(0), c(0), d(0) {;}
 			Matrix2(const float a, const float b, const float c, const float d) : a(a), b(b), c(c), d(d) {;}
 
-			Eigenvalues getEigenvalues() const {
+			Eigenvalues2 getEigenvalues() const {
 				const float T = a+d;
 				const float D = a*d - b*c;
-				Eigenvalues res;
+				Eigenvalues2 res;
 				res.e1 = T/2 + std::sqrt(T*T/4-D);
 				res.e2 = T/2 - std::sqrt(T*T/4-D);
 				return res;
@@ -38,23 +40,25 @@ namespace K {
 		float threshold;
 		float sigma;
 
+		LocalMaxima lMax;
+
 	public:
 
 
 
 		/** ctor */
 		CornerDetectorHarris(const float k = 0.02f, const float threshold = 0.001f, const float sigma = 1.0f) :
-			k(k), threshold(threshold), sigma(sigma) {
+			k(k), threshold(threshold), sigma(sigma), lMax(2) {
 			;
 		}
 
 
 		/** find all corners within the provided image-channel */
-		std::vector<Corner> getCorners(const ImageChannel& _img) {
+		std::vector<Corner> getCorners(const ImageChannel& img) {
 
 			Kernel kernel = KernelFactory::gauss2D(1, 5);
 
-			const ImageChannel img = Convolve::run(_img, kernel);
+			//const ImageChannel img = Convolve::run(_img, kernel);
 
 			// derive the input image in x and y direction -> Ix and Iy
 			ImageChannel imgX = Derivative::getX(img);
@@ -70,8 +74,7 @@ namespace K {
 			imgY.forEachModify(lambda);
 
 			// apply guassian to the derived images
-
-			imgX = Convolve::run(imgX, kernel);
+			imgX =Convolve::run(imgX, kernel);
 			imgY = Convolve::run(imgY, kernel);
 			imgXY = Convolve::run(imgXY, kernel);
 
@@ -79,20 +82,20 @@ namespace K {
 			ImageChannel imgR(imgX.getWidth(), imgX.getHeight());
 			auto getR = [&] (const int x, const int y) {
 				const Matrix2 m(imgX.get(x,y), imgXY.get(x,y), imgXY.get(x,y), imgY.get(x,y));
-				const Matrix2::Eigenvalues ev = m.getEigenvalues();
+				const Eigenvalues2 ev = m.getEigenvalues();
 				//const float r = ev.e1 - 2.0 * ev.e2;
 				//const float r = std::abs(  ev.e1*ev.e2 - k * ((ev.e1+ev.e2)*(ev.e1+ev.e2))  );
 				const float r = (ev.e1*ev.e2) / (ev.e1+ev.e2);
-				return (r==r && r > threshold) ? (r) : (0);//(r > 0.005) ? (r) : (0);
+				return (r==r && r > threshold) ? (r) : (0);
 			};
 			imgR.setEach(getR);
 
 			// find local maxima within the image
-			LocalMaxima lMax(2);
 			std::vector<Corner> found;
 			ImageChannel imgC(imgX.getWidth(), imgX.getHeight()); imgC.zero();
 			const int s = 1;
-			lMax.forEach(img, [&] (const int x, const int y) {
+			lMax.forEach(imgR, [&] (const int x, const int y) {
+
 				found.push_back(Corner(x,y,0));
 				imgC.set(x,y,1);
 			});
@@ -101,19 +104,13 @@ namespace K {
 			imgY.normalize();;
 			imgXY.normalize();
 			imgR.normalize();
+			ImageFactory::writePNG("/tmp/i.png", img);
 			ImageFactory::writePNG("/tmp/ix.png", imgX);
 			ImageFactory::writePNG("/tmp/iy.png", imgY);
 			ImageFactory::writePNG("/tmp/ixy.png", imgXY);
 			ImageFactory::writePNG("/tmp/ir.png", imgR);
 			ImageFactory::writePNG("/tmp/ic.png", imgC);
 			// find corners
-
-
-
-
-
-
-
 
 			return found;
 
