@@ -75,7 +75,7 @@ namespace K {
 
 			// get image information
 			const int channels = png_get_channels(png, info_ptr);
-			const int bytesPerRow = png_get_rowbytes(png, info_ptr);
+			const size_t bytesPerRow = png_get_rowbytes(png, info_ptr);
 			png_get_IHDR(png, info_ptr, &width, &height, &bitdepth, &colortype, &interlacetype, nullptr, nullptr);
 
 			// sanity checks
@@ -84,7 +84,7 @@ namespace K {
 			// allocate memory for each line of the image
 			uint8_t* buffer = (uint8_t*) malloc(height*bytesPerRow);
 			uint8_t* rows[height];
-			for (int y = 0; y < height; ++y) {
+			for (uint32_t y = 0; y < height; ++y) {
 				rows[y] = &buffer[y*bytesPerRow];
 			}
 
@@ -93,8 +93,8 @@ namespace K {
 
 			// convert it to grey
 			ImageChannel img(width, height);
-			for (int y = 0; y < height; ++y) {
-				for (int x = 0; x < width; ++x) {
+			for (uint32_t y = 0; y < height; ++y) {
+				for (uint32_t x = 0; x < width; ++x) {
 					const float g = toGrey(&rows[y][x*channels], channels);
 					img.set(x,y,g);
 				}
@@ -173,8 +173,8 @@ namespace K {
 		/** convert x components to a [0.0:1.0] grey value */
 		static inline float toGrey(const uint8_t* raw, const int components) {
 			switch (components) {
-				case 3: return (raw[0]+raw[1]+raw[2])/765.0f;
-				case 1: return (raw[0])/765.0f;
+				case 3: return float(raw[0]+raw[1]+raw[2])/765.0f;
+				case 1: return float(raw[0])/765.0f;
 				default: throw 1;
 			}
 		}

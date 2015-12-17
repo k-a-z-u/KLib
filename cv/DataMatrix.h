@@ -24,6 +24,11 @@ namespace K {
 
 	public:
 
+		/** empty ctor */
+		DataMatrix() : width(0), height(0) {
+			;
+		}
+
 		/** ctor with data */
 		DataMatrix(const T* data, const int width, const int height) : width(width), height(height) {
 			const int numElems = width*height;

@@ -5,12 +5,12 @@ namespace K {
 
 	struct Corner {
 
-		float x;
-		float y;
+		int x;
+		int y;
 		float strength;
 
 		Corner() : x(0), y(0), strength(0) {;}
-		Corner(const float x, const float y, const float strength) : x(x), y(y), strength(strength) {;}
+		Corner(const int x, const int y, const float strength) : x(x), y(y), strength(strength) {;}
 
 	};
 
