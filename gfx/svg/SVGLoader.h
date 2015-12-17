@@ -54,6 +54,9 @@ namespace K {
 		/** append a new <path> (stored within elem) to the given layer */
 		static void addPathToLayer(SVGFile* svgFile, SVGLayer* layer, const tinyxml2::XMLElement* elem);
 
+		/** ensure the given string uses only numbers and points (no other chars) */
+		static void assertFloat(const char* c, const char* err);
+
 	};
 
 
@@ -70,8 +73,10 @@ namespace K {
 		const tinyxml2::XMLElement* svg = doc.FirstChildElement("svg");
 
 		// load width/height and convert them to centimeters
-		svgFile->width = atof(svg->Attribute("width")) * PIXEL_TO_CM;
-		svgFile->height = atof(svg->Attribute("height")) * PIXEL_TO_CM;
+		assertFloat(svg->Attribute("width"), "width is not given in px");		// not ending with e.g. "mm" or "cm"
+		assertFloat(svg->Attribute("height"), "width is not given in px");		// not ending with e.g. "mm" or "cm"
+		svgFile->width = std::stof(svg->Attribute("width")) * PIXEL_TO_CM;
+		svgFile->height = std::stof(svg->Attribute("height")) * PIXEL_TO_CM;
 
 		// get the first layer
 		const tinyxml2::XMLElement* layer = svg->FirstChildElement("g");
@@ -88,6 +93,13 @@ namespace K {
 
 		}
 
+	}
+
+	void SVGLoader::assertFloat(const char* c, const char* err) {
+		while (*c) {
+			if (*c != '.' && (*c < '0' || *c > '9')) {throw err;}
+			++c;
+		}
 	}
 
 	/** apply the transform specified within the given node to the (already loaded) obstacles */
