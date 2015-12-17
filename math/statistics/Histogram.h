@@ -3,66 +3,130 @@
 
 #include "../../Assertions.h"
 
+#include <vector>
+
 namespace K {
 
-	class Histogram {
+	template <typename T> class Histogram {
 
-	private:
-
-		double min;
-		double max;
-		double range;
-
+		T min;
+		T max;
+		T range;
+		T binSize;
 		int numBins;
 
-		std::vector<double> bins;
+		std::vector<T> bins;
 
 	public:
 
 		/** ctor */
-		Histogram(const double min, const double max, const int numBins) : min(min), max(max), range(max-min), numBins(numBins) {
+		Histogram(const T min, const T max, const int numBins) : min(min), max(max), range(max-min), binSize(range/numBins), numBins(numBins) {
 			bins.resize(numBins);
 		}
 
-		/** add one new entry to the bin given by 'val' */
-		void add(const double val) {
-			++bins[getBin(val)];
+		float getMin() const {return min;}
+
+		float getMax() const {return max;}
+
+		/** get the size of one bin */
+		float getBinSize() const {
+			return binSize;
 		}
 
-		/** add 'amount' to the bin denoted by 'val' */
-		void add(const double val, const double amount) {
+		/** get the number of bins */
+		int getNumBins() const {
+			return numBins;
+		}
+
+		/** get the center-value for the given bin */
+		float getCenter(const int bin) const {
+			_assertBetween(bin, 0, numBins-1, "bin-index out of range: " + std::to_string(bin));
+			return min + (range / float(numBins) * (float(bin) + 0.5f));
+		}
+
+		/** add the given "amount" to the bin best matching "val" */
+		void add(const float val, const T amount) {
 			bins[getBin(val)] += amount;
 		}
 
-		/** add the given amount to the given bin */
-		void addToBin(const int bin, const double amount) {
-			_assertBetween(bin, 0, numBins-1, "bin-index out of range");
-			bins[bin] += amount;
+		/** add the given "amount" to the two bins best matching "val" */
+		void addInterpolate(const float val, const T amount) {
+
+			// sanity check
+			_assertBetween(val, min, max, "value out of range: " + std::to_string(val));
+
+			// get the two bins best matching the given value
+			int idx1 = (int) std::floor((val-binSize/2)/range*float(numBins));		// binSize/2 = move to the bin's center
+			int idx2 = (int)  std::ceil((val-binSize/2)/range*float(numBins));		// binSize/2 = move to the bin's center
+
+			// ensure we are within the range
+			if (idx1 < 0)			{idx1 = 0;}
+			if (idx2 >= numBins)	{idx2 = numBins-1;}
+
+			// interpolate?
+			if (idx1 == idx2) {
+
+				// no interpolation necessary!
+				bins[idx1] += amount;
+
+			} else {
+
+				// interpolate the result by adding the "amount" shared between those two bins
+				const float v1 = std::abs(val - getCenter(idx2)) / binSize;			// distance from bin-2
+				const float v2 = std::abs(val - getCenter(idx1)) / binSize;			// distance from bin-1
+
+				// add
+				bins[idx1] += amount * v1;
+				bins[idx2] += amount * v2;
+
+			}
+
 		}
 
-		/** get the value within the given bin */
-		double getValue(const int bin) const {
-			_assertBetween(bin, 0, numBins-1, "bin-index out of range");
+		/** set the given bin to the provided value */
+		void set(const int bin, const T val) {
+			bins[bin] = val;
+		}
+
+		/** get the value for the given bin */
+		T get(const int bin) const {
+			_assertBetween(bin, 0, numBins-1, "bin-index out of range: " + std::to_string(bin));
 			return bins[bin];
+		}
+
+		/** get the bin the given value belongs to */
+		int getBin(const T val) {
+
+			// sanity check
+			_assertBetween(val, min, max, "value out of range: " + std::to_string(val));
+
+			// calculate
+			return std::round((val-binSize/2)/range*float(numBins));				// binSize/2 = move to the bin's center
+
+		}
+
+		/** set all bins to zero */
+		void zero() {
+			std::fill (bins.begin(), bins.end(), 0.0f);
 		}
 
 		/** normalize the histogram (sum of 1.0) */
 		void normalize() {
 			const double sum = getSum();
 			if (sum == 0) {return;}
-			for (double& d : bins) {d /= sum;}
+			for (T& d : bins) {d /= sum;}
 		}
 
 		/** get the sum of all histogram bins */
-		double getSum() const {
+		T getSum() const {
 			double sum = 0;
-			for (double d : bins) {sum += d;}
+			for (T d : bins) {sum += d;}
 			return sum;
 		}
 
-		/** get the number of bins */
-		int getNumBins() const {
-			return numBins;
+		/** get the data from the contained bins */
+		const T* getData() const {
+			return bins.data();
 		}
 
 		/** send to stream */
@@ -75,25 +139,6 @@ namespace K {
 		}
 
 
-
-
-	private:
-
-		/** get the bin for the given value */
-		int getBin(const double val) const {
-
-			// sanity check
-			//_assertBetween(val, min, max, "value out of bounds: " + std::to_string(val));
-
-			// value -> index
-			int idx = (int) ( (val - min) / range * (numBins-1) );
-
-			// sanity check
-			_assertBetween(idx, 0, numBins-1, "index out of bounds: " + std::to_string(idx));
-
-			return idx;
-
-		}
 
 	};
 

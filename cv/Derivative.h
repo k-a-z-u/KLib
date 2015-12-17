@@ -58,7 +58,7 @@ namespace K {
 			_assertBetween(x, 1, img.getWidth() - 2, "x-index out of bounds");
 			_assertBetween(y, 0, img.getHeight() - 1, "y-index out of bounds");
 			if (x >= img.getWidth() - 1) {return 0;}
-			return (img.get(x+1,y) - img.get(x-1,y));
+			return (img.get(x+1,y) - img.get(x-1,y)) / 2.0f;
 		}
 
 
@@ -73,7 +73,7 @@ namespace K {
 		static float getYcen(const ImageChannel& img, const int x, const int y) {
 			_assertBetween(x, 0, img.getWidth() - 1, "x-index out of bounds");
 			_assertBetween(y, 1, img.getHeight() - 2, "y-index out of bounds");
-			return (img.get(x,y+1) - img.get(x,y-1));
+			return (img.get(x,y+1) - img.get(x,y-1)) / 2.0f;
 		}
 
 

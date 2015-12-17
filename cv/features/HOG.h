@@ -16,7 +16,11 @@ namespace K {
 	 * C-HOG (circular)
 	 *
 	 * https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients
+	 * https://www.youtube.com/watch?v=0Zib1YEE4LU
+	 *
 	 * - no smoothing beforehand!
+	 * - [0:180] degree region!
+	 *   - a 270 degree gradient is the same as a 90 degree gradient -> modulo
 	 *
 	 */
 	class HOG {
@@ -36,7 +40,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		HOG(const int size, const int bins = 8) : size(size), bins(bins) {
+		HOG(const int size = 4, const int bins = 8) : size(size), bins(bins) {
 			constructRegion();
 		}
 
@@ -65,10 +69,10 @@ namespace K {
 
 
 		/** get the HOG at the given center point within the provided image */
-		Histogram get(const ImageChannel& src, const int x, const int y) {
+		Histogram<float> get(const ImageChannel& src, const int x, const int y) {
 
 			// use X bins between [0:2PI]
-			Histogram h(0, 2*M_PI, bins);
+			Histogram<float> h(0, M_PI, bins);
 
 			// process each point belonging to the region (centered at (0,0))
 			for (const ImagePoint p : region) {
@@ -87,18 +91,13 @@ namespace K {
 
 				// calculate magnitude and direction of the gradient
 				const float mag = std::sqrt( (dx*dx) + (dy*dy) );	// gradient's overall magnitude
-				double dir = std::atan2(dy, dx);						// the gradient's direction
+				double dir = atan180(dy, dx);						// the gradient's direction
 
-				// convert from [-pi:+po] to [0:pi]
+
 				if (dir < 0) {dir += 2*M_PI;}
-				//dir = std::fmod(dir + 2*M_PI, 2*M_PI);
-
-				// get the bin for the given direction
-				int bin = getBin(bins, dir);
 
 				// update the histogram
-				h.addToBin(bin, mag);
-				//h.add(dir, mag);
+				h.addInterpolate(dir, mag);
 
 			}
 
@@ -108,12 +107,47 @@ namespace K {
 
 		}
 
-	public:
+		PICTURES LOOK LIKE ITS BEST TO ROTATE BEFORE SAVING THE FIRST HISTOGRAM
+		ROTATING AFTER HISTOGRAM CREATION LOOKS SOMEWHAT OFF
 
-		/** convert the given direction [0:2PI] to a bin-number */
-		static int getBin(const int bins, const float dir) {
-			return (int) std::round(dir * bins / (2*M_PI)) % bins;
+		MAYBE 360 IS BETTER THAN 180?
+
+		/** "rotate" the histogram to ensure the largest magnitude comes first" */
+		static Histogram<float> largestFirst(const Histogram<float>& h) {
+
+			// find the index with the largest output
+			float max = 0; int maxIdx = 0;
+			for (int i = 0; i < h.getNumBins(); ++i) {
+				if (h.get(i) > max) {
+					max = h.get(i);
+					maxIdx = i;
+				}
+			}
+
+			// create a rotated output: bin[0] = largest output
+			Histogram<float> h2(h.getMin(), h.getMax(), h.getNumBins());
+			for (int i = 0; i < h.getNumBins(); ++i) {
+				const int idx2 = (i+maxIdx) % h.getNumBins();
+				h2.set(i, h.get(idx2));
+			}
+
+			return h2;
+
 		}
+
+	private:
+
+		/**
+		 * 0 degree -> to the left
+		 * 90 degree -> upwards
+		 * 270 degree -> same as 90 -> upwards
+		 */
+		double atan180(const float y, const float x) const {
+			const double a = std::fmod(std::atan2(y, x) + 2*M_PI, 2*M_PI);
+			return (a < M_PI) ? (a) : (a - M_PI);
+		}
+
+
 
 	};
 
