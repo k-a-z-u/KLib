@@ -3,7 +3,9 @@
 
 #include "../../os/Process.h"
 #include "../../fs/File.h"
+
 #include "GnuplotSize.h"
+#include "GnuplotDrawable.h"
 
 namespace K {
 
@@ -57,7 +59,7 @@ namespace K {
 			if (terminal == "eps")		{attrs = "color dashed";}
 			if (terminal == "svg")		{attrs = "dashed";}
 			if (terminal == "epslatex")	{attrs = "color dashed";}
-			if (terminal == "pngcairo")	{attrs = "transparent";}
+			//if (terminal == "pngcairo")	{attrs = "transparent";}
 			this->width = size.getWidth("wxt");
 			this->height = size.getHeight("wxt");
 			(*this) << "set terminal " << terminal << " " << attrs << " size " << size.getWidth(terminal) << "," << size.getHeight(terminal) << "\n";
@@ -80,6 +82,11 @@ namespace K {
 			if (debug) {std::cout << buffer.str();}
 			proc->flush();
 			buffer.str("");
+		}
+
+		/** attach the given drawablw to the draw buffer */
+		void draw(const GnuplotDrawable& d) {
+			d.addTo(buffer);
 		}
 
 	private:
