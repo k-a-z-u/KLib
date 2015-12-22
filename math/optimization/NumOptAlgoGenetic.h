@@ -165,7 +165,7 @@ namespace K {
 					//test += currentPopulation[xx].fitness;
 					stats.add(currentPopulation[xx].fitness);
 				}
-				stats.out(std::cout) << std::endl;
+				//(std::cout) << std::endl;
 				std::cout << currentPopulation[0].genes << std::endl;
 				//std::cout << "avg: " << (test / populationSize) << std::endl;
 

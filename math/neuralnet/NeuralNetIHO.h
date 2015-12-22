@@ -1,6 +1,9 @@
 #ifndef NEURALNETIHO_H
 #define NEURALNETIHO_H
 
+#include "../../Assertions.h"
+#include <vector>
+
 namespace K {
 
 	template <int numOut> struct NeuralNetResultIHO {
@@ -13,15 +16,30 @@ namespace K {
 
 	public:
 
-		void setInToHiddenWeights(unsigned int idxHidden, float values[numIn]) {
+		void setInToHiddenWeights(const unsigned int idxHidden, const float values[numIn]) {
 			memcpy(inWeights[idxHidden], values, sizeof(float) * numIn);
 		}
-		void setHiddenToOutputWeights(unsigned int idxOutput, float values[numHidden]) {
+
+		void setHiddenToOutputWeights(const unsigned int idxOutput, const float values[numHidden]) {
 			memcpy(hiddenWeights[idxOutput], values, sizeof(float) * numHidden);
 		}
 
+		void setAll(const std::vector<float> values) {
+			_assertEqual(numIn*numHidden + numHidden*numOut, values.size(), "invalid number of values");
+			setAll(values.data());
+		}
+
+		void setAll(const float* values) {
+			for (int h = 0; h < numHidden; ++h) {
+				setInToHiddenWeights(h, &values[h*numIn]);
+			}
+			for (int o = 0; o < numOut; ++o) {
+				setHiddenToOutputWeights(o, &values[numIn*numHidden+o*numHidden]);
+			}
+		}
+
 		/** get the networks output for the given input */
-		NeuralNetResult<numOut> getOutput(float input[numIn]) {
+		NeuralNetResultIHO<numOut> getOutput(float input[numIn]) {
 
 			float hidden[numHidden];
 			float out[numOut];
@@ -45,7 +63,7 @@ namespace K {
 				out[idxOut] = 1.0f / (1.0f + std::exp(-out[idxOut]));
 			}
 
-			NeuralNetResult<numOut> res;
+			NeuralNetResultIHO<numOut> res;
 			memcpy(res.values, out, sizeof(float)*numOut);
 			return res;
 
