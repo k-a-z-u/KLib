@@ -31,6 +31,11 @@ namespace K {
 			points.push_back(p);
 		}
 
+		/** remove all points */
+		void clear() {
+			points.clear();
+		}
+
 		/** add an unnconected segment from A to B */
 		void addSegment(const GnuplotPoint2 from, const GnuplotPoint2 to) {
 			points.push_back(from);

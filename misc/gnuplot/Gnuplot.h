@@ -77,9 +77,9 @@ namespace K {
 
 		/** send all buffered commands to gnuplot */
 		void flush() {
-			buffer << std::endl;
+			//buffer << std::endl;
 			*proc << buffer.str();
-			if (debug) {std::cout << buffer.str();}
+			if (debug) {std::cout << buffer.str() << std::endl;}
 			proc->flush();
 			buffer.str("");
 		}

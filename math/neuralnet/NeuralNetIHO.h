@@ -39,7 +39,7 @@ namespace K {
 		}
 
 		/** get the networks output for the given input */
-		NeuralNetResultIHO<numOut> getOutput(float input[numIn]) {
+		NeuralNetResultIHO<numOut> getOutput(const float input[numIn]) {
 
 			float hidden[numHidden];
 			float out[numOut];

@@ -3,10 +3,11 @@
 
 #include <vector>
 #include "GnuplotSplotElementRaw.h"
+#include "attributes/GnuplotAttrColor.h"
 
 namespace K {
 
-	class GnuplotSplotElementLines : public GnuplotSplotElementRaw {
+	class GnuplotSplotElementLines : public GnuplotSplotElementRaw, public GnuplotAttrColor {
 
 	private:
 
