@@ -17,6 +17,11 @@ namespace K {
 
 	public:
 
+		/** remove all added elements */
+		void clear() {
+			points.clear();
+		}
+
 		void addDataTo(std::stringstream& ss) const override {
 
 			for (const GnuplotPoint3 p : points) {

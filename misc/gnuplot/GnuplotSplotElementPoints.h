@@ -2,10 +2,11 @@
 #define GNUPLOTSPLOTELEMENTPOINTS_H
 
 #include "GnuplotSplotElementRaw.h"
+#include "attributes/GnuplotAttrColor.h"
 
 namespace K {
 
-	class GnuplotSplotElementPoints : public GnuplotSplotElementRaw {
+	class GnuplotSplotElementPoints : public GnuplotSplotElementRaw, public GnuplotAttrColor {
 
 	private:
 

@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <random>
+#include "../distribution/Normal.h"
 
 namespace K {
 
@@ -26,7 +27,7 @@ namespace K {
 		float elitism = 0.02f;
 
 		/** chance of mutating a gene during crossover */
-		float mutation = 0.02f;
+		float mutation = 0.10f;
 
 		/** the random value range for mutation */
 		NumOptVector<numArgs> valRange;
@@ -37,6 +38,8 @@ namespace K {
 		/** an exponential distribution for picking random parents */
 		std::exponential_distribution<float> expDist = std::exponential_distribution<float>(10.0);
 
+		/** callback-function to inform after every run */
+		std::function<void(const int iteration, const float fitness, const NumOptVector<numArgs>&)> callback;
 
 	public:
 
@@ -84,10 +87,15 @@ namespace K {
 			float fitness;					// fitness (here: negative fitness: error)
 		};
 
+		/** set a callback-function to inform after every run */
+		void setCallback(std::function<void(const int iteration, const float fitness, const NumOptVector<numArgs>&)> func) {
+			this->callback = func;
+		}
+
 		/**
 		 * how it works:
 		 * 1) start with X entites filled with Y random values
-		 * 2) calculate their fitness (here: error)
+		 * 2) calculate their fitness (he>re: error)
 		 * 3) sort by error (least error = best)
 		 * 4) create a new population by
 		 *		a crossover between two current parents (genes), depending on their fitness
@@ -169,6 +177,11 @@ namespace K {
 				//std::cout << currentPopulation[0].genes << std::endl;
 				//std::cout << "avg: " << (test / populationSize) << std::endl;
 
+				// inform callback (if any) about the current optimum
+				if (callback) {
+					callback(iter, currentPopulation[0].fitness, currentPopulation[0].genes);
+				}
+
 			}
 
 			// use the best chromosome as final result
@@ -220,7 +233,7 @@ namespace K {
 			for (int i = 0; i < numArgs; ++i) {
 
 				// take this gene from either parent1 or parent2
-				child[i] = (randB()) ? (parent1[i]) : (parent2[i]);
+				child[i] = (rand5050()) ? (parent1[i]) : (parent2[i]);
 
 				//  mutate this gene?
 				if (doMutate()) {child[i] += randGene(i);}
@@ -231,28 +244,25 @@ namespace K {
 
 		/** get a random genetic change depending on the index and thus allowed variance for this gene */
 		inline float randGene(const int idx) {
-			return randF(-valRange[idx], +valRange[idx]);
+			return randF(valRange[idx]);
 		}
 
-		/** true in 2.0% of all runs */
+		/** true in x% of all calls */
 		inline bool doMutate() {
-			//return rand() < (RAND_MAX * 0.05);
 			return gen() < (gen.max() * mutation);
 		}
 
 		/** random true/false (50:50) */
-		inline bool randB() {
-			//return rand() < (RAND_MAX/2);
+		inline bool rand5050() {
 			return gen() < (gen.max() / 2);
 		}
 
-		/** random value between min and max */
-		inline float randF(const float min, const float max) {
-			//return min + rand() * (max-min) / RAND_MAX;
-			return min + (gen() * (max-min) / gen.max());
+
+		/** zero-mean normally-distributed random value */
+		inline float randF(const float sigma) {
+			std::normal_distribution<> d(0, sigma);
+			return d(gen);
 		}
-
-
 
 	};
 
