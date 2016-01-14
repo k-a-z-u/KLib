@@ -14,7 +14,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		Gnuplot() {
+		Gnuplot() : debug(false) {
 			proc = new K::Process("/usr/bin/gnuplot", "");
 			setSize(640,480);
 			flush();

@@ -24,7 +24,7 @@ namespace K {
 
 		void addDataTo(std::stringstream& ss) const override {
 
-			for (const GnuplotPoint3 p : points) {
+			for (const GnuplotPoint3& p : points) {
 				if (p.isEmpty()) {
 					ss << "\n";
 				} else {

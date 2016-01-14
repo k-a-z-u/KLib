@@ -16,6 +16,8 @@ namespace K {
 
 	public:
 
+		void setPointType(const int t) {this->pointType = t;}
+
 		void setPointSize(const float s) {this->pointSize = s;}
 
 		void setColorHex(const std::string& hex) {this->color = "rgb '" + hex + "'";}
