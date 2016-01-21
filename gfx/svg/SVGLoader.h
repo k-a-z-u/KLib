@@ -61,7 +61,7 @@ namespace K {
 
 
 
-	void SVGLoader::load(const File& f, SVGFile* svgFile) {
+	inline void SVGLoader::load(const File& f, SVGFile* svgFile) {
 
 		// sanity check
 		if (!f.exists()) {throw "error while loading file";} //throw Exception("could not open floorplan file: " + file.getAbsolutePath());}
@@ -95,7 +95,7 @@ namespace K {
 
 	}
 
-	void SVGLoader::assertFloat(const char* c, const char* err) {
+	inline void SVGLoader::assertFloat(const char* c, const char* err) {
 		while (*c) {
 			if (*c != '.' && (*c < '0' || *c > '9')) {throw err;}
 			++c;
@@ -103,7 +103,7 @@ namespace K {
 	}
 
 	/** apply the transform specified within the given node to the (already loaded) obstacles */
-	void SVGLoader::applyTransform(const tinyxml2::XMLElement* node, SVGElement* dst) {
+	inline void SVGLoader::applyTransform(const tinyxml2::XMLElement* node, SVGElement* dst) {
 
 		// get transform attribute (if any)
 		const char* tmp = node->Attribute("transform");
@@ -133,7 +133,7 @@ namespace K {
 	}
 
 	/** load all entries within this layer */
-	SVGComposite* SVGLoader::loadEntries(SVGFile* svgFile, const tinyxml2::XMLElement* layer) {
+	inline SVGComposite* SVGLoader::loadEntries(SVGFile* svgFile, const tinyxml2::XMLElement* layer) {
 
 		// get the layers name
 		std::string name = layer->Attribute("inkscape:label");
@@ -165,7 +165,7 @@ namespace K {
 	}
 
 	/** append a new <text> (stored within elem) to the given layer */
-	void SVGLoader::addTextToLayer(SVGFile* svgFile, SVGLayer* layer, const tinyxml2::XMLElement* elem) {
+	inline void SVGLoader::addTextToLayer(SVGFile* svgFile, SVGLayer* layer, const tinyxml2::XMLElement* elem) {
 
 		// create a new text-field and add it to the layer
 		SVGText* text = new SVGText();
@@ -183,7 +183,7 @@ namespace K {
 	}
 
 	/** append a new <path> (stored within elem) to the given layer */
-	void SVGLoader::addPathToLayer(SVGFile* svgFile, SVGLayer* layer, const tinyxml2::XMLElement* elem) {
+	inline void SVGLoader::addPathToLayer(SVGFile* svgFile, SVGLayer* layer, const tinyxml2::XMLElement* elem) {
 
 		// temporals
 		std::vector<std::string> points;

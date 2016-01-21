@@ -65,7 +65,7 @@ namespace K {
 
 #include "SVGLayer.h"
 
-K::SVGLayer* K::SVGComposite::getContainedLayerNamed(const std::string& name) const {
+inline K::SVGLayer* K::SVGComposite::getContainedLayerNamed(const std::string& name) const {
 
 	// process each child
 	for (K::SVGElement* elSub : getChilds() ) {
