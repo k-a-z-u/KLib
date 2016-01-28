@@ -12,6 +12,9 @@ namespace K {
 
 	public:
 
+		/** empty ctor */
+		ImageChannel() : DataMatrix() {;}
+
 		/** ctor with data */
 		ImageChannel(const float* data, const int width, const int height) : DataMatrix(data, width, height) {;}
 
@@ -33,6 +36,19 @@ namespace K {
 			auto update = [&] (const int x, const int y, const float val) {(void) x; (void) y; return (val - min) / diff;};
 			forEachModify(update);
 
+		}
+
+		/** get the value using bi-linear interpolation */
+		const float getBilinear(const float x, const float y) const {
+			const int x1 = (int) std::floor(x);
+			const int x2 = (int) std::ceil(x);
+			const float px1 = (float)x2 - x;
+			const int y1 = (int) std::floor(y);
+			const int y2 = (int) std::ceil(y);
+			const float py1 = (float)y2 - y;
+			const float vy1 = get(x1,y1) * px1 + get(x2,y1) * (1-px1);
+			const float vy2 = get(x1,y2) * px1 + get(x2,y2) * (1-px1);
+			return vy1 * py1 + vy2 * (1-py1);
 		}
 
 		/** call the given function for each of the channels's pixels.*/

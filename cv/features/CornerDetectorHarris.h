@@ -105,12 +105,15 @@ namespace K {
 			imgY.normalize();;
 			imgXY.normalize();
 			imgR.normalize();
+
+#ifdef WITH_PNG
 			ImageFactory::writePNG("/tmp/i.png", img);
 			ImageFactory::writePNG("/tmp/ix.png", imgX);
 			ImageFactory::writePNG("/tmp/iy.png", imgY);
 			ImageFactory::writePNG("/tmp/ixy.png", imgXY);
 			ImageFactory::writePNG("/tmp/ir.png", imgR);
 			ImageFactory::writePNG("/tmp/ic.png", imgC);
+#endif
 			// find corners
 
 			return found;

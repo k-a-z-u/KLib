@@ -107,11 +107,6 @@ namespace K {
 
 		}
 
-		PICTURES LOOK LIKE ITS BEST TO ROTATE BEFORE SAVING THE FIRST HISTOGRAM
-		ROTATING AFTER HISTOGRAM CREATION LOOKS SOMEWHAT OFF
-
-		MAYBE 360 IS BETTER THAN 180?
-
 		/** "rotate" the histogram to ensure the largest magnitude comes first" */
 		static Histogram<float> largestFirst(const Histogram<float>& h) {
 

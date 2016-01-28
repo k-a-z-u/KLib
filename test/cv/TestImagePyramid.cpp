@@ -43,7 +43,9 @@ TEST(ImagePyramid, create) {
 	ImagePyramid pyr(img);
 	for (int i = 0; i < pyr.size(); ++i) {
 		std::string file = "/tmp/" + std::to_string(i) + ".png";
+#ifdef WITH_PNG
 		ImageFactory::writePNG(file, pyr.get(i));
+#endif
 		//plot(i, pyr.get(i));
 	}
 

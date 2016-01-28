@@ -9,6 +9,8 @@
 
 #include <vector>
 #include <random>
+#include <functional>
+
 #include "../distribution/Normal.h"
 
 namespace K {

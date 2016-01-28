@@ -72,10 +72,12 @@ FILE(GLOB SOURCES
 	./*/*.cpp
 	./*/*/*.cpp
 	./*/*/*/*.cpp
+	./*/*/*/*/*.cpp
 	${EXTRA_SOURCES}
 )
 
 ADD_DEFINITIONS(-DWITH_TESTS)
+ADD_DEFINITIONS(-DWITH_ASSERTIONS)
 
 # system specific compiler flags
 IF(MSVC)
@@ -87,6 +89,8 @@ ELSE()
 		-Wextra
 		-Wconversion
 		-Werror=return-type
+		-g
+		-O0
 	)
 ENDIF()
 

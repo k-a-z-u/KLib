@@ -1,0 +1,84 @@
+#ifndef POINT2_H
+#define POINT2_H
+
+#include <cmath>
+
+
+template <typename T> struct Point2 {
+
+	/** x-coordinate */
+	T x;
+
+	/** y-coordinate */
+	T y;
+
+	/** empty ctor */
+	Point2() : x(0), y(0) {;}
+
+	/** ctor */
+	Point2(const T x, const T y) : x(x), y(y) {;}
+
+
+	/** get distance between two points */
+	T getDistance(const Point2& p) const {
+		return sqrt( (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) );
+	}
+
+	/** get the length when pretending the point to be a vector from (0,0) */
+	T getLength() const {
+		return std::sqrt( x*x + y*y );
+	}
+
+	/** treat this point as a vector from (0,0) and rotate it by the angle theta */
+	void rotate(const float theta) {
+		const T _x = (x*std::cos(theta)) - (y*std::sin(theta));
+		const T _y = (x*std::sin(theta)) + (y*std::cos(theta));
+		this->x = _x;
+		this->y = _y;
+	}
+
+	/** treat this point as a vector from (0,0) and return a version rotated by the angle theta */
+	Point2 getRotated(const float theta) const {
+		const float _x = (x*std::cos(theta)) - (y*std::sin(theta));
+		const float _y = (x*std::sin(theta)) + (y*std::cos(theta));
+		return Point2(_x, _y);
+	}
+
+	T getDirection() const {
+		return std::atan2(y,x);
+	}
+
+	Point2& operator += (const Point2& right) {this->x += right.x; this->y += right.y; return *this;}
+
+	Point2& operator -= (const Point2& right) {this->x -= right.x; this->y -= right.y; return *this;}
+
+	Point2& operator *= (const Point2& right) {this->x *= right.x; this->y *= right.y; return *this;}
+
+	Point2& operator /= (const Point2& right) {this->x /= right.x; this->y /= right.y; return *this;}
+
+	Point2& operator *= (const T right) {this->x *= right; this->y *= right; return *this;}
+
+	Point2& operator /= (const T right) {this->x /= right; this->y /= right; return *this;}
+
+
+	Point2 operator + (const Point2& right) const {return Point2(this->x+right.x, this->y+right.y);}
+
+	Point2 operator - (const Point2& right) const {return Point2(this->x-right.x, this->y-right.y);}
+
+	Point2 operator * (const Point2& right) const {return Point2(this->x*right.x, this->y*right.y);}
+
+	Point2 operator / (const Point2& right) const {return Point2(this->x/right.x, this->y/right.y);}
+
+	Point2 operator * (const T right) const {return Point2((this->x*right), (this->y*right));}
+
+	Point2 operator / (const T right) const {return Point2((this->x/right), (this->y/right));}
+
+
+	bool operator == (const Point2& other) const {return (x == other.x) && (y == other.y);}
+
+
+};
+
+typedef Point2<float> Point2f;
+
+#endif // POINT2_H

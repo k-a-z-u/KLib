@@ -3,8 +3,13 @@
 
 #include "ImageChannel.h"
 
+#ifdef WITH_PNG
 #include <png.h>
+#endif
+
+#ifdef WITH_JPEG
 #include <jpeglib.h>
+#endif
 
 #include <string>
 
@@ -23,6 +28,7 @@ namespace K {
 			return out;
 		}
 
+#ifdef WITH_PNG
 		static void writePNG(const std::string& file, const ImageChannel& _img) {
 
 			DataMatrix<uint8_t> img = to8(_img);
@@ -107,10 +113,11 @@ namespace K {
 
 			return img;
 
-
-
 		}
 
+#endif
+
+#ifdef WITH_JPEG
 
 		/** read a JPEG from the given file */
 		static ImageChannel readJPEG(const std::string& file) {
@@ -167,6 +174,8 @@ namespace K {
 			return img;
 
 		}
+
+#endif
 
 	private:
 

@@ -19,6 +19,9 @@
 		}\
 }
 
+static inline std::string getDataFile(const std::string& name) {
+	return "/mnt/data/workspaces/KLib/test/data/" + name;
+}
 
 
 #endif
