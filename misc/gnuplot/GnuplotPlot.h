@@ -26,6 +26,11 @@ namespace K {
 			elements.push_back(elem);
 		}
 
+		/** remove a to-be-drawn element from the plot */
+		void remove(const GnuplotPlotElement* elem) {
+			elements.erase(std::find(elements.begin(), elements.end(), elem));
+		}
+
 		/** get a string of what to draw */
 		void addTo(std::stringstream& ss) const override {
 

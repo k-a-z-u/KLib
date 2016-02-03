@@ -1,5 +1,5 @@
-#ifndef ASSERTIONS_H
-#define ASSERTIONS_H
+#ifndef K_ASSERTIONS_H
+#define K_ASSERTIONS_H
 
 #include "Exception.h"
 
@@ -38,4 +38,4 @@
 
 #endif
 
-#endif // ASSERTIONS_H
+#endif // K_ASSERTIONS_H

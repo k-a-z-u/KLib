@@ -109,11 +109,14 @@ namespace K {
 		//params[0] = +0.5;
 		//params[1] = -0.5;
 
+
+//		see youtube videos laptop d:\kiste
+
 		ImageChannel src = ImageFactory::readPNG(getDataFile("lens_2.png"));
 		ImageChannel dst = LensDistortionRadial::undistort(src, params.data(), params.size());
 		ImageFactory::writePNG("/tmp/test_2.png", dst);
 
-		CornerDetectorHarris cdh();
+		CornerDetectorHarris cdh;
 		std::vector<Corner> corners = cdh.getCorners(src);
 
 		ImageChannel i2(src.getWidth(), src.getHeight());

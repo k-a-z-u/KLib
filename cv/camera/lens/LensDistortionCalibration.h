@@ -51,10 +51,29 @@ namespace K {
 				const Point2f p2 = LensDistortionRadial::distort(path[i+1], params, num);
 				const float isAngle01 = (p1-p0).getDirection();
 				const float isAngle12 = (p2-p1).getDirection();
-				const float diff = isAngle01 - isAngle12;
+				const float diff = (isAngle01 - isAngle12) * 10;
 				const float err = diff*diff;
 				cumErr += err;
 			}
+
+			// calculate the distance std-deviation (same distance for all)
+			double sum = 0;
+			double sumSq = 0;
+			for (size_t i = 0; i < path.size()-1; ++i) {
+				const Point2f p1 = LensDistortionRadial::distort(path[i], params, num);
+				const Point2f p2 = LensDistortionRadial::distort(path[i+1], params, num);
+				const float dist = p1.getDistance(p2) * 10;
+				sum += dist;
+				sumSq += dist*dist;
+			}
+
+			sum /= (path.size() - 1);
+			sumSq /= (path.size() - 1);
+			const double distSigma = std::sqrt(sumSq - (sum*sum));
+			if (distSigma != distSigma) {
+				cumErr += distSigma;
+			}
+			cumErr += distSigma;
 
 			return cumErr;
 

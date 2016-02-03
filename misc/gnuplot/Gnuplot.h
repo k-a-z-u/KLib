@@ -89,6 +89,11 @@ namespace K {
 			d.addTo(buffer);
 		}
 
+		/** get the current buffer content as string */
+		std::string getBuffer() const {
+			return buffer.str();
+		}
+
 	private:
 
 		/** io stream to gnuplot */

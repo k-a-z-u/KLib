@@ -10,6 +10,7 @@
 
 #include <set>
 #include <cstdint>
+#include <sstream>
 
 namespace K {
 
@@ -107,8 +108,15 @@ namespace K {
 			return numFound;
 		}
 
-		/** send to stream */
-		inline std::ostream& operator << (std::ostream& out) {
+		/** get as string */
+		std::string asString() const {
+			std::stringstream ss;
+			appendTo(ss);
+			return ss.str();
+		}
+
+		/** send to the given stream */
+		void appendTo(std::ostream& out) const {
 			out << "cnt(" << getCount() << ")\t";
 			out << "min(" << getMin() << ")\t";
 			out << "max(" << getMax() << ")\t";
@@ -116,8 +124,11 @@ namespace K {
 			out << "med(" << getMedian() << ")\t";
 			out << "avg(" << getAvg() << ")\t";
 			out << "stdDev(" << getStdDev() << ")\t";
-			//out << "squared(" << s.getSquaredSum() << ")";
-			return out;
+		}
+
+		/** send to stream */
+		inline std::ostream& operator << (std::ostream& out) const {
+			appendTo(out); return out;
 		}
 
 		/** reset all statistics */

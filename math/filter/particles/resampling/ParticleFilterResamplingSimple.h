@@ -29,7 +29,15 @@ namespace K {
 		/** this is a copy of the particle-set to draw from it */
 		std::vector<Particle<State>> particlesCopy;
 
+		/** random number generator */
+		std::minstd_rand gen;
+
 	public:
+
+		/** ctor */
+		ParticleFilterResamplingSimple() {
+			gen.seed(1234);
+		}
 
 		void resample(std::vector<Particle<State>>& particles) override {
 
@@ -67,16 +75,16 @@ namespace K {
 	private:
 
 		/** draw one particle according to its weight from the copy vector */
-		const Particle<State>& draw(const double cumWeight) const {
+		const Particle<State>& draw(const double cumWeight) {
 
-			// random value between [0;1]
-			const double rand01 = double(rand()) / double(RAND_MAX);
+			// generate random values between [0:cumWeight]
+			std::uniform_real_distribution<float> dist(0, cumWeight);
 
-			// random value between [0; cumulativeWeight]
-			const double rand = rand01 * cumWeight;
+			// draw a random value between [0:cumWeight]
+			const float rand = dist(gen);
 
-			// search comparator
-			auto comp = [] (const Particle<State>& s, const double d) {return s.weight < d;};
+			// search comparator (cumWeight is ordered -> use binary search)
+			auto comp = [] (const Particle<State>& s, const float d) {return s.weight < d;};
 			auto it = std::lower_bound(particlesCopy.begin(), particlesCopy.end(), rand, comp);
 			return *it;
 

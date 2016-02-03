@@ -65,6 +65,7 @@ FILE(GLOB HEADERS
 	./*/*.h
 	./*/*/*.h
 	./*/*/*/*.h
+	./*/*/*/*/*.h
 )
 
 FILE(GLOB SOURCES

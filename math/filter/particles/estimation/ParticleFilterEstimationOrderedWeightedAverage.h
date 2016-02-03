@@ -39,16 +39,20 @@ namespace K {
 				return p1.weight > p2.weight;
 			};
 
-			// sort
-			std::sort (particles.begin(), particles.end(), comp);
+			// create a copy
+			std::vector<Particle<State>> copy;
+			copy.insert(copy.begin(), particles.begin(), particles.end());
+
+			// sort the copy (highest weight first)
+			std::sort (copy.begin(), copy.end(), comp);
 
 			State tmp;
 
 			// calculate weighted average
-			const int numBest = particles.size() * percent;
+			const int numBest = copy.size() * percent;
 			double weightSum = 0;
 			for (int i = 0; i < numBest; ++i) {
-				const Particle<State>& p = particles[i];
+				const Particle<State>& p = copy[i];
 				tmp += p.state * p.weight;
 				weightSum += p.weight;
 			}
