@@ -5,13 +5,14 @@
 #include "GnuplotStructs.h"
 #include "attributes/GnuplotAttrTitle.h"
 #include "attributes/GnuplotAttrColor.h"
+#include "attributes/GnuplotAttrCustom.h"
 
 namespace K {
 
 	/**
 	 * an element that can be added to a Gnuplot Plot (2D plot)
 	 */
-	class GnuplotPlotElement : public GnuplotAttrTitle, public GnuplotAttrColor {
+	class GnuplotPlotElement : public GnuplotAttrTitle, public GnuplotAttrColor, public GnuplotAttrCustom {
 
 	public:
 

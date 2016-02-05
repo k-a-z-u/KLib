@@ -14,6 +14,7 @@ namespace K {
 		void addHeaderTo(std::stringstream& ss) const override {
 			ss << "'-' with image";
 			ss << " title '" << title << "' ";
+			ss << attrCustom;
 		}
 
 		/** add a new point to output */

@@ -4,13 +4,14 @@
 #include <sstream>
 #include "GnuplotStructs.h"
 #include "attributes/GnuplotAttrTitle.h"
+#include "attributes/GnuplotAttrCustom.h"
 
 namespace K {
 
 	/**
 	 * an element that can be added to a Gnuplot SPlot (3D plot)
 	 */
-	class GnuplotSplotElement : public GnuplotAttrTitle {
+	class GnuplotSplotElement : public GnuplotAttrTitle, public GnuplotAttrCustom {
 
 	public:
 

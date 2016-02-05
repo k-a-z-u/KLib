@@ -22,6 +22,7 @@ namespace K {
 
 		void addHeaderTo(std::stringstream& ss) const override {
 			ss << "'-' with lines ";
+			ss << attrCustom << " ";
 			ss << " lw " << lineWidth;
 			ss << " lc " << color;
 			ss << " title '" << title << "'";

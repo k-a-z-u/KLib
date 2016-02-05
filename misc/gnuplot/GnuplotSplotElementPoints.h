@@ -24,6 +24,7 @@ namespace K {
 
 		void addHeaderTo(std::stringstream& ss) const override {
 			ss << "'-' with points ";
+			ss << attrCustom << " ";
 			ss << " pt " << pointType;
 			ss << " ps " << pointSize;
 			ss << " lc " << color;
