@@ -11,6 +11,7 @@
 
 #include "NumOptAlgo.h"
 #include <algorithm>
+#include <functional>
 
 namespace K {
 
@@ -44,6 +45,11 @@ namespace K {
 		NumOptAlgoDownhillSimplex(double abortAt = 0.001, double alpha = 1.0, double rho = -0.5, double gamma = 2.0, double sigma = 0.5) :
 			abortAt(abortAt), alpha(alpha), rho(rho), gamma(gamma), sigma(sigma), maxIterations(5000), numRestarts(0) {
 			;
+		}
+
+		/** set a callback-function to inform after every run */
+		void setCallback(std::function<void(const int iteration, const float error, const NumOptVector<numArgs>&)> func) {
+			this->callback = func;
 		}
 
 		/** optimize the functions only parameter until epsilon is reached */
@@ -151,6 +157,11 @@ namespace K {
 
 					}
 
+					// inform callback (if any) about the current optimum
+					if (callback) {
+						callback(iter, set[IDX_BEST].value, set[IDX_BEST].param);
+					}
+
 					// done?
 					if ((set[IDX_BEST].param - set[IDX_WORST].param).getLength() < abortAt) {
 						break;
@@ -197,6 +208,9 @@ namespace K {
 
 		/** how often to restart the algorithm after having found a valid solution */
 		unsigned int numRestarts;
+
+		/** callback-function to inform after every run */
+		std::function<void(const int iteration, const float error, const NumOptVector<numArgs>&)> callback;
 
 
 	};

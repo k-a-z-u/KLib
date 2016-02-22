@@ -54,6 +54,6 @@ namespace K {
 	};
 
 
-	};
+}
 
 #endif // GNUPLOTPLOT_H

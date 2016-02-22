@@ -28,7 +28,7 @@ namespace K {
 		void setPointSize(const float s) {this->pointSize = s;}
 
 
-		void addHeaderTo(std::stringstream& ss) const override {
+		void addHeaderTo(std::ostream& ss) const override {
 			ss << "'-' with points palette ";
 			ss << attrCustom << " ";
 			ss << " pt " << pointType;
@@ -46,7 +46,7 @@ namespace K {
 			points.clear();
 		}
 
-		void addDataTo(std::stringstream& ss) const override {
+		void addDataTo(std::ostream& ss) const override {
 			for (const ColorPoint& p : points) {
 					ss << p.p.x << ' ' << p.p.y << ' ' << p.p.z << ' ' << p.color << "\n";
 			}

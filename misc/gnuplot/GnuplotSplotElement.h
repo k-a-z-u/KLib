@@ -1,7 +1,7 @@
 #ifndef GNUPLOTSPLOTELEMENT_H
 #define GNUPLOTSPLOTELEMENT_H
 
-#include <sstream>
+#include <ostream>
 #include "GnuplotStructs.h"
 #include "attributes/GnuplotAttrTitle.h"
 #include "attributes/GnuplotAttrCustom.h"
@@ -15,9 +15,9 @@ namespace K {
 
 	public:
 
-		virtual void addHeaderTo(std::stringstream& ss) const = 0;
+		virtual void addHeaderTo(std::ostream& ss) const = 0;
 
-		virtual void addDataTo(std::stringstream& ss) const = 0;
+		virtual void addDataTo(std::ostream& ss) const = 0;
 
 	};
 

@@ -22,7 +22,7 @@ namespace K {
 
 		void setColorHex(const std::string& hex) {this->color = "rgb '" + hex + "'";}
 
-		void addHeaderTo(std::stringstream& ss) const override {
+		void addHeaderTo(std::ostream& ss) const override {
 			ss << "'-' with points ";
 			ss << attrCustom << " ";
 			ss << " pt " << pointType;

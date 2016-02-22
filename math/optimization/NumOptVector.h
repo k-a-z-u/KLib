@@ -65,11 +65,13 @@ namespace K {
 		}
 
 		/** read/write array access */
-		double& operator [] (int idx) {return data[idx];}
+		double& operator [] (const int idx) {return data[idx];}
 
 		/** read array access */
-		const double& operator [] (int idx) const {return data[idx];}
+		const double& operator [] (const int idx) const {return data[idx];}
 
+		/** data access */
+		const double* getData() const {return data;}
 
 
 		/** -------------------------------- DOUBLE -------------------------------- */

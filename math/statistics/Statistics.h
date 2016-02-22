@@ -23,7 +23,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		Statistics() : sum(0), sumSquared(0), cnt(0) {;}
+		Statistics() : sum(), sumSquared(), cnt() {;}
 
 		/** dtor */
 		~Statistics() {;}
@@ -37,19 +37,19 @@ namespace K {
 		}
 
 		/** get the std-dev of all values */
-		double getStdDev() const {
+		T getStdDev() const {
 			double E1 = sumSquared / (double) cnt;
 			double E2 = getAvg();
 			return sqrt(E1 - (E2*E2));
 		}
 
 		/** get average value */
-		double getAvg() const {
+		T getAvg() const {
 			return sum / (double) cnt;
 		}
 
 		/** get the given quantile (e.g. 0.5 for median) */
-		double getQuantile(const double q) const {
+		T getQuantile(const double q) const {
 			if (q < 0 || q >= 1.0) {return -1;}
 			uint32_t pos = cnt * q;
 			uint32_t curPos = 0;
@@ -61,29 +61,29 @@ namespace K {
 		}
 
 		/** get the median value (= Quantile 0.5) */
-		double getMedian() const {
+		T getMedian() const {
 			return getQuantile(0.5f);
 		}
 
 		/** get smallest value */
-		double getMin() const {
+		T getMin() const {
 			if (values.empty()) {return -1;}
 			return *(values.begin());
 		}
 
 		/** get largest value */
-		double getMax() const {
+		T getMax() const {
 			if (values.empty()) {return -1;}
 			return *(--values.end());
 		}
 
 		/** get the range between min an max */
-		double getRange() const {
+		T getRange() const {
 			return getMax() - getMin();
 		}
 
 		/** get the squared sum */
-		double getSquaredSum() const {
+		T getSquaredSum() const {
 			return sumSquared;
 		}
 
@@ -133,8 +133,8 @@ namespace K {
 
 		/** reset all statistics */
 		void reset() {
-			sum = 0;
-			sumSquared = 0;
+			sum = T();
+			sumSquared = T();
 			cnt = 0;
 			values.clear();
 		}

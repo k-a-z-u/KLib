@@ -20,7 +20,7 @@ namespace K {
 
 
 
-		void addHeaderTo(std::stringstream& ss) const override {
+		void addHeaderTo(std::ostream& ss) const override {
 			ss << "'-' with lines ";
 			ss << attrCustom << " ";
 			ss << " lw " << lineWidth;
