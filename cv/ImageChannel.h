@@ -26,18 +26,6 @@ namespace K {
 			std::fill(data.begin(), data.end(), 0);
 		}
 
-		/** normalize the image = set all values between [0.0:1.0] */
-		void normalize() {
-
-			const float min = *std::min_element(data.begin(), data.end());
-			const float max = *std::max_element(data.begin(), data.end());
-			const float diff = max - min;
-
-			auto update = [&] (const int x, const int y, const float val) {(void) x; (void) y; return (val - min) / diff;};
-			forEachModify(update);
-
-		}
-
 		/** get the value using bi-linear interpolation */
 		const float getBilinear(const float x, const float y) const {
 			const int x1 = (int) std::floor(x);

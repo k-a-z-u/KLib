@@ -18,10 +18,16 @@ namespace K {
 	public:
 
 		/** ctor */
-		LocalMaxima(const int size = 1, const float threshold = 0.00001f) : size(size), threshold(threshold) {
+		LocalMaxima(const int size = 1, const float threshold = 0) : size(size), threshold(threshold) {
 			;
 		}
 
+		/** set the size of the region to examine */
+		void setSize(const int size) {
+			this->size = size;
+		}
+
+		/** call the given function for each local maxima */
 		void forEach(const ImageChannel& img, std::function<void(const int x, const int y)> func) {
 			for (int y = 0; y < img.getHeight(); ++y) {
 				for (int x = 0; x < img.getWidth(); ++x) {

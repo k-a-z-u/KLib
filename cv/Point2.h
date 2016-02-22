@@ -2,7 +2,7 @@
 #define POINT2_H
 
 #include <cmath>
-
+#include <cstdint>
 
 template <typename T> struct Point2 {
 
@@ -80,5 +80,17 @@ template <typename T> struct Point2 {
 };
 
 typedef Point2<float> Point2f;
+typedef Point2<int> Point2i;
+
+namespace std {
+	template<typename T> struct hash<Point2<T>> {
+		size_t operator() (const Point2<T>& p) const {
+			//const uint32_t x = *((uint32_t*)(&p.x));
+			//const uint32_t y = *((uint32_t*)(&p.y));
+			//return (x ^ y);
+			return (p.x * 13) + (p.y * 41);
+		}
+	};
+}
 
 #endif // POINT2_H

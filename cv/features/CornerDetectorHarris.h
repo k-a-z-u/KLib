@@ -7,6 +7,8 @@
 #include "../filter/Gauss.h"
 #include "../ImageFactory.h"
 #include "../LocalMaxima.h"
+#include "../segmentation/Segmentation.h"
+#include "../filter/Normalize.h"
 
 namespace K {
 
@@ -45,18 +47,32 @@ namespace K {
 
 
 		/** ctor */
-		CornerDetectorHarris(const float threshold = 0.001f, const float sigma = 1.0f) :
-			threshold(threshold), sigma(sigma), lMax( int(sigma*2) ) {
+		CornerDetectorHarris() : threshold(0.001f), sigma(1.0f), lMax( int(sigma*2), 0.00001f ) {
 			;
 		}
 
 
+		/** set the threshold for considering a pixel as a possible corner. default: 0.001f */
+		void setThreshold(const float threshold) {
+			this->threshold = threshold;
+		}
+
+		/** set the sigma used for gaussian blurring of the derivative images. default: 1.0f */
+		void setBlurSigma(const float sigma) {
+			this->sigma = sigma;
+		}
+
+		/** set the size of the neighborhood to examine when searching for local maxima. default: 2*sigma */
+		void setNeighborhoodSize(const int size) {
+			this->lMax.setSize(size);
+		}
+
 		/** find all corners within the provided image-channel */
-		std::vector<Corner> getCorners(const ImageChannel& src) {
+		std::vector<Corner> getCorners(const ImageChannel& img) {
 
 			// slightly blur the input (remove noise)
-			Gauss g1(0.75);
-			ImageChannel img = g1.filter(src);
+			//Gauss g1(0.75);
+			//ImageChannel img = g1.filter(src);
 
 			// derive the input image in x and y direction -> Ix and Iy
 			ImageChannel imgX = Derivative::getX(img);
@@ -71,14 +87,11 @@ namespace K {
 			imgX.forEachModify(lambda);
 			imgY.forEachModify(lambda);
 
-			// apply guassian to the derived images
+			// apply guassian to the derived images (blend possible edges together)
 			Gauss g2(sigma);
 			imgX = g2.filter(imgX);
 			imgY = g2.filter(imgY);
 			imgXY = g2.filter(imgXY);
-			//imgX =Convolve::run(imgX, kernel);
-			//imgY = Convolve::run(imgY, kernel);
-			//imgXY = Convolve::run(imgXY, kernel);
 
 			// calculate R image
 			ImageChannel imgR(imgX.getWidth(), imgX.getHeight());
@@ -91,6 +104,7 @@ namespace K {
 				return (r==r && r > threshold) ? (r) : (0);
 			};
 			imgR.setEach(getR);
+			//imgR.normalize();
 
 			// find local maxima within the image
 			std::vector<Corner> found;
@@ -101,10 +115,10 @@ namespace K {
 				imgC.set(x,y,1);
 			});
 
-			imgX.normalize();;
-			imgY.normalize();;
-			imgXY.normalize();
-			imgR.normalize();
+			Normalize::inplace(imgX);
+			Normalize::inplace(imgY);
+			Normalize::inplace(imgXY);
+			Normalize::inplace(imgR);
 
 #ifdef WITH_PNG
 			ImageFactory::writePNG("/tmp/i.png", img);

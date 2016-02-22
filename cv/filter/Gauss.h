@@ -23,7 +23,6 @@ namespace K {
 		Gauss(const float sigma) {
 			kH = KernelFactory::gauss1D(sigma);
 			kV = KernelFactory::gauss1D(sigma); kV.tilt();
-			std::cout << kV << std::endl;
 		}
 
 	public:

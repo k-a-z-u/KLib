@@ -2,6 +2,8 @@
 #define K_CV_DATAMATRIX_H
 
 #include <vector>
+#include <iostream>
+
 #include "../Assertions.h"
 
 namespace K {
@@ -41,6 +43,9 @@ namespace K {
 			data.resize(numElems);
 		}
 
+		decltype(data.begin())	begin()	{return data.begin();}
+		decltype(data.end())	end()	{return data.end();}
+
 
 
 		/** get the image's width */
@@ -65,6 +70,11 @@ namespace K {
 			_assertBetween(x, 0, getWidth()-1, "x out of bounds: " + std::to_string(x));
 			_assertBetween(y, 0, getHeight()-1, "y out of bounds: " + std::to_string(y));
 			data[x + y*width] = v;
+		}
+
+		/** set all entries to the given value */
+		void setAll(const T v) {
+			std::fill(data.begin(), data.end(), v);
 		}
 
 		/** debug output */
