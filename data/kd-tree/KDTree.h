@@ -191,6 +191,7 @@ namespace K {
 
 				const KDIdx* data = elem->asLeaf()->entries.data();
 				const KDIdx  size = elem->asLeaf()->entries.size();
+				elems.reserve(elems.size() + size);
 				elems.insert(elems.end(), data, data + size);
 
 			} else {
@@ -333,16 +334,6 @@ namespace K {
 			newNode->left =		splitIfNeeded(newLeft,  nextAxis(axis), depth + 1 );
 			newNode->right =	splitIfNeeded(newRight, nextAxis(axis), depth + 1 );
 
-//			// adjust the ownership of the lower levels
-//			newNode->left->parent = newNode;
-//			newNode->right->parent = newNode;
-
-//			// reverse ownership
-//			if (leaf->parent) {
-//				if (leaf->parent->asNode()->left == leaf)	{((_KDTreeNode*)leaf->parent->asNode())->left = newNode;}
-//				if (leaf->parent->asNode()->right == leaf)	{((_KDTreeNode*)leaf->parent->asNode())->right = newNode;}
-//		}
-
 			// delete the old leaf
 			delete leaf;
 
@@ -351,26 +342,45 @@ namespace K {
 
 		}
 
+
+		/** is the given element in balance? */
+		inline bool isBalanced(const _KDTreeElem* elem) const {
+
+			// if the ratio is at least 1.5 (50 more nodes on one side)
+			// and the absolute difference between left/right is at least "2 elements"
+			// we are NOT in balance
+			const KDRatio ratio = getRatio(elem);
+			return (ratio.getMax() <= 1.5f || ratio.getAbsDiff() < 2);
+
+		}
+
 		/**
 		 * check the balance for the given tree element
-		 * if this is a leaf, proceed with its parent element
-		 * if this is a node, check its balance
-		 * if it needs a rebalance, rebuild it, otherwise proceed withi its parent element
+		 * bubbleup (towards root) until we find the first element NOT needing a balance
+		 * balance the element BEFORE this one
+		 * -> we balance only the highest element which will also balance all elements below
 		 */
 		void checkAndBalance(_KDTreeElem* elem) {
+
+			// TODO: faster ratio calculation? is very slow here...
 
 			_KDTreeElem* needs = nullptr;
 
 			// leaf? -> proceed with parent
 			if (elem->isLeaf()) {elem = elem->parent;}
 
-			// bubble-up from elem towards root to find the element nearest to root, that needs rebalancing
+			// bubble-up from elem towards root to find the last element, nearest to root, that needs rebalancing
 			while(elem) {
-				const KDRatio ratio = getRatio(elem);
-				if (ratio.getMax() > 1.25) {needs = elem; elem = elem->parent;} else {break;}
+
+				// check
+				if (!isBalanced(elem)) {needs = elem;}
+
+				// check the parent (if any) as well
+				elem = elem->parent;
+
 			}
 
-			// have we found a node that needs rebalancing?
+			// have we found a node that needs rebalancing? -> check
 			if (needs) {rebuild((_KDTreeNode*)needs);}
 
 		}
@@ -399,19 +409,17 @@ namespace K {
 
 			// 2) create a new leaf
 			_KDTreeLeaf* leaf = new _KDTreeLeaf(node->parent);
-			for (KDIdx idx : entries) {leaf->entries.add(idx);}		// TODO faster?
+			leaf->entries.addAll(entries);
 
-			// 3) replace the old branch with the new leaf
+			// 3) replkace the old branch with the new leaf
 			if (root == node) {
 				root = leaf;
 				root = splitIfNeeded(leaf, 0, 0);
 			} else {
 				if (parent->left == node) {
-					parent->left = splitIfNeeded(leaf, nextAxis(parent->splitAxis), 0);		// 0??
-					//parent->left->parent = parent;
+					parent->left = splitIfNeeded(leaf, nextAxis(parent->splitAxis), 0);		// TODO: depth is currently 0
 				} else {
-					parent->right = splitIfNeeded(leaf, nextAxis(parent->splitAxis), 0);		// 0??
-					//parent->right->parent = parent;
+					parent->right = splitIfNeeded(leaf, nextAxis(parent->splitAxis), 0);	// TODO: depth is currently 0
 				}
 			}
 

@@ -12,6 +12,38 @@
 //	https://www.youtube.com/watch?v=ywternCEqSU
 //	!!!https://www.youtube.com/watch?v=Ou9Uj75DJX0
 
+namespace K {
+
+	namespace Camera {
+
+		struct Intrinsics {
+
+			float focalX;
+			float focalY;
+			float centerX;
+			float centerY;
+			float skew;
+
+			/** ctor */
+			Intrinsics(const float fx, const float fy, const float cx, const float cy, const float skew) :
+				focalX(fx), focalY(fy), centerX(cx), centerY(cy), skew(skew) {;}
+
+			/** translate the given depthImage */
+			void translateDepthImage(const float ix, const float iy, const float iz, float& x, float& y, float& z) {
+				z = iz;
+				x = (ix - centerX) * z / focalX;
+				y = (iy - centerY) * z / focalY;
+			}
+
+		} __attribute__((packed));
+
+
+
+
+	};
+
+}
+
 class CameraIntrinsics {
 
 private:

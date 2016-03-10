@@ -57,6 +57,8 @@ namespace K {
 		/** get the underyling data array */
 		T* getData() {return data.data();}
 
+		/** get the underyling data array */
+		const T* getData() const {return data.data();}
 
 		/** get the value at (x,y) */
 		T get(const int x, const int y) const {

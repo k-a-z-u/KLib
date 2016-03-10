@@ -175,6 +175,41 @@ namespace K {
 
 		}
 
+		static void writeJPEG(const std::string& file, const ImageChannel& _img) {
+
+			DataMatrix<uint8_t> img = to8(_img);
+
+			struct jpeg_compress_struct cinfo;
+			struct jpeg_error_mgr jerr;
+
+			JSAMPROW row_pointer[1];
+
+			FILE* fp = fopen(file.c_str(), "wb");
+			if (!fp) {throw "error";}
+
+			cinfo.err = jpeg_std_error( &jerr );
+			jpeg_create_compress(&cinfo);
+			jpeg_stdio_dest(&cinfo, fp);
+
+			cinfo.image_width = img.getWidth();
+			cinfo.image_height = img.getHeight();
+			cinfo.input_components = 1;				// byte per pixel
+			cinfo.in_color_space = JCS_GRAYSCALE;
+
+			jpeg_set_defaults( &cinfo );
+			jpeg_start_compress( &cinfo, TRUE );
+
+			while( cinfo.next_scanline < cinfo.image_height ) {
+				row_pointer[0] = &img.getData()[ cinfo.next_scanline * cinfo.image_width * cinfo.input_components];
+				jpeg_write_scanlines( &cinfo, row_pointer, 1 );
+			}
+
+			jpeg_finish_compress(&cinfo);
+			jpeg_destroy_compress(&cinfo);
+			fclose(fp);
+
+		}
+
 #endif
 
 	private:

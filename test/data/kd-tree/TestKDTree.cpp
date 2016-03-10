@@ -174,13 +174,14 @@ struct KDPointCloud : std::vector<KDPoint3> {
 
 //}
 
-using CFG = KDTreeConfig<float, KDPointCloud, 3, KDTreeSplit::APXAVG>;
+using CFG = KDTreeConfig<float, KDPointCloud, 3, KDTreeSplit::AVG>;
 
 void traverse(const KDTree<CFG>& tree, const KDTreeElem<float>* elem, std::ostream& ss) {
 
 	if (elem->isNode()) {
 		const KDTreeNode<float>* node = elem->asNode();
-		ss << (size_t)node << " [label=\"" << node->splitAxis << ":" << node->splitValue << "\"]\n";
+		const float ratio = tree.getRatio(node).get();
+		ss << (size_t)node << " [label=\"" << node->splitAxis << ":" << node->splitValue << "\n" << ratio << "\"]\n";
 		traverse(tree, node->left, ss);
 		traverse(tree, node->right, ss);
 		ss << (size_t)node << " -> " << (size_t)node->left << "\n";
@@ -190,12 +191,6 @@ void traverse(const KDTree<CFG>& tree, const KDTreeElem<float>* elem, std::ostre
 		ss << (size_t)leaf << " [shape=record, label=<";
 		for (int i = 0; i < leaf->entries.size(); ++i) {
 			if (i > 0) {ss << "|";}
-//			ss << "{id:" << leaf->entries[i] << "|{";
-//				for (int ax = 0; ax < 3; ++ax) {
-//					if (ax > 0) {ss << "|";}
-//					ss << tree.getValue(leaf->entries[i], ax);
-//				}
-//			ss << "}}";
 			ss << "{";
 				ss << "<b>" << leaf->entries[i] << "</b>";
 				for (int ax = 0; ax < 3; ++ax) {
@@ -255,36 +250,58 @@ TEST(KDTree, add) {
 }
 
 
-TEST(KDTree, balanceRemove) {
+/** traverse the given element and assert its balance is OK */
+void kdCheckBalance(KDTree<CFG>& tree, const KDTreeElem<float>* elem) {
+	if (elem->isLeaf()) {return;}
+	const KDRatio ratio = tree.getRatio(elem);
+	ASSERT_TRUE(ratio.getMax() <= 1.5f || ratio.getAbsDiff() < 2);
+	kdCheckBalance(tree, elem->asNode()->left);
+	kdCheckBalance(tree, elem->asNode()->right);
+}
 
+/** ensure the tree is balanced when adding elements */
+TEST(KDTree, balanceAdd) {
+
+	const int num = 64;
 	KDTree<CFG> tree(10, 4);
-
 	KDPointCloud vals;
 	tree.setDataSource(&vals);
 
-	for (int i = 1; i <= 32; ++i) {
-		vals.push_back(KDPoint3(-i, 0, 0));
-		vals.push_back(KDPoint3(+i, 0, 0));
+	// build the data values
+	for (int i = 0; i < num; ++i) {
+		vals.push_back(KDPoint3((float)+i, 0, 0));
 	}
 
-	tree.addAll(vals.size());
-	toDot(tree);
-
-	for (int i = 0; i < vals.size(); ++i) {
-		tree.deleteByID(i);
-		toDot(tree, "/tmp/" + std::to_string(i) + ".png");
+	// add elements in ascending order (would create a list)
+	for (int i = 0; i < (int) vals.size(); ++i) {
+		tree.addByID(i, true);
+		//toDot(tree, "/tmp/bla.png");
+		kdCheckBalance(tree, tree.getRoot());
 	}
 
-//	tree.deleteByID(7, splt);
+}
 
-//	toDot(tree);
-//	tree.deleteByID(6, splt);
-//	toDot(tree);
-//	tree.deleteByID(5, splt);
-//	toDot(tree);
-//	tree.deleteByID(4, splt);
-//	//toDot(tree);
-//	//tree.deleteByID(4, splt);
+/** ensure the tree is balanced when removing elements */
+TEST(KDTree, balanceRemove) {
+
+	const int num = 64;
+	KDTree<CFG> tree(10, 4);
+	KDPointCloud vals;
+	tree.setDataSource(&vals);
+
+	// build the tree
+	for (int i = 0; i < num; ++i) {
+		vals.push_back(KDPoint3((float)+i, 0, 0));
+	}
+	tree.addAll((KDIdx)vals.size());
+	toDot(tree, "/tmp/bla.png");
+
+	// remove elements
+	for (int i = 0; i < (int) vals.size(); ++i) {
+		tree.deleteByID(i, true);
+		//toDot(tree, "/tmp/bla.png");
+		kdCheckBalance(tree, tree.getRoot());
+	}
 
 }
 
@@ -350,39 +367,53 @@ TEST(KDTree, remove) {
 }
 
 
-
-TEST(KDTree, kNNhuge) {
+TEST(KDTree, addManySingleNoBalance) {
 
 	KDTree<CFG> tree(10);
-
 	std::minstd_rand gen(1234);
 	std::uniform_real_distribution<float> dist(-1, +1);
 
-
-
 	KDPointCloud vals;
 	for (int i = 0; i < 1024000; ++i) {
-		KDPoint3 v (dist(gen), dist(gen), 0);
-		vals.push_back(v);
+		vals.push_back( KDPoint3(dist(gen), dist(gen), 0) );
 	}
 
 	tree.setDataSource(&vals);
 	uint64_t s1 = Time::getTimeMS();
-//	tree.build(&vals, KDTreeSplitAPXAVG());
-	for (int i = 0; i < 1024000; ++i) { tree.addByID(i); }
+		for (int i = 0; i < 10240; ++i) { tree.addByID(i, true); }
 	uint64_t s2 = Time::getTimeMS();
-
-	//std::vector<KDTreeNeighbor> n1 = KDTreeKNN::getNeighborsApx(tree, KDTreeV(0.05,0.08,0), 1000);
-	for (int i = 0; i < 128; ++i) {
-		KDTreeKNN::getNeighborsWithinRadius(tree, {0.05,0.08,0}, 0.15f);
-	}
-
+		for (int i = 0; i < 128; ++i) {
+			KDTreeKNN::getNeighborsWithinRadius(tree, {0.05,0.08,0}, 0.15f);
+		}
 	uint64_t s3 = Time::getTimeMS();
 
 	std::cout << "build: " << (s2-s1) << std::endl;
 	std::cout << "search: " << (s3-s2) << std::endl;
 
+}
 
+TEST(KDTree, addManyAtOnce) {
+
+	KDTree<CFG> tree(10);
+	std::minstd_rand gen(1234);
+	std::uniform_real_distribution<float> dist(-1, +1);
+
+	KDPointCloud vals;
+	for (int i = 0; i < 1024000; ++i) {
+		vals.push_back( KDPoint3(dist(gen), dist(gen), 0) );
+	}
+
+	tree.setDataSource(&vals);
+	uint64_t s1 = Time::getTimeMS();
+		tree.addAll((KDIdx)vals.size());
+	uint64_t s2 = Time::getTimeMS();
+		for (int i = 0; i < 128; ++i) {
+			KDTreeKNN::getNeighborsWithinRadius(tree, {0.05,0.08,0}, 0.15f);
+		}
+	uint64_t s3 = Time::getTimeMS();
+
+	std::cout << "build: " << (s2-s1) << std::endl;
+	std::cout << "search: " << (s3-s2) << std::endl;
 
 	std::vector<KDTreeNeighbor<float>> n1 = KDTreeKNN::getNeighborsWithinRadius(tree, {0.05,0.08,0}, 0.15f);
 

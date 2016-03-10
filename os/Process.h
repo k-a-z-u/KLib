@@ -2,6 +2,7 @@
 #define K_OS_PROCESS_H
 
 #include <exception>
+#include <sys/wait.h>
 
 namespace K {
 

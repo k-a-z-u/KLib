@@ -126,6 +126,9 @@ namespace K {
 		/** add the given index to the leaf */
 		inline void add(const KDIdx idx) {indices.push_back(idx);}
 
+		/** add all of the given indices to this leaf */
+		inline void addAll(const std::vector<KDIdx>& vec) {indices.insert(indices.end(), vec.begin(), vec.end());}
+
 		/** remove the given index from the leaf */
 		inline void remove(const KDIdx idx) {
 			indices.erase(std::remove(indices.begin(), indices.end(), idx), indices.end());
@@ -195,6 +198,9 @@ namespace K {
 		//	if (numLeft == 0 || numRight == 0) {return NAN;}
 			return (float) std::max(numLeft, numRight) / (float) std::min(numLeft, numRight);
 		}
+
+		/** get the difference between numLeft and numRight as absolute value */
+		KDIdx getAbsDiff() const {return std::abs(numLeft - numRight);}
 
 		/** get the number of elements (left + right) */
 		KDIdx numElements() const {return numLeft + numRight;}
