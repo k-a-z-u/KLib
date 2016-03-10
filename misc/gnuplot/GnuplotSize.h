@@ -7,23 +7,23 @@ namespace K {
 
 	public:
 
-		const double width;
+		const float width;
 
-		const double height;
+		const float height;
 
 
 	public:
 
-		GnuplotSize(const double w, const double h) : width(w), height(h) {;}
+		GnuplotSize(const float w, const float h) : width(w), height(h) {;}
 
-		double getWidth(const std::string& term) {
-			if		(term == "wxt" || term == "svg" || term == "pngcairo") {return width * 30;}
-			else					{return width / 2.54;}		// to inch
+		float getWidth(const std::string& term) {
+			if		(term == "wxt" || term == "svg" || term == "pngcairo") {return width * 30.0f;}
+			else					{return width / 2.54f;}		// to inch
 		}
 
-		double getHeight(const std::string& term) {
-			if		(term == "wxt" || term == "svg" || term == "pngcairo") {return height * 30;}
-			else					{return height / 2.54;}		// to inch
+		float getHeight(const std::string& term) {
+			if		(term == "wxt" || term == "svg" || term == "pngcairo") {return height * 30.0f;}
+			else					{return height / 2.54f;}		// to inch
 		}
 
 	};

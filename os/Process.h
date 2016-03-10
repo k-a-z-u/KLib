@@ -42,11 +42,17 @@ namespace K {
 		const int CHILD = 0;
 		const int READ = 0;
 		const int WRITE = 1;
+		//const int ERR = 2;
 
 	public:
 
 		/** open the process using the given command */
-		Process(const std::string& cmd, const std::string& args) : pid(0), pipeToProcess(), pipeFromProcess() {
+		Process(const std::string& cmd) : Process(cmd, {}) {
+
+		}
+
+		/** open the process using the given command and arguments */
+		Process(const std::string& cmd, const std::vector<std::string> args) : pid(0), pipeToProcess(), pipeFromProcess() {
 
 			// create pipes
 			if ( pipe(pipeToProcess) != 0 ) {
@@ -54,6 +60,14 @@ namespace K {
 			}
 			if ( pipe(pipeFromProcess) != 0 ) {
 				throw ProcessException("error while creating pipe for process: " + cmd);
+			}
+
+			// argument pointer
+			char* argv[args.size()+2];			// binary + args + null-terminator
+			argv[0] = (char*) cmd.c_str();		// the binary itself
+			argv[args.size()+1] = nullptr;		// null-terminator
+			for (int i = 0; i < (int) args.size(); ++i) {
+				argv[i+1] = (char*) args[i].c_str();
 			}
 
 			// fork a new process
@@ -70,18 +84,19 @@ namespace K {
 				// child process
 
 				// close pipes not needed by the child
-				close(pipeToProcess[WRITE]);
-				close(pipeFromProcess[READ]);
+				closeFD(pipeToProcess[WRITE]);
+				closeFD(pipeFromProcess[READ]);
+				//close(pipeFromProcess[ERR]);
 
 				// reading from what parent has written to this process
 				dup2(pipeToProcess[READ], STDIN_FILENO);
 
 				// writing this process's output to the parent
 				dup2(pipeFromProcess[WRITE], STDOUT_FILENO);
-				//dup2(pipeFromProcessErr[WRITE], STDERR_FILENO);
+				//dup2(pipeFromProcess[ERR], STDERR_FILENO);
 
 				// exec
-				int ret = execl(cmd.c_str(), args.c_str(), (char*) NULL);
+				const int ret = execv(cmd.c_str(), argv);		// execl
 
 				// check
 				if (ret < 0) {
@@ -94,19 +109,20 @@ namespace K {
 				// parent process
 
 				// close pipes not needed by the parent
-				close(pipeToProcess[READ]);
-				close(pipeFromProcess[WRITE]);
+				closeFD(pipeToProcess[READ]);
+				closeFD(pipeFromProcess[WRITE]);
+				//close(pipeFromProcess[ERR]);
 
 			}
 
 		}
 
+
 		/** dtor */
 		~Process() {
 
 			// cleanup
-			close(pipeToProcess[READ]);
-			close(pipeFromProcess[WRITE]);
+			close();
 			kill(pid, 9);
 
 		}
@@ -120,7 +136,7 @@ namespace K {
 		/** TODO read one line */
 		Process& operator >> (std::string& str) {
 			char buf[128];
-			ssize_t len = read( pipeFromProcess[READ], buf, 128 );
+			const ssize_t len = read( pipeFromProcess[READ], buf, 128 );
 			std::cout << "read:" << len << std::endl;
 			if (len == -1) {
 				throw new ProcessException("error while writing reading from process");
@@ -135,8 +151,8 @@ namespace K {
 
 		/** flush to process */
 		void flush() {
-			std::string data = ss.str();
-			ssize_t ret = write( pipeToProcess[WRITE], data.c_str(), data.length() );
+			const std::string data = ss.str();
+			const ssize_t ret = write( pipeToProcess[WRITE], data.c_str(), data.length() );
 			if (ret != (long) data.length()) {
 				throw new ProcessException("error writing complete data block to child. FIXME.");
 			}
@@ -146,8 +162,26 @@ namespace K {
 			}
 		}
 
+		/** close the streams */
+		void close() {
+			closeFD(pipeFromProcess[READ]);
+			closeFD(pipeToProcess[WRITE]);
+		}
 
+		/** wait for the process to terminate */
+		void join() {
+			int status;
+			while (wait(&status) != pid) {
+				usleep(10000);
+			}
+		}
 
+	private:
+
+		/** cleanup */
+		void closeFD(int& fd) {
+			if (fd >= 0) {::close(fd); fd = -1;}
+		}
 
 		/** send data to the process */
 		std::stringstream ss;
@@ -156,10 +190,10 @@ namespace K {
 		pid_t pid;
 
 		/** pipe to send data to the process */
-		int pipeToProcess[2];
+		int pipeToProcess[3];
 
 		/** pipe to read data from the process */
-		int pipeFromProcess[2];
+		int pipeFromProcess[3];
 
 	};
 

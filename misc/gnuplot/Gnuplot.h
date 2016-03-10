@@ -15,7 +15,7 @@ namespace K {
 
 		/** ctor */
 		Gnuplot() : debug(false) {
-			proc = new K::Process("/usr/bin/gnuplot", "");
+			proc = new K::Process("/usr/bin/gnuplot");
 			setSize(640,480);
 			flush();
 		}
@@ -37,7 +37,7 @@ namespace K {
 		}
 
 		/** resize the terminal */
-		void setSize(const int w, const int h) {
+		void setSize(const float w, const float h) {
 			if (w == this->width && h == this->height) {return;}
 			this->width = w;
 			this->height = h;
@@ -49,9 +49,9 @@ namespace K {
 			proc = nullptr;
 		}
 
-		int getWidth() {return width;}
+		float getWidth() {return width;}
 
-		int getHeight() {return height;}
+		float getHeight() {return height;}
 
 		/** configure the output terminal */
 		void setTerminal(const std::string& terminal, GnuplotSize size) {
@@ -102,8 +102,8 @@ namespace K {
 		/** the buffer to use */
 		std::stringstream buffer;
 
-		int width;
-		int height;
+		float width;
+		float height;
 
 		/** perform debug output? */
 		bool debug;

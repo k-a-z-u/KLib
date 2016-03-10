@@ -20,7 +20,7 @@ namespace K {
 
 	TEST(Convolution, simple) {
 
-		Process gp("/usr/bin/gnuplot", "");
+		Process gp("/usr/bin/gnuplot");
 		unsigned int SIZE = 64;
 		float arr1[SIZE];
 
@@ -47,7 +47,7 @@ namespace K {
 
 	TEST(Convolution, fft) {
 
-		Process gp("/usr/bin/gnuplot", "");
+		Process gp("/usr/bin/gnuplot");
 		unsigned int SIZE = 64;
 		float arr1[SIZE];
 

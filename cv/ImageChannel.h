@@ -26,8 +26,13 @@ namespace K {
 			std::fill(data.begin(), data.end(), 0);
 		}
 
+		/** set all pixels to one */
+		void ones() {
+			std::fill(data.begin(), data.end(), 1);
+		}
+
 		/** get the value using bi-linear interpolation */
-		const float getBilinear(const float x, const float y) const {
+		float getBilinear(const float x, const float y) const {
 			const int x1 = (int) std::floor(x);
 			const int x2 = (int) std::ceil(x);
 			const float px1 = (float)x2 - x;
@@ -40,7 +45,7 @@ namespace K {
 		}
 
 		/** call the given function for each of the channels's pixels.*/
-		void forEach(std::function<float(const int, const int, const float)> exec) const {
+		void forEach(std::function<void(const int, const int, const float)> exec) const {
 
 			// run function for each element
 			for (int y = 0; y < height; ++y) {

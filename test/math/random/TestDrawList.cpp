@@ -70,30 +70,30 @@ namespace K {
 
 		list.draw();
 
-		ASSERT_FLOAT_EQ(0.11, list.entries[0].cumulativeProbability);
-		ASSERT_FLOAT_EQ(0.33, list.entries[1].cumulativeProbability);
-		ASSERT_FLOAT_EQ(0.66, list.entries[2].cumulativeProbability);
-		ASSERT_FLOAT_EQ(1.10, list.entries[3].cumulativeProbability);
-		ASSERT_FLOAT_EQ(1.65, list.entries[4].cumulativeProbability);
-		ASSERT_FLOAT_EQ(2.31, list.entries[5].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.11f, list.entries[0].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.33f, list.entries[1].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.66f, list.entries[2].cumulativeProbability);
+		ASSERT_FLOAT_EQ(1.10f, list.entries[3].cumulativeProbability);
+		ASSERT_FLOAT_EQ(1.65f, list.entries[4].cumulativeProbability);
+		ASSERT_FLOAT_EQ(2.31f, list.entries[5].cumulativeProbability);
 
 		list.set(0, MyData(), 0.22);
 
-		ASSERT_FLOAT_EQ(0.00, list.entries[0].cumulativeProbability);
-		ASSERT_FLOAT_EQ(0.33, list.entries[1].cumulativeProbability);
-		ASSERT_FLOAT_EQ(0.66, list.entries[2].cumulativeProbability);
-		ASSERT_FLOAT_EQ(1.10, list.entries[3].cumulativeProbability);
-		ASSERT_FLOAT_EQ(1.65, list.entries[4].cumulativeProbability);
-		ASSERT_FLOAT_EQ(2.31, list.entries[5].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.00f, list.entries[0].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.33f, list.entries[1].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.66f, list.entries[2].cumulativeProbability);
+		ASSERT_FLOAT_EQ(1.10f, list.entries[3].cumulativeProbability);
+		ASSERT_FLOAT_EQ(1.65f, list.entries[4].cumulativeProbability);
+		ASSERT_FLOAT_EQ(2.31f, list.entries[5].cumulativeProbability);
 
 		list.draw();
 
-		ASSERT_FLOAT_EQ(0.22, list.entries[0].cumulativeProbability);
-		ASSERT_FLOAT_EQ(0.44, list.entries[1].cumulativeProbability);
-		ASSERT_FLOAT_EQ(0.77, list.entries[2].cumulativeProbability);
-		ASSERT_FLOAT_EQ(1.21, list.entries[3].cumulativeProbability);
-		ASSERT_FLOAT_EQ(1.76, list.entries[4].cumulativeProbability);
-		ASSERT_FLOAT_EQ(2.42, list.entries[5].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.22f, list.entries[0].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.44f, list.entries[1].cumulativeProbability);
+		ASSERT_FLOAT_EQ(0.77f, list.entries[2].cumulativeProbability);
+		ASSERT_FLOAT_EQ(1.21f, list.entries[3].cumulativeProbability);
+		ASSERT_FLOAT_EQ(1.76f, list.entries[4].cumulativeProbability);
+		ASSERT_FLOAT_EQ(2.42f, list.entries[5].cumulativeProbability);
 
 	}
 

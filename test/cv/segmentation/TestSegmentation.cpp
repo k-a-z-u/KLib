@@ -2,6 +2,9 @@
 
 #include "../../Test.h"
 #include "../../../cv/segmentation/Segmentation.h"
+#include "../../../cv/ImageFactory.h"
+#include "../../../cv/filter/Threshold.h"
+#include "../../../cv/draw/Drawer.h"
 
 using namespace K;
 
@@ -49,7 +52,36 @@ TEST(Segmentation, segments) {
 TEST(Segmentation, huge) {
 
 	ImageChannel img(2048, 2048);
-	std::vector<Segment> s = Segmentation::getSegments(img);
+	//std::vector<Segment> s = Segmentation::getSegments(img);
+
+}
+
+TEST(Segmentation, text) {
+
+	ImageChannel img = ImageFactory::readJPEG(getDataFile("text_scan.jpg"));
+	Threshold::inplace(img, 0.80f);
+
+	ImageFactory::writePNG("/tmp/bla.png", img);
+
+	Bitmap used(img);
+	std::vector<Segment> segs = Segmentation::getSegments(img, used, 0.5f);
+
+	int cnt = 0;
+	for (Segment& s : segs) {
+		if (++cnt > 128) {break;}
+		ImageChannel i = s.asImage(false);
+		ImageFactory::writePNG("/tmp/" + std::to_string(cnt) + ".png", i);
+	}
+
+	ImageChannel img2(img.getWidth(), img.getHeight());
+	img2.ones();
+	Drawer d(img2);
+	for (Segment& s : segs) {
+		const BBox2i bb = s.calcBBox();
+		d.drawRect(bb.getMin(), bb.getMax());
+	}
+	ImageFactory::writePNG("/tmp/segs.png", img2);
+
 
 }
 

@@ -3,6 +3,8 @@
 
 #include "../Point2.h"
 #include "../ImageChannel.h"
+#include "../Bitmap.h"
+
 #include "Segment.h"
 
 #include <vector>
@@ -15,30 +17,17 @@ namespace K {
 	 */
 	class RegionGrowing {
 
-	private:
-
-		/** quickly track used pixels */
-		struct Used : DataMatrix<bool> {
-			Used(const int w, const int h) : DataMatrix(w, h) {;}
-			void setUsed(const Point2i p) {setUsed(p.x, p.y);}
-			void setUsed(const int x, const int y) {set(x,y,true);}
-			bool isUsed(const Point2i p) {return isUsed(p.x, p.y);}
-			bool isUsed(const int x, const int y) const {return get(x,y);}
-		};
-
 	public:
 
 		/**
 		 * get all other pixels beloging attached to the same seed.
 		 * pixels count as attached when their difference is below the given threshold.
 		 * @param seed the position to start searching
+		 * @parma used track which points already belong to a segment and are thus skipped
 		 * @param threshold the difference threshold to use
 		 * @return
 		 */
-		static Segment get(const ImageChannel& img, const Point2i& seed, const float threshold = 0.1f) {
-
-			// track all visited points
-			Used visited(img.getWidth(), img.getHeight());
+		static Segment get(const ImageChannel& img, const Point2i& seed, Bitmap& used, const float threshold = 0.1f) {
 
 			// track all to-be-checked points
 			std::vector<Point2i> toCheck;
@@ -49,7 +38,7 @@ namespace K {
 
 			// start at the seed
 			toCheck.push_back(seed);
-			visited.setUsed(seed);
+			used.set(seed);
 
 			// while we have something to check
 			while (!toCheck.empty()) {
@@ -63,36 +52,38 @@ namespace K {
 				seg.points.push_back(next);
 				seg.avg += val;
 
+				// reached boundaries?
+				const bool l = next.x > 0;							// there are pixels on the left
+				const bool t = next.y > 0;							// there are pixels above
+				const bool r = next.x < img.getWidth()-1;			// there are pixels on the right
+				const bool b = next.y < img.getHeight()-1;			// there are pixels below
+
+				// funny.. faster than static inline?!
+				auto checkAdd = [&] (const Point2i p) {
+
+					// skip already visisted
+					if (used.isSet(p))						{return;}
+
+					// skip above-threshold
+					const float diff = val - img.get(p.x, p.y);
+					if (std::abs(diff) > threshold)			{return;}
+
+					// fine! -> add
+					toCheck.push_back(p);
+					used.set(p);
+
+				};
+
 				// check neighborhood
-				for (int x = -1; x <= +1; ++x) {
-					for (int y = -1; y <= +1; ++y) {
+				if (l)			{checkAdd( Point2i(next.x-1, next.y  ) );}
+				if (t)			{checkAdd( Point2i(next.x  , next.y-1) );}
+				if (r)			{checkAdd( Point2i(next.x+1, next.y  ) );}
+				if (b)			{checkAdd( Point2i(next.x  , next.y+1) );}
 
-						// ignore the center
-						if (x == y) {continue;}
-
-						// get the new point
-						Point2i p(next.x + x, next.y + y);
-
-						// skip-out-of-bounds
-						if ((p.x < 0) || (p.y < 0))				{continue;}
-						if (p.x >= img.getWidth())				{continue;}
-						if (p.y >= img.getHeight())				{continue;}
-
-						// skip already visisted
-						//if (visited.find(p) != visited.end())	{continue;}eed.x, seed.y
-						if (visited.isUsed(p))					{continue;}
-
-						// skip above-threshold
-						const float diff = val - img.get(p.x, p.y);
-						if (std::abs(diff) > threshold)			{continue;}
-
-						// fine! -> add
-						toCheck.push_back(p);
-						visited.setUsed(p);
-
-					}
-				}
-
+				if (l&&t)		{checkAdd( Point2i(next.x-1, next.y-1) );}
+				if (l&&b)		{checkAdd( Point2i(next.x-1, next.y+1) );}
+				if (r&&t)		{checkAdd( Point2i(next.x+1, next.y-1) );}
+				if (r&&b)		{checkAdd( Point2i(next.x+1, next.y+1) );}
 
 			}
 
@@ -103,6 +94,29 @@ namespace K {
 			return seg;
 
 		}
+
+
+		/**
+		 * get all other pixels beloging attached to the same seed.
+		 * pixels count as attached when their difference is below the given threshold.
+		 * @param seed the position to start searching
+		 * @param threshold the difference threshold to use
+		 * @return
+		 */
+		static Segment get(const ImageChannel& img, const Point2i& seed, const float threshold = 0.1f) {
+
+			// track all visited points
+			Bitmap used(img.getWidth(), img.getHeight());
+
+			// execute
+			return get(img, seed, used, threshold);
+
+		}
+
+
+	private:
+
+
 
 	};
 
