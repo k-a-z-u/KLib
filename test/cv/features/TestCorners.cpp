@@ -2,7 +2,6 @@
 
 
 #ifdef WITH_TESTS
-#define WITH_ASSERTIONS
 
 #include "../../Test.h"
 #include "../../../cv/features/CornerDetectorHarris.h"
@@ -45,7 +44,9 @@ TEST(Corners, Harris) {
 	std::cout << std::fmod(std::atan2(0,-1)+ 2*M_PI, 2*M_PI) << std::endl;
 	std::cout << std::fmod(std::atan2(-1,0) + 2*M_PI, 2*M_PI) << std::endl;
 
-	CornerDetectorHarris cdh(0.002f, 3.0f);
+	CornerDetectorHarris cdh;
+	cdh.setThreshold(0.002f);
+	cdh.setBlurSigma(3.0f);
 	std::vector<Corner> corners = cdh.getCorners(img);
 
 	HOG hog(8);

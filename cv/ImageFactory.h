@@ -71,6 +71,7 @@ namespace K {
 
 			// open the file
 			FILE* fp = fopen(file.c_str(), "rb");
+			if (!fp) {throw Exception("error while reading file " + file);}
 
 			// initialize and read the PNG-header
 			png_init_io(png, fp);
@@ -217,9 +218,10 @@ namespace K {
 		/** convert x components to a [0.0:1.0] grey value */
 		static inline float toGrey(const uint8_t* raw, const int components) {
 			switch (components) {
-				case 3: return float(raw[0]+raw[1]+raw[2])/765.0f;
-				case 1: return float(raw[0])/765.0f;
-				default: throw 1;
+				case 4:		return float(raw[0]+raw[1]+raw[2])/765.0f;		// RGBA.	skip alpha
+				case 3:		return float(raw[0]+raw[1]+raw[2])/765.0f;		// RGB.		average
+				case 1:		return float(raw[0])/765.0f;
+				default:	throw Exception("unsupported number of components: " + std::to_string(components));
 			}
 		}
 

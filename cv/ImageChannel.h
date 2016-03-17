@@ -31,18 +31,7 @@ namespace K {
 			std::fill(data.begin(), data.end(), 1);
 		}
 
-		/** get the value using bi-linear interpolation */
-		float getBilinear(const float x, const float y) const {
-			const int x1 = (int) std::floor(x);
-			const int x2 = (int) std::ceil(x);
-			const float px1 = (float)x2 - x;
-			const int y1 = (int) std::floor(y);
-			const int y2 = (int) std::ceil(y);
-			const float py1 = (float)y2 - y;
-			const float vy1 = get(x1,y1) * px1 + get(x2,y1) * (1-px1);
-			const float vy2 = get(x1,y2) * px1 + get(x2,y2) * (1-px1);
-			return vy1 * py1 + vy2 * (1-py1);
-		}
+
 
 		/** call the given function for each of the channels's pixels.*/
 		void forEach(std::function<void(const int, const int, const float)> exec) const {
@@ -79,6 +68,20 @@ namespace K {
 				}
 			}
 
+		}
+
+		/** clamped access (repeat edge values) to the underlying image data */
+		float getClamped (const int x, const int y) const {
+			return get( clamp(x,0,width-1), clamp(y,0,height-1) );
+		}
+
+	private:
+
+		/** clamp the given value to [min:max] */
+		static inline int clamp(const int val, const int min, const int max) {
+			if (val < min) {return min;}
+			if (val > max) {return max;}
+			return val;
 		}
 
 	};

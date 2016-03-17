@@ -4,6 +4,7 @@
 #include "../../../Assertions.h"
 #include "../../Point2.h"
 #include "../../ImageChannel.h"
+#include "../../filter/Interpolation.h"
 
 
 namespace K {
@@ -90,7 +91,7 @@ namespace K {
 					if (p2.x < 0 || p2.y < 0) {continue;}
 
 					// apply
-					dst.set(x,y, src.getBilinear(p2.x,p2.y));
+					dst.set(x,y, Interpolation::bilinear(src,p2.x,p2.y));
 
 				}
 			}
