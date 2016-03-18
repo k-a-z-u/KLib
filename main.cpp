@@ -38,7 +38,7 @@ class MyListener : public K::HttpServerListener {
 int main(int argc, char** argv) {
 
 //	K::HttpServer srv(8080);
-//	srv.setListener(new MyListener());
+//	srv.setListener(new MyListener());w
 //	srv.start();
 //	sleep(100);
 //	srv.stop();
@@ -53,7 +53,9 @@ int main(int argc, char** argv) {
 
 
 #ifdef WITH_TESTS
-	::testing::GTEST_FLAG(filter) = "*LensCalibration*";
+	//::testing::GTEST_FLAG(filter) = "*LensCalibration*";
+	//::testing::GTEST_FLAG(filter) = "*KDTree*";
+	::testing::GTEST_FLAG(filter) = "*OCR*";
 	//::testing::GTEST_FLAG(filter) = "*Distribution*";
 	//::testing::GTEST_FLAG(filter) = "*Vector*";
 	::testing::InitGoogleTest(&argc, argv);
