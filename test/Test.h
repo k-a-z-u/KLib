@@ -20,7 +20,15 @@
 }
 
 static inline std::string getDataFile(const std::string& name) {
-	return "/mnt/data/workspaces/KLib/test/data/" + name;
+	const std::string file = __FILE__;
+	const std::string folder = file.substr(0, file.find_last_of("/")) + "/_files/";
+	return folder + name;
+}
+
+static inline std::string getTempFile(const std::string& name) {
+	//const std::string file = __FILE__;
+	//const std::string folder = file.substr(0, file.find_last_of("/")) + "/_files/";
+	return "/tmp/" + name;
 }
 
 
