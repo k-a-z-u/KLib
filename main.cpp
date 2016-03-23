@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
 
 #ifdef WITH_TESTS
-	::testing::GTEST_FLAG(filter) = "*Homography*";
+	::testing::GTEST_FLAG(filter) = "*Ellipses*";
 	//::testing::GTEST_FLAG(filter) = "*Distribution*";
 	//::testing::GTEST_FLAG(filter) = "*Vector*";
 	::testing::InitGoogleTest(&argc, argv);
