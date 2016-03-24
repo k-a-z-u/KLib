@@ -21,7 +21,7 @@ template <typename T> struct Point2 {
 
 
 	/** get distance between two points */
-	T getDistance(const Point2<T>& p) const {
+	template <typename T2> T getDistance(const Point2<T2>& p) const {
 		return std::sqrt( (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) );
 	}
 

@@ -58,6 +58,7 @@ int main(int argc, char** argv) {
 	//::testing::GTEST_FLAG(filter) = "*OCR*";
 	//::testing::GTEST_FLAG(filter) = "*Homography*";
 	::testing::GTEST_FLAG(filter) = "*Outline*";
+	::testing::GTEST_FLAG(filter) = "*Ellipses*";
 	//::testing::GTEST_FLAG(filter) = "*Distribution*";
 	//::testing::GTEST_FLAG(filter) = "*Vector*";
 	::testing::InitGoogleTest(&argc, argv);
