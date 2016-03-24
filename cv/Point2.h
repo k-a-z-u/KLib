@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <string>
 
 template <typename T> struct Point2 {
 
@@ -20,14 +21,17 @@ template <typename T> struct Point2 {
 
 
 	/** get distance between two points */
-	T getDistance(const Point2& p) const {
-		return sqrt( (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) );
+	T getDistance(const Point2<T>& p) const {
+		return std::sqrt( (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) );
 	}
 
 	/** get the length when pretending the point to be a vector from (0,0) */
 	T getLength() const {
 		return std::sqrt( x*x + y*y );
 	}
+
+	/** array access to x/y */
+	T operator [] (const int idx) const {return (idx == 0) ? (x) : (y);}
 
 	/** treat this point as a vector from (0,0) and rotate it by the angle theta */
 	void rotate(const float theta) {
@@ -76,6 +80,11 @@ template <typename T> struct Point2 {
 
 	bool operator == (const Point2& other) const {return (x == other.x) && (y == other.y);}
 
+	bool operator != (const Point2& other) const {return (x != other.x) || (y != other.y);}
+
+	std::string asString() const {
+		return "(" + std::to_string(x) + ":" + std::to_string(y) + ")";
+	}
 
 };
 

@@ -55,8 +55,9 @@ int main(int argc, char** argv) {
 #ifdef WITH_TESTS
 	//::testing::GTEST_FLAG(filter) = "*LensCalibration*";
 	//::testing::GTEST_FLAG(filter) = "*KDTree*";
-	::testing::GTEST_FLAG(filter) = "*OCR*";
-	::testing::GTEST_FLAG(filter) = "*Homography*";
+	//::testing::GTEST_FLAG(filter) = "*OCR*";
+	//::testing::GTEST_FLAG(filter) = "*Homography*";
+	::testing::GTEST_FLAG(filter) = "*Outline*";
 	//::testing::GTEST_FLAG(filter) = "*Distribution*";
 	//::testing::GTEST_FLAG(filter) = "*Vector*";
 	::testing::InitGoogleTest(&argc, argv);
