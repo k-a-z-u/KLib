@@ -76,6 +76,8 @@ template <typename T> struct Point2 {
 
 	bool operator == (const Point2& other) const {return (x == other.x) && (y == other.y);}
 
+	std::string asString() const {return "(" + std::to_string(x) + "," + std::to_string(y) + ")";}
+
 
 };
 

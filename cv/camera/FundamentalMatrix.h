@@ -27,9 +27,9 @@ namespace K {
 	 * |xr yr 1| * | dxl + eyl + f |
 	 *             | gxl + hyl + i |
 	 *
-	 * axlxr + by1xr + cxr +
-	 * dx1yr + ey1yr + fyr +
-	 * gx1 + hy1 + i = 0
+	 * axlxr + bylxr + cxr +
+	 * dxlyr + eylyr + fyr +
+	 * gxl + hyl + i = 0
 	 *
 	 */
 	class FundamentalMatrix {
@@ -62,19 +62,25 @@ namespace K {
 			imgRight.push_back(Point2f(xr, yr));
 		}
 
+		/** add a known correspondence between imgLeft(x,y) and imgRight(x,y) */
+		template <typename T> void addCorrespondence(const Point2<T> pl, const Point2<T> pr) {
+			imgLeft.push_back(Point2f(pl.x, pl.y));
+			imgRight.push_back(Point2f(pr.x, pr.y));
+		}
+
 		/** get the idx-th correspondence point within the left image */
-		const Point2f getImgLeft(const int idx) const {return imgLeft[idx];}
+		const Point2f getPointLeft(const int idx) const {return imgLeft[idx];}
 
 		/** get the idx-th correspondence point within the right image */
-		const Point2f getImgRight(const int idx) const {return imgRight[idx];}
+		const Point2f getPointRight(const int idx) const {return imgRight[idx];}
 
 
 		/** estimate the Homography based on previously added correspondences */
 		void estimate() {
 
 			// normalize poth point-sets (zero-mean, std-dev=1)
-//			normalize(imgLeft);
-//			normalize(imgRight);
+//			normalize(img1);
+//			normalize(img2);
 
 			// create the A-Matrix (n*9) of linear-equation-system A*x=0
 			Eigen::Matrix<Scalar, Eigen::Dynamic, 9> A;
@@ -103,10 +109,10 @@ namespace K {
 
 			// V is a 9x9 matrix. For F, we use the column, corresponding to the smallest singular value in D
 			const int smlIdx = getMinIdx(svdA.singularValues());
-			_assertEqual(V.cols()-1, smlIdx, "should always be the last index of the last column");
+			_assertEqual(svdA.singularValues().rows()-1, smlIdx, "should always be the index of the last row");
 			Eigen::Matrix<Scalar,9,1> F = V.col(smlIdx);
 
-			// reshape from 9x1 to 3x3
+			// reshape from 9xl to 3x3
 			Eigen::Matrix<Scalar,3,3> FF(F.data());
 
 			// why do we need this step?
@@ -179,23 +185,34 @@ namespace K {
 
 		/**
 		 * get the equation for an epi-line within the right-image,
-		 * corresponding one point in the left image.
+		 * using the given point in the left image.
+		 * l_r = F * p_l
 		 * the equation is given as 3 parameters A,B,C denoting Ax + By + C = 0.
 		 * to transform this into a line, just rephrase the problem as y = mx+b:
 		 * Ax + By + C = 0
 		 * By = -Ax - C
-		 * y = (-Ax - C) / B
+		 * y = -(Ax + C) / B
 		 */
 		Eigen::Matrix<Scalar,3,1> getEpilineRight(const Vec3& pLeft) const {
-			Vec3 v3 = F * pLeft;
+			Vec3 v3 = F.transpose() * pLeft;	// SHOULD BE WITHOUT TRANSPOSE?!
 			Vec2 v2; v2 << v3(0), v3(1);		// only the first two coordinates
-			return v3 / v2.norm();					// normalize using only the first two coordinates (scales into image-space)
+			return v3 / v2.norm();				// normalize using only the first two coordinates (scales into image-space)
 		}
 
+		template <typename T> Eigen::Matrix<Scalar,3,1> getEpilineRight(Point2<T> pLeft) const {
+			return getEpilineRight(Vec3(pLeft.x, pLeft.y, 1));
+		}
+
+		/**
+		 * get the equation for an epi-line within the left-image,
+		 * using the given point in the right image.
+		 * l_l = F^T * p_r
+		 * see getEpilineRight()
+		 */
 		Eigen::Matrix<Scalar,3,1> getEpilineLeft(const Vec3& pRight) const {
-			Vec3 v3 = F.transpose() * pRight;	// transpose the matrix
+			Vec3 v3 = F * pRight;	// // SHOULD BE WITH TRANSPOSE?!
 			Vec2 v2; v2 << v3(0), v3(1);		// only the first two coordinates
-			return v3 / v2.norm();					// normalize using only the first two coordinates (scales into image-space)
+			return v3 / v2.norm();				// normalize using only the first two coordinates (scales into image-space)
 		}
 
 
