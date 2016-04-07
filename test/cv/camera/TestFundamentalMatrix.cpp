@@ -76,8 +76,8 @@ namespace K {
 
 			gp << "set terminal qt size 1800,800\n";
 			gp << "set size ratio -1\n";
-			gp << "set xrange[0:"<<desc.imgLeft.getWidth()<<"]\n";
-			gp << "set yrange[0:"<<desc.imgRight.getHeight()<<"]\n";
+		//	gp << "set xrange[0:"<<desc.imgLeft.getWidth()<<"]\n";
+		//	gp << "set yrange[0:"<<desc.imgRight.getHeight()<<"]\n";
 
 		}
 
@@ -204,9 +204,9 @@ namespace K {
 
 
 //#pragma omp parallel 0
-			for (int y = 0; y < desc.imgLeft.getHeight()-100; y+=2) {
+			for (int y = 0; y < desc.imgLeft.getHeight()-1; y+=2) {
 				std::cout << y << std::endl;
-				for (int x = 0; x < desc.imgLeft.getWidth()-100; x+=2) {
+				for (int x = 0; x < desc.imgLeft.getWidth()-1; x+=2) {
 
 
 					const Point2i pL(x,y);
@@ -266,17 +266,25 @@ namespace K {
 //					gp.flush();
 //					usleep(1000*1000);
 
-					QueueElem bestInRight = queue.top();
-
-//					if (vMin != INFINITY ) {
+					if (!queue.empty()) {
+						QueueElem bestInRight = queue.top();
 						const float depth = pL.getDistance(bestInRight.p);
 						imgDepth.set(pL.x, pL.y, depth);
 						imgDepth.set(pL.x+1, pL.y, depth);
 						imgDepth.set(pL.x, pL.y+1, depth);
 						imgDepth.set(pL.x+1, pL.y+1, depth);
+					}
+
+//					if (vMin != INFINITY ) {
+//						const float depth = pL.getDistance(bestInRight.p);
+//						imgDepth.set(pL.x, pL.y, depth);
+//						imgDepth.set(pL.x+1, pL.y, depth);
+//						imgDepth.set(pL.x, pL.y+1, depth);
+//						imgDepth.set(pL.x+1, pL.y+1, depth);
 //					} else {
 //						int i = 0; (void) i;
 //					}
+
 
 
 
@@ -296,7 +304,7 @@ namespace K {
 
 	TEST(FundamentalMatrix, estimate) {
 
-		IDIS desc;
+		Garden desc;
 
 		StereoPlot plot(desc);
 
@@ -325,7 +333,7 @@ namespace K {
 			plot.lPoints.add(GnuplotPoint2(piL(0), piL(1)));
 			plot.rPoints.add(GnuplotPoint2(piR(0), piR(1)));
 
-			for (int xx = -300; xx < desc.imgLeft.getWidth(); xx+=25) {
+			for (int xx = -400; xx < desc.imgLeft.getWidth()*3; xx+=25) {
 				int x1 = xx;
 				int x2 = xx + 25;
 

@@ -41,8 +41,11 @@ namespace K {
 
 		using Vec2 = Eigen::Matrix<Scalar,2,1>;
 		using Vec3 = Eigen::Matrix<Scalar,3,1>;
+		using Mat3 = Eigen::Matrix<Scalar,3,3>;
 
-		Eigen::Matrix<Scalar,3,3> F;
+		Mat3 F;
+		Vec3 epipoleLeft;
+		Vec3 epipoleRight;
 
 		std::vector<Point2f> imgLeft;
 		std::vector<Point2f> imgRight;
@@ -145,24 +148,40 @@ namespace K {
 				std::cout << FFF << std::endl;
 
 				// done
-				this->F = FFF;
+				this->F = FFF.transpose(); // why the transpose?
 
 			}
 
+			// estimate right epipole
 			{
 
-				const Eigen::Matrix<Scalar,3,3> FF = this->F * this->F.transpose();
+				const Mat3 FF = this->F * this->F.transpose();
 				Eigen::SelfAdjointEigenSolver<decltype(FF)> solver(FF);
 
-				const Eigen::Matrix<Scalar,1,3> vec = getMin(solver.eigenvectors(), solver.eigenvalues());
-
-				int i = 0;
+				// get the eigenvector corresponding to the smallest eigenvalue
+				const Vec3 v3 = getMin(solver.eigenvectors(), solver.eigenvalues());
+				this->epipoleRight = normW(v3);
 
 			}
 
+			// estimate left epipole
+			{
+
+				const Mat3 FF = this->F.transpose() * this->F;
+				Eigen::SelfAdjointEigenSolver<decltype(FF)> solver(FF);
+
+				// get the eigenvector corresponding to the smallest eigenvalue
+				const Vec3 v3 = getMin(solver.eigenvectors(), solver.eigenvalues());
+				this->epipoleLeft = normW(v3);
+
+			}
+
+			int i = 0; (void) i;
 
 
 		}
+
+
 
 		/** get the index of the smallest element within the given vector */
 		template <typename Vec> int getMin(const Vec vec) {
@@ -180,6 +199,7 @@ namespace K {
 			return evec.col(minIdx);
 		}
 
+
 		/** get the fundamental matrix */
 		Eigen::Matrix<Scalar,3,3> getFundamentalMatrix() const {return F;}
 
@@ -193,13 +213,13 @@ namespace K {
 		 * By = -Ax - C
 		 * y = -(Ax + C) / B
 		 */
-		Eigen::Matrix<Scalar,3,1> getEpilineRight(const Vec3& pLeft) const {
-			Vec3 v3 = F.transpose() * pLeft;	// SHOULD BE WITHOUT TRANSPOSE?!
+		Vec3 getEpilineRight(const Vec3& pLeft) const {
+			Vec3 v3 = F * pLeft;
 			Vec2 v2; v2 << v3(0), v3(1);		// only the first two coordinates
 			return v3 / v2.norm();				// normalize using only the first two coordinates (scales into image-space)
 		}
 
-		template <typename T> Eigen::Matrix<Scalar,3,1> getEpilineRight(Point2<T> pLeft) const {
+		template <typename T> Vec3 getEpilineRight(Point2<T> pLeft) const {
 			return getEpilineRight(Vec3(pLeft.x, pLeft.y, 1));
 		}
 
@@ -209,12 +229,20 @@ namespace K {
 		 * l_l = F^T * p_r
 		 * see getEpilineRight()
 		 */
-		Eigen::Matrix<Scalar,3,1> getEpilineLeft(const Vec3& pRight) const {
-			Vec3 v3 = F * pRight;	// // SHOULD BE WITH TRANSPOSE?!
+		Vec3 getEpilineLeft(const Vec3& pRight) const {
+			Vec3 v3 = F.transpose() * pRight;	// transposed matrix
 			Vec2 v2; v2 << v3(0), v3(1);		// only the first two coordinates
 			return v3 / v2.norm();				// normalize using only the first two coordinates (scales into image-space)
 		}
 
+		/** get the right epipole */
+		Vec3 getEpipoleRight() const {return epipoleRight;}
+
+		/** get the left epipole */
+		Vec3 getEpipoleLeft() const {return epipoleLeft;}
+
+
+	private:
 
 		/** get the index of the smallest value in vec */
 		template <typename T> int getMinIdx(T vec) const {
@@ -225,6 +253,17 @@ namespace K {
 			}
 			return idx;
 
+		}
+
+		/** normalize v3's x/y component (distance = 1.0) */
+		inline Vec3 normXY(const Vec3 v3) const {
+			Vec2 v2; v2 << v3(0), v3(1);
+			return v3 / v2.norm();
+		}
+
+		/** convert v3 from homogenous to normal coordinates (ensure w = 1.0) */
+		inline Vec3 normW(const Vec3 v3) const {
+			return v3 / v3(2);
 		}
 
 		/**
