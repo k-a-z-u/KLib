@@ -1,6 +1,7 @@
 #ifndef GNUPLOTPLOTELEMENTPOINTS_H
 #define GNUPLOTPLOTELEMENTPOINTS_H
 
+#include <vector>
 
 #include "GnuplotPlotElementRaw.h"
 #include "attributes/GnuplotAttrColor.h"
@@ -35,6 +36,11 @@ namespace K {
 		/** add a new point to output */
 		void add(const GnuplotPoint2 p) {
 			points.push_back(p);
+		}
+
+		/** remove all points */
+		void clear() {
+			points.clear();
 		}
 
 	};
