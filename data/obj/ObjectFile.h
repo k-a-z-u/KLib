@@ -63,6 +63,7 @@ namespace K {
 			std::ifstream is(file);
 			std::string line;
 			while(getline(is, line)) {parseLine(line);}
+			is.close();
 
 		}
 

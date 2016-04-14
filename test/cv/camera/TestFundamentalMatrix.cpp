@@ -12,15 +12,24 @@
 #include "../../../misc/gnuplot/GnuplotPlotElementImage.h"
 #include "../../../misc/gnuplot/GnuplotMultiplot.h"
 
+#include "../../../misc/gnuplot/GnuplotSplot.h"
+#include "../../../misc/gnuplot/GnuplotSplotElementPoints.h"
+
 #include "../../../cv/matching/Matching.h"
 #include "../../../cv/matching/MatchingSAD.h"
+#include "../../../cv/matching/MatchingConvolution.h"
 
 #include "../../../cv/draw/BresenhamIter.h"
 
 #include "../../../cv/filter/Normalize.h"
 #include "../../../cv/features/Simple.h"
+#include "../../../cv/features/HOG.h"
+
+#include "../../../cv/Derivative.h"
+#include "../../../cv/filter/Normalize.h"
 
 #include <queue>
+#include <set>
 
 namespace K {
 
@@ -59,13 +68,13 @@ namespace K {
 
 		StereoPlot(Desc& desc) : multiplot(1,2), lImg(desc.fileLeft), rImg(desc.fileRight) {
 
-			lPoints.setColorHex("#999900"); lPoints.setPointSize(0.6f); lPoints.setPointType(7);
+			lPoints.setColorHex("#ff0000"); lPoints.setPointSize(0.8f); lPoints.setPointType(7);
 			lLines.setColorHex("#0000ff");
 			plotL.add(&lImg);
 			plotL.add(&lLines);
 			plotL.add(&lPoints);
 
-			rPoints.setColorHex("#999900"); rPoints.setPointSize(0.6f); rPoints.setPointType(7);
+			rPoints.setColorHex("#00AA00"); rPoints.setPointSize(0.8f); rPoints.setPointType(7);
 			rLines.setColorHex("#0000ff");
 			plotR.add(&rImg);
 			plotR.add(&rLines);
@@ -76,8 +85,8 @@ namespace K {
 
 			gp << "set terminal qt size 1800,800\n";
 			gp << "set size ratio -1\n";
-		//	gp << "set xrange[0:"<<desc.imgLeft.getWidth()<<"]\n";
-		//	gp << "set yrange[0:"<<desc.imgRight.getHeight()<<"]\n";
+			gp << "set xrange[0:"<<desc.imgLeft.getWidth()<<"]\n";
+			gp << "set yrange[0:"<<desc.imgRight.getHeight()<<"]\n";
 
 		}
 
@@ -119,6 +128,7 @@ namespace K {
 			fm.addCorrespondence(pl1,	pr1);
 			fm.addCorrespondence(pl2,	pr2);
 			fm.addCorrespondence(pl3,	pr3);
+#include "../../../cv/features/Simple.h"
 
 			fm.addCorrespondence(pl4,	pr4);
 
@@ -170,9 +180,143 @@ namespace K {
 
 		}
 
+	};
 
+	struct Metal1 : public Desc {
+
+		Metal1() {
+
+			fileLeft = "/apps/workspaces/kiste_data/stereo/3/left.png";
+			fileRight = "/apps/workspaces/kiste_data/stereo/3/right.png";
+			imgLeft = ImageFactory::readPNG(fileLeft);
+			imgRight = ImageFactory::readPNG(fileRight);
+
+			MatchingSAD sad(imgLeft, imgRight, 15);
+			Matching matcher;
+
+			Point2i pl1(608,834);	Point2i pr1(400,873);		//pr1 = matcher.refine(sad, pl1, pr1);
+			Point2i pl2(357,485);	Point2i pr2(292,470);		//pr2 = matcher.refine(sad, pl2, pr2);
+			Point2i pl3(461,672);	Point2i pr3(294,678);		//pr3 = matcher.refine(sad, pl3, pr3);
+			Point2i pl4(524,507);	Point2i pr4(410,523);		//pr4 = matcher.refine(sad, pl4, pr4);
+			Point2i pl5(518,479);	Point2i pr5(440,493);		//pr5 = matcher.refine(sad, pl5, pr5);
+			Point2i pl6(586,405);	Point2i pr6(476,431);		//pr6 = matcher.refine(sad, pl6, pr6);
+			Point2i pl7(593,324);	Point2i pr7(532,349);		//pr7 = matcher.refine(sad, pl7, pr7);
+			Point2i pl8(673,366);	Point2i pr8(596,405);		//pr8 = matcher.refine(sad, pl8, pr8);
+
+			fm.addCorrespondence(pl1,	pr1);
+			fm.addCorrespondence(pl2,	pr2);
+			fm.addCorrespondence(pl3,	pr3);
+			fm.addCorrespondence(pl4,	pr4);
+			fm.addCorrespondence(pl5,	pr5);
+			fm.addCorrespondence(pl6,	pr6);
+			fm.addCorrespondence(pl7,	pr7);
+			fm.addCorrespondence(pl8,	pr8);
+			//fm.addCorrespondence(pl9,	pr9);
+
+			fm.estimate();
+
+		}
 
 	};
+
+	struct House1 : public Desc {
+
+		House1() {
+
+			fileLeft = "/apps/workspaces/kiste_data/stereo/4/left.png";
+			fileRight = "/apps/workspaces/kiste_data/stereo/4/right.png";
+			imgLeft = ImageFactory::readPNG(fileLeft);
+			imgRight = ImageFactory::readPNG(fileRight);
+
+			MatchingSAD sad(imgLeft, imgRight, 15);
+			Matching matcher;
+
+			Point2i pl1(110,244);	Point2i pr1(198,296);		//pr1 = matcher.refine(sad, pl1, pr1);
+			Point2i pl2(273,242);	Point2i pr2(309,249);		//pr2 = matcher.refine(sad, pl2, pr2);
+			Point2i pl3(88,117);	Point2i pr3(129,121);		//pr3 = matcher.refine(sad, pl3, pr3);
+			Point2i pl4(247,122);	Point2i pr4(244,89);		//pr4 = matcher.refine(sad, pl4, pr4);
+			Point2i pl5(321,100);	Point2i pr5(320,50);		//pr5 = matcher.refine(sad, pl5, pr5);
+			Point2i pl6(398,162);	Point2i pr6(428,125);		//pr6 = matcher.refine(sad, pl6, pr6);
+			Point2i pl7(393,282);	Point2i pr7(424,273);		//pr7 = matcher.refine(sad, pl7, pr7);
+			Point2i pl8(266,154);	Point2i pr8(278,132);		//pr8 = matcher.refine(sad, pl8, pr8);
+
+			fm.addCorrespondence(pl1,	pr1);
+			fm.addCorrespondence(pl2,	pr2);
+			fm.addCorrespondence(pl3,	pr3);
+			fm.addCorrespondence(pl4,	pr4);
+			fm.addCorrespondence(pl5,	pr5);
+			fm.addCorrespondence(pl6,	pr6);
+			fm.addCorrespondence(pl7,	pr7);
+			fm.addCorrespondence(pl8,	pr8);
+			//fm.addCorrespondence(pl9,	pr9);
+
+			fm.estimate();
+
+		}
+
+	};
+
+	struct House3D : public Desc {
+
+		House3D() {
+
+			fileLeft = "/apps/workspaces/kiste_data/stereo/5/left.png";
+			fileRight = "/apps/workspaces/kiste_data/stereo/5/right.png";
+			imgLeft = ImageFactory::readPNG(fileLeft);
+			imgRight = ImageFactory::readPNG(fileRight);
+
+
+//			imgLeft = Derivative::getX(imgLeft);
+//			imgRight = Derivative::getX(imgRight);
+
+//			Normalize::inplace(imgLeft);
+//			Normalize::inplace(imgRight);
+
+			MatchingSAD sad(imgLeft, imgRight, 15);
+			Matching matcher;
+
+			Point2i pl1(245,381);	Point2i pr1(176,366);		//pr1 = matcher.refine(sad, pl1, pr1);		// h1 lower left
+			Point2i pl2(308,323);	Point2i pr2(312,323);		//pr2 = matcher.refine(sad, pl2, pr2);		// h1 lower right
+			Point2i pl3(222,82);	Point2i pr3(246,82);		//pr3 = matcher.refine(sad, pl3, pr3);		// h1 upper right
+			Point2i pl4(134,76);	Point2i pr4(101,78);		//pr4 = matcher.refine(sad, pl4, pr4);		// h1 upper left
+			Point2i pl5(501,218);	Point2i pr5(416,228);		//pr5 = matcher.refine(sad, pl5, pr5);		// h1 mid left
+			Point2i pl6(620,201);	Point2i pr6(625,219);		//pr6 = matcher.refine(sad, pl6, pr6);		// h1 mid right
+			Point2i pl7(546,83);	Point2i pr7(570,78);		//pr7 = matcher.refine(sad, pl7, pr7);		// h1 upper right
+			Point2i pl8(423,79);	Point2i pr8(378,77);		//pr8 = matcher.refine(sad, pl8, pr8);		// h1 upper left
+
+			Point2i pl9(381,413);	Point2i pr9(319,420);		//pr8 = matcher.refine(sad, pl8, pr8);		// cube1a
+			Point2i plA(153,322);	Point2i prA(68,299);		//pr8 = matcher.refine(sad, pl8, pr8);		// cube2
+			Point2i plB(348,361);	Point2i prB(294,362);		//pr8 = matcher.refine(sad, pl8, pr8);		// cube1b
+
+
+//			Point2i pl1(242,219);	Point2i pr1(171,212);		//pr1 = matcher.refine(sad, pl1, pr1);		// h1 lower left
+//			Point2i pl2(307,194);	Point2i pr2(311,194);		//pr2 = matcher.refine(sad, pl2, pr2);		// h1 lower right
+//			Point2i pl3(222,82);	Point2i pr3(246,82);		//pr3 = matcher.refine(sad, pl3, pr3);		// h1 upper right
+//			Point2i pl4(134,76);	Point2i pr4(101,78);		//pr4 = matcher.refine(sad, pl4, pr4);		// h1 upper left
+//			Point2i pl5(501,218);	Point2i pr5(416,228);		//pr5 = matcher.refine(sad, pl5, pr5);		// h1 lower left
+//			Point2i pl6(620,201);	Point2i pr6(625,219);		//pr6 = matcher.refine(sad, pl6, pr6);		// h1 lower right
+//			Point2i pl7(546,83);	Point2i pr7(570,78);		//pr7 = matcher.refine(sad, pl7, pr7);		// h1 upper right
+//			Point2i pl8(423,79);	Point2i pr8(378,77);		//pr8 = matcher.refine(sad, pl8, pr8);		// h1 upper left
+
+			fm.addCorrespondence(pl1,	pr1);
+			fm.addCorrespondence(pl2,	pr2);
+			fm.addCorrespondence(pl3,	pr3);
+			fm.addCorrespondence(pl4,	pr4);
+			fm.addCorrespondence(pl5,	pr5);
+			fm.addCorrespondence(pl6,	pr6);
+			fm.addCorrespondence(pl7,	pr7);
+			fm.addCorrespondence(pl8,	pr8);
+			fm.addCorrespondence(pl9,	pr9);
+
+			fm.addCorrespondence(plA,	prA);
+			fm.addCorrespondence(plB,	prB);
+
+			fm.estimate();
+
+		}
+
+	};
+
 
 
 	class StereoReconstruction {
@@ -190,18 +334,59 @@ namespace K {
 
 		void perform() {
 
-
 			ImageChannel imgDepth(desc.imgLeft.getWidth(), desc.imgLeft.getHeight());
 			imgDepth.ones();
 
-			DataMatrix<SimpleFeatures::FeatureVec> fLeft = SimpleFeatures::getFeatures(desc.imgLeft, 15);
-			DataMatrix<SimpleFeatures::FeatureVec> fRight = SimpleFeatures::getFeatures(desc.imgRight, 15);
+			MatchingSAD sad(desc.imgLeft, desc.imgRight, 9);
+			MatchingConvolution conv(desc.imgLeft, desc.imgRight, 9);
+			Matching matcher;
+
+			DataMatrix<SimpleFeatures::FeatureVec> fLeft = SimpleFeatures::getFeatures(desc.imgLeft, 25);
+			DataMatrix<SimpleFeatures::FeatureVec> fRight = SimpleFeatures::getFeatures(desc.imgRight, 25);
 
 			Gnuplot gp;
 			GnuplotPlot p;
 			GnuplotPlotElementLines errLine;
 			p.add(&errLine);
 
+			GnuplotSplot splot;
+			GnuplotSplotElementPoints depthPlot;
+			splot.add(&depthPlot);
+
+
+			DataMatrix<std::vector<float>> hogLeft(desc.imgLeft.getWidth(), desc.imgRight.getHeight());
+			DataMatrix<std::vector<float>> hogRight(desc.imgLeft.getWidth(), desc.imgRight.getHeight());
+			HOG hog(10);
+
+			for (int y = 0; y < desc.imgLeft.getHeight(); ++y) {
+				for (int x = 0; x < desc.imgLeft.getWidth(); ++x) {
+
+
+					std::vector<HOGGradient> gLeft =	hog.getGradients(desc.imgLeft, x, y);
+					std::vector<HOGGradient> gRight =	hog.getGradients(desc.imgRight, x, y);
+					hog.relativeToBestOne(gLeft);
+					hog.relativeToBestOne(gRight);
+					hog.normalize(gLeft);
+					hog.normalize(gRight);
+					hogLeft.set(x,y,hog.binify(gLeft, 8));
+					hogRight.set(x,y,hog.binify(gRight, 8));
+
+				}
+			}
+
+
+
+			struct QueueElem {
+				float err;
+				Point2i p;
+				QueueElem(const float err, const Point2i p) : err(err), p(p) {;}
+				QueueElem() : err(99999999), p(0,0) {;}
+				bool operator < (const QueueElem& o) const {return err > o.err;}
+			};
+
+//			auto comp = [] (const QueueElem& a, const QueueElem& b) {
+//				return a.err < b.err;
+//			};
 
 //#pragma omp parallel 0
 			for (int y = 0; y < desc.imgLeft.getHeight()-1; y+=2) {
@@ -224,19 +409,10 @@ namespace K {
 
 					BresenhamIter iter(x1,y1,x2,y2);
 
-					//Point2i pMin(0,0);
-					//float vMin = INFINITY;
 
 
+					std::priority_queue<QueueElem, std::vector<QueueElem>> queue;
 
-					struct QueueElem {
-						float err;
-						Point2i p;
-						QueueElem(const float err, const Point2i p) : err(err), p(p) {;}
-						QueueElem() : err(99999999), p(0,0) {;}
-					};
-					auto comp = [] (const QueueElem& a, const QueueElem& b) {return a.err < b.err;};
-					std::priority_queue<QueueElem, std::vector<QueueElem>, decltype(comp)> queue(comp);
 
 					// follow the epipolar line
 					while (iter.hasNext()) {
@@ -245,14 +421,18 @@ namespace K {
 
 						const int maxD = desc.imgLeft.getWidth() / 4;
 						if(pL.getDistance(pR) > maxD) {continue;}
-						if(pL.getDistance(pR) < 10) {continue;}
+						//if(pL.getDistance(pR) < 10) {continue;}
 
 						//const int w = 0;
 						//for (int oy = -w; oy <= +w; ++oy) {
 						//	for (int ox = -w; ox <= +w; ++ox) {
 								//const Point2i pR = _pR + (Point2i(ox, oy));
 								if (pR.x < 2 || pR.y < 2 || pR.x >= desc.imgRight.getWidth() - 2 || pR.y >= desc.imgRight.getHeight() - 2) {continue;}
-								float err = fLeft.get(pL.x, pL.y).diff(fRight.get(pR.x, pR.y));
+								//float err = - fLeft.get(pL.x, pL.y).diff(fRight.get(pR.x, pR.y));
+								//float err = sad.getError(pL, pR);
+								//float err = -conv.getScore(pL, pR);
+								float err = HOG::getDistance( hogLeft.get(pL.x, pL.y), hogRight.get(pR.x, pR.y) );
+
 								//if (err < vMin) {vMin = err; pMin = pR;}
 								queue.push(QueueElem(err, pR));
 								//errLine.add( GnuplotPoint2(pR.x, err) );
@@ -266,13 +446,32 @@ namespace K {
 //					gp.flush();
 //					usleep(1000*1000);
 
-					if (!queue.empty()) {
-						QueueElem bestInRight = queue.top();
-						const float depth = pL.getDistance(bestInRight.p);
-						imgDepth.set(pL.x, pL.y, depth);
-						imgDepth.set(pL.x+1, pL.y, depth);
-						imgDepth.set(pL.x, pL.y+1, depth);
-						imgDepth.set(pL.x+1, pL.y+1, depth);
+
+
+					if (queue.size() > 10) {
+
+						Point2i best = queue.top().p;
+
+						int cnt = 8;
+						Point2i sum(0,0);
+						for (int i = 0; i < cnt; ++i) {
+							sum += queue.top().p;
+							queue.pop();
+						}
+						sum /= cnt;
+
+						//if (best.getDistance(sum) < 25) {
+
+							const float depth = pL.getDistance(best);
+							imgDepth.set(pL.x, pL.y, depth);
+							imgDepth.set(pL.x+1, pL.y, depth);
+							imgDepth.set(pL.x, pL.y+1, depth);
+							imgDepth.set(pL.x+1, pL.y+1, depth);
+
+							depthPlot.add(GnuplotPoint3(best.x, best.y, depth));
+
+						//}
+
 					}
 
 //					if (vMin != INFINITY ) {
@@ -293,6 +492,9 @@ namespace K {
 				}
 			}
 
+			gp.draw(splot);
+			gp.flush();
+
 			Normalize::inplace(imgDepth);
 			ImageFactory::writePNG("/tmp/depth.png", imgDepth);
 
@@ -304,7 +506,11 @@ namespace K {
 
 	TEST(FundamentalMatrix, estimate) {
 
-		Garden desc;
+		//Garden desc;
+		//IDIS desc;
+		//Metal1 desc;
+		House3D desc;
+
 
 		StereoPlot plot(desc);
 
@@ -321,7 +527,10 @@ namespace K {
 			//ASSERT_GE(0.1, std::abs(res));
 		}
 
-		for (int i = 0; i < 9; ++i) {
+		plot.rPoints.add(GnuplotPoint2( desc.fm.getEpipoleRight()(0), desc.fm.getEpipoleRight()(1) ));
+		plot.lPoints.add(GnuplotPoint2( desc.fm.getEpipoleLeft()(0), desc.fm.getEpipoleLeft()(1) ));
+
+		for (int i = 0; i < desc.fm.getNumCorrespondences(); ++i) {
 			//	const int i = 1;
 
 			const Eigen::Vector3d piL = toVec(desc.fm.getPointLeft(i));

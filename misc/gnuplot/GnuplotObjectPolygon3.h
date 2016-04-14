@@ -5,17 +5,30 @@
 #include "GnuplotObject.h"
 #include "GnuplotStructs.h"
 
+#include <cstring>
+#include <string.h>
+
 namespace K {
 
 	class GnuplotObjectPolygon3 : public GnuplotObject {
 
 	private:
 
-		std::string fillStyle = "transparent";	// or solid
+		std::string fillStyle = "solid";	// or solid
 		std::string fillColor = "rgb 'red'";
 		std::vector<GnuplotPoint3> points;
 
 	public:
+
+		void setFillColorHEX(const std::string& hex) {
+			fillColor = "rgb '" + hex + "'";
+		}
+
+		void setFillColorRGB(const int r, const int g, const int b) {
+			char buf[8];
+			sprintf(buf, "#%02X%02X%02X", r, g, b);
+			setFillColorHEX(buf);
+		}
 
 		void addTo(std::stringstream& ss, const int id) const override {
 

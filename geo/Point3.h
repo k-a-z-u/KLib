@@ -63,11 +63,26 @@ namespace K {
 		Point3 operator / (const T right) const {return Point3((this->x/right), (this->y/right), (this->z/right));}
 
 
-		bool operator == (const Point3& other) const {return (x == other.x) && (y == other.y) && (y == other.z);}
+		bool operator == (const Point3& other) const {return (x == other.x) && (y == other.y) && (z == other.z);}
 
 
 		/** dot-product between this point and the given one */
 		float dot(const Point3& o) const {return x*o.x + y*o.y + z*o.z;}
+
+		/** cross-product between this point and the given one */
+		Point3 cross(const Point3& o) const {
+			const float x = y*o.z - z*o.y;
+			const float y = z*o.x - x*o.z;
+			const float z = x*o.y - y*o.x;
+			return Point3(x,y,z);
+		}
+
+		void normalize() {
+			const float len = getLength();
+			x /= len;
+			y /= len;
+			z /= len;
+		}
 
 		std::string asString() const {return "(" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(y) + ")";}
 
