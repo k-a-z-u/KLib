@@ -2,7 +2,7 @@
 #define K_CV_DRAWER_H
 
 #include "../ImageChannel.h"
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 
 
 namespace K {

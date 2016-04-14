@@ -1,7 +1,7 @@
 #ifndef K_CV_BBOX2_H
 #define K_CV_BBOX2_H
 
-#include "Point2.h"
+#include "../geo/Point2.h"
 
 /**
  * this class represents an axis-aligned 2D bounding box

@@ -1,7 +1,7 @@
 #ifndef K_CV_CAMERA_HOMOGRAPHY_H
 #define K_CV_CAMERA_HOMOGRAPHY_H
 
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 #include <vector>
 #include <eigen3/Eigen/Dense>
 

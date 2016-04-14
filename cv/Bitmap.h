@@ -2,7 +2,7 @@
 #define BITMAP_H
 
 #include "DataMatrix.h"
-#include "Point2.h"
+#include "../geo/Point2.h"
 #include "ImageChannel.h"
 
 namespace K {

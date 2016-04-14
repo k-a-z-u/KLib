@@ -1,7 +1,7 @@
 #ifndef MATCHING_H
 #define MATCHING_H
 
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 #include "../ImageChannel.h"
 
 namespace K {

@@ -1,7 +1,7 @@
 #ifndef BRESENHAMITER_H
 #define BRESENHAMITER_H
 
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 
 namespace K {
 
