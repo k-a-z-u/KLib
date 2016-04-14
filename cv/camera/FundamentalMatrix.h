@@ -71,6 +71,9 @@ namespace K {
 			imgRight.push_back(Point2f(pr.x, pr.y));
 		}
 
+		/** get the number of added correspondences */
+		int getNumCorrespondences() const {return imgLeft.size();}
+
 		/** get the idx-th correspondence point within the left image */
 		const Point2f getPointLeft(const int idx) const {return imgLeft[idx];}
 

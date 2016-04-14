@@ -18,17 +18,19 @@ namespace K {
 	public:
 
 		struct FeatureVec {
-			float avgValue;
-			float avgGradX;
-			float avgGradY;
-			float avgSigma;
+			float avg1Value;
+			float avg2Value;
+			float avg1GradX;
+			float avg1GradY;
+			float avg1Sigma;
 			float sigma;
 			float diff(const FeatureVec& o) const {
 				return
-					K::NormalDistribution::getProbability(o.avgValue, 0.05, avgValue) *
-					K::NormalDistribution::getProbability(o.avgGradX, 0.1, avgGradX) *	// blurred -> tiny sigma
-					K::NormalDistribution::getProbability(o.avgGradY, 0.1, avgGradY) *	// blurred -> tiny sigma
-					K::NormalDistribution::getProbability(o.avgSigma, 0.1, avgSigma) *	// blurred -> tiny sigma
+					K::NormalDistribution::getProbability(o.avg2Value, 0.1, avg2Value) *
+					K::NormalDistribution::getProbability(o.avg1Value, 0.1, avg1Value) *
+					//K::NormalDistribution::getProbability(o.avg1GradX, 0.1, avg1GradX) *	// blurred -> tiny sigma
+					//K::NormalDistribution::getProbability(o.avg1GradY, 0.1, avg1GradY) *	// blurred -> tiny sigma
+					K::NormalDistribution::getProbability(o.avg1Sigma, 0.1, avg1Sigma) *	// blurred -> tiny sigma
 					K::NormalDistribution::getProbability(o.sigma, 0.1 , sigma) *			// unblurred -> larger sigma
 					1.0f;
 			}
@@ -38,22 +40,26 @@ namespace K {
 
 		static DataMatrix<FeatureVec> getFeatures(const ImageChannel& img, const int win = 9) {
 
-			Gauss g1(1.0f);
-			Gauss g2(10.0f);
+			Gauss g1(1.5f);
+			Gauss g2(win/2);
+
 			ImageChannel imgBlur1 = g1.filter(img);
 			ImageChannel imgBlur2 = g2.filter(img);
 
 			// get new images for both, x and y gradient (1st derivative)
-			ImageChannel imgX = Derivative::getX(imgBlur2);
-			ImageChannel imgY = Derivative::getY(imgBlur2);
+			ImageChannel imgBlur2X = Derivative::getX(imgBlur2);
+			ImageChannel imgBlur2Y = Derivative::getY(imgBlur2);
+
+			ImageChannel imgBlur1X = Derivative::getX(imgBlur1);
+			ImageChannel imgBlur1Y = Derivative::getY(imgBlur1);
 
 
 //			Normalize::inplace(imgX);
 //			Normalize::inplace(imgY);
 			ImageFactory::writeJPEG("/tmp/blur1.jpg", imgBlur1);
 			ImageFactory::writeJPEG("/tmp/blur2.jpg", imgBlur2);
-			ImageFactory::writeJPEG("/tmp/imgX.jpg", imgX);
-			ImageFactory::writeJPEG("/tmp/imgY.jpg", imgY);
+			ImageFactory::writeJPEG("/tmp/imgX.jpg", imgBlur1X);
+			ImageFactory::writeJPEG("/tmp/imgY.jpg", imgBlur1Y);
 
 			const int s = win/2;
 			DataMatrix<FeatureVec> dm(img.getWidth(), img.getHeight());
@@ -63,8 +69,10 @@ namespace K {
 				for (int x = 0; x < img.getWidth(); ++x) {
 
 					float cnt = ((s*2)+1) * ((s*2)+1);
-					float avgSum = 0;
-					float avgSum2 = 0;
+					float avg1Sum = 0;
+					float avg1Sum2 = 0;
+					float avg2Sum = 0;
+					float avg2Sum2 = 0;
 					float sum = 0;
 					float sum2 = 0;
 
@@ -73,24 +81,29 @@ namespace K {
 					for (int y1 = -s; y1 <= +s; ++y1) {
 						for (int x1 = -s; x1 <= +s; ++x1) {
 
-							float val =		imgBlur1.getClamped(x+x1, y+y1);
-							float avgVal =	imgBlur2.getClamped(x+x1, y+y1);
-
-							avgSum += avgVal;
-							avgSum2 += avgVal*avgVal;
+							float val =		img.getClamped(x+x1, y+y1);
+							float avg1Val =	imgBlur1.getClamped(x+x1, y+y1);
+							float avg2Val =	imgBlur2.getClamped(x+x1, y+y1);
 
 							sum += val;
 							sum2 += val*val;
+
+							avg1Sum += avg1Val;
+							avg1Sum2 += avg1Val*avg1Val;
+
+							avg2Sum += avg2Val;
+							avg2Sum2 += avg2Val*avg2Val;
 
 						}
 					}
 
 
 					FeatureVec vec;
-					vec.avgValue =	imgBlur2.getClamped(x, y);
-					vec.avgGradX =	imgX.getClamped(x, y);
-					vec.avgGradY =	imgY.getClamped(x, y);
-					vec.avgSigma =	std::sqrt(avgSum2/cnt -	((avgSum/cnt)*(avgSum/cnt)));
+					vec.avg2Value =	imgBlur2.getClamped(x,y);
+					vec.avg1Value = imgBlur1.getClamped(x,y);
+					vec.avg1GradX =	imgBlur1X.getClamped(x, y);
+					vec.avg1GradY =	imgBlur1Y.getClamped(x, y);
+					vec.avg1Sigma =	std::sqrt(avg1Sum2/cnt -	((avg1Sum/cnt)*(avg1Sum/cnt)));
 					vec.sigma =		std::sqrt(sum2/cnt -		((sum/cnt)*(sum/cnt)));
 					dm.set(x,y,vec);
 
