@@ -49,7 +49,8 @@ namespace K {
 			int err = dx+dy, e2;
 
 			while(1) {
-				img.set(x1, y1, fg);
+
+				if (x1 >= 0 && y1 >= 0 && x1 < img.getWidth() && y1 < img.getHeight()) { img.set(x1, y1, fg); }
 				if ( (x1==x2) && (y1==y2) ) {break;}
 				e2 = 2*err;
 				if (e2 > dy) { err += dy; x1 += sx; }

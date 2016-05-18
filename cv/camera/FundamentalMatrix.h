@@ -120,18 +120,34 @@ namespace K {
 				FFF = FFF / FFF.norm();
 				std::cout << FFF << std::endl;
 
+				// done
+				this->F = FFF;
+
 			}
 
-			// done
-			this->F = FFF;
+			// estimate the epipoles
+
+			{
+
+				Eigen::Matrix<Scalar,3,3> FF = this->F * this->F.transpose();
+
+				Eigen::SelfAdjointEigenSolver<decltype(FF)> solver(FF);
+
+				solver.eigenvalues()
+
+			}
+
+
 
 		}
+
+
 
 		/** get the fundamental matrix */
 		Eigen::Matrix<Scalar,3,3> get() const {return F;}
 
 		/** get the index of the smallest value in vec */
-		int getMinIdx(auto vec) const {
+		template <typename T> int getMinIdx(T vec) const {
 			Scalar min = 99999999;
 			int idx = -1;
 			for (int i = 0; i < vec.rows(); ++i) {

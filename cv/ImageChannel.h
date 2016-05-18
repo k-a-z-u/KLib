@@ -32,6 +32,18 @@ namespace K {
 		}
 
 
+		int setIdx;
+		ImageChannel& operator << (const float val) {
+			data[0] = val;
+			setIdx = 1;
+			return *this;
+		}
+
+		ImageChannel& operator , (const float val) {
+			data[setIdx] = val;
+			++setIdx;
+			return *this;
+		}
 
 		/** call the given function for each of the channels's pixels.*/
 		void forEach(std::function<void(const int, const int, const float)> exec) const {

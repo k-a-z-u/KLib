@@ -78,6 +78,9 @@ template <typename T> struct Point2 {
 	Point2 operator / (const T right) const {return Point2((this->x/right), (this->y/right));}
 
 
+	template <typename T2> Point2<T2> operator / (const T2 right) const {return Point2<T2>((this->x/right), (this->y/right));}
+
+
 	bool operator == (const Point2& other) const {return (x == other.x) && (y == other.y);}
 
 	bool operator != (const Point2& other) const {return (x != other.x) || (y != other.y);}
