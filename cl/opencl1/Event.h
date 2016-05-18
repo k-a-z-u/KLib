@@ -1,30 +1,52 @@
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef K_CL_EVENT_H
+#define K_CL_EVENT_H
 
 #include "Base.h"
 
-namespace CL {
+namespace K {
+	namespace CL {
 
-	class Event {
+		class Event {
 
-	private:
+		private:
 
-		cl_event event;
+			cl_event event;
 
-	public:
+		public:
 
-		/** ctor from an existing event handle */
-		Event(const cl_event event) : event(event) {
-			;
-		}
+			/** ctor from an existing event handle */
+			Event(const cl_event event) : event(event) {
+				;
+			}
 
-		/** wait for this event to finish */
-		void waitForCompletion() {
-			check(clWaitForEvents(1, &event));
-		}
+			/** dtor */
+			~Event() {
+				clReleaseEvent(event);
+			}
 
-	};
+			/** no-copy */
+			Event(const Event& o) = delete;
 
+			/** move ctor */
+			Event(Event&& o)  : event(o.event) {
+				o.event = 0;
+			}
+
+			/** no-assign */
+			Event& operator = (const Event& o) = delete;
+
+
+
+		public:
+
+			/** wait for this event to finish */
+			void waitForCompletion() {
+				check(clWaitForEvents(1, &event));
+			}
+
+		};
+
+	}
 }
 
-#endif // EVENT_H
+#endif // K_CL_EVENT_H
