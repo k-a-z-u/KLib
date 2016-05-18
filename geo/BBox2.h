@@ -43,6 +43,25 @@ namespace K {
 
 		}
 
+		/** grow the bounding-box by the given factor (0.1 = +5% in each direction) */
+		void growFactor(const float factor) {
+			const T aw = (T) (getWidth() * (factor/2));
+			const T ah = (T) (getHeight() * (factor/2));
+			pMin.x -= aw;
+			pMin.y -= ah;
+			pMax.x += aw;
+			pMax.y += ah;
+		}
+
+		/** grow the bounding-box by the value into each direction */
+		void growValue(const T value) {
+			pMin.x -= value;
+			pMin.y -= value;
+			pMax.x += value;
+			pMax.y += value;
+		}
+
+
 		/** add the given bbox to this bbox */
 		void add(const BBox2<T>& o) {
 			add(o.pMin);
@@ -59,14 +78,34 @@ namespace K {
 
 		}
 
-		/** does the bouding-box intersect with the given bounding-box? */
-		bool intersects(const BBox2<T>& o) const {
-			bool n=	(pMax.x < o.pMin.x) ||	// left of
-					(pMax.y < o.pMin.y) ||	// below
-					(pMin.x > o.pMax.x) ||	// right of
-					(pMin.y > o.pMax.y);	// above
-			return !n;
+		/** does the bounding-box fully contain the given bounding box? */
+		bool contains(const BBox2<T>& b) const {
+
+			return	(pMin.x < b.pMin.x) &&
+					(pMin.y < b.pMin.y) &&
+					(pMax.x > b.pMax.x) &&
+					(pMax.y > b.pMax.y);
+
 		}
+
+		/** does the bounding-box intersect with the given bounding box? */
+		bool intersects(const BBox2<T>& b) const {
+
+			return	(pMin.x <= b.pMax.x) &&
+					(pMin.y <= b.pMax.y) &&
+					(pMax.x >= b.pMin.x) &&
+					(pMax.y >= b.pMin.y);
+
+		}
+
+//		/** does the bouding-box intersect with the given bounding-box? */
+//		bool intersects(const BBox2<T>& o) const {
+//			return =	(pMax.x < o.pMin.x) ||	// left of
+//					(pMax.y < o.pMin.y) ||	// below
+//					(pMin.x > o.pMax.x) ||	// right of
+//					(pMin.y > o.pMax.y);	// above
+//			return !n;
+//		}
 
 		/** equality check */
 		bool operator == (const BBox2<T>& o) const {
@@ -78,6 +117,9 @@ namespace K {
 
 		/** get the lower-right edge of the bounding box */
 		Point2<T> getMax() const {return pMax;}
+
+		/** get the BBox's center */
+		Point2<T> getCenter() const {return (pMin + pMax)/2;}
 
 		T getWidth() const {return pMax.x - pMin.x;}
 		T getHeight() const {return pMax.y - pMin.y;}

@@ -329,6 +329,29 @@ namespace K {
 
 	public:
 
+		ImageChannel img(600,600);
+		img.ones();
+		Drawer d(img);
+
+
+		for (int i = 0; i < 9; ++i) {
+			const Eigen::Vector3d a = toVec(fm.getImg1(i));
+//			const Eigen::Vector3d b = toVec(fm.getImg2(i));
+//			const float res = (a.transpose() * (fm.get() * b));
+//			std::cout << "#" << res << std::endl;
+//			ASSERT_GE(0.1, std::abs(res));
+			Eigen::Vector3d l = fm.get() * a;
+			std::cout << "#" << l << std::endl;
+			l /= l(2);
+			//l *= 50;
+
+			Eigen::Vector3d s = a*20;
+			d.drawLine(l(0), l(1), l(0)*100, l(1)*100);
+
+		}
+
+		ImageFactory::writeJPEG("/tmp/1.jpg", img);
+
 		/** ctor */
 		StereoReconstruction(Desc& desc) : desc(desc) {
 			;

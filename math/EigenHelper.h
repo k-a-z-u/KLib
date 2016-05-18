@@ -1,0 +1,4 @@
+#ifndef EIGENHELPER_H
+#define EIGENHELPER_H
+
+#endif // EIGENHELPER_H

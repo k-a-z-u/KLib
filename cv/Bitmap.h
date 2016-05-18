@@ -16,10 +16,10 @@ namespace K {
 		Bitmap(const int w, const int h) : DataMatrix(w, h) {;}
 
 		/** ctor from image */
-		Bitmap(const ImageChannel& img) : DataMatrix(img.getWidth(), img.getHeight()) {
+		Bitmap(const ImageChannel& img, const float threshold = 0.5f) : DataMatrix(img.getWidth(), img.getHeight()) {
 
 			auto conv = [&] (const int x, const int y, const float val) {
-				if (val > 0.5) {set(x,y);}
+				if (val > threshold) {set(x,y);}
 			};
 			img.forEach(conv);
 

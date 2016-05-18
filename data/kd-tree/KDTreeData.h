@@ -165,7 +165,7 @@ namespace K {
 		KDTreeNeighbor() : idx(-1), distance(-1) {;}
 
 		/** ctor */
-		KDTreeNeighbor(const KDIdx idx, const float distance) : idx(idx), distance(distance) {;}
+		KDTreeNeighbor(const KDIdx idx, const Scalar distance) : idx(idx), distance(distance) {;}
 
 		/** for sorting */
 		inline bool operator < (const KDTreeNeighbor& n) const {return distance < n.distance;}

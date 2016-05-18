@@ -64,7 +64,8 @@ namespace K {
 			}
 
 			// argument pointer
-			char* argv[args.size()+2];			// binary + args + null-terminator
+			char* argv[128];					// binary + args + null-terminator
+			//char* argv[args.size()+2];			// binary + args + null-terminator
 			argv[0] = (char*) cmd.c_str();		// the binary itself
 			argv[args.size()+1] = nullptr;		// null-terminator
 			for (int i = 0; i < (int) args.size(); ++i) {

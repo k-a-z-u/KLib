@@ -213,12 +213,12 @@ namespace K {
 			return minI;
 		}
 
+
 		/** get the eigenvector for the samllest eigenvalue */
 		template <typename Mat, typename Vec> Vec getMin(const Mat evec, const Vec eval) {
 			const int minIdx = getMin(eval);
 			return evec.col(minIdx);
 		}
-
 
 		/** get the fundamental matrix */
 		Eigen::Matrix<Scalar,3,3> getFundamentalMatrix() const {return F;}

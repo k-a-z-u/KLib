@@ -36,6 +36,18 @@ namespace K {
 		}
 
 
+		int setIdx;
+		ImageChannel& operator << (const float val) {
+			data[0] = val;
+			setIdx = 1;
+			return *this;
+		}
+
+		ImageChannel& operator , (const float val) {
+			data[setIdx] = val;
+			++setIdx;
+			return *this;
+		}
 
 
 
