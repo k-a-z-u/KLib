@@ -75,7 +75,7 @@ namespace K {
 				//	if (p2.y == p1.y) {continue;}
 
 					// ellipse center
-					const Point2f p0 = (p1+p2)/2.0f;
+					const Point2f p0((p1.x+p2.x)/2.0f, (p1.y+p2.y)/2.0f);
 
 
 					// rotation angle
