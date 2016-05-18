@@ -1,7 +1,7 @@
 #ifndef LENSDISTORTIONCALIBRATION_H
 #define LENSDISTORTIONCALIBRATION_H
 
-#include "../../Point2.h"
+#include "../../../geo/Point2.h"
 #include <vector>
 
 #include "LensDistortionRadial.h"

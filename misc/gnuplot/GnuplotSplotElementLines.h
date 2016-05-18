@@ -33,6 +33,11 @@ namespace K {
 			points.push_back(p);
 		}
 
+		/** add an empty line */
+		void splitFace() {
+			points.push_back(GnuplotPoint3::getEmpty());
+		}
+
 		/** add an unnconected segment from A to B */
 		void addSegment(const GnuplotPoint3 from, const GnuplotPoint3 to) {
 			points.push_back(from);

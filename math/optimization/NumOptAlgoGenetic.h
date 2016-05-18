@@ -218,7 +218,7 @@ namespace K {
 
 		/** calculate the fitness for the given genes */
 		template <typename Func, typename Params> inline float getFitness(Func& func, const Params& genes) {
-			return - func.getError(genes); // negative value to convert from "error" to "fitness"
+			return - (func(genes)); // negative value to convert from "error" to "fitness"
 		}
 
 		/** cross the given two parent's genes and apply random mutation to create an new child */

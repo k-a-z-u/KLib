@@ -2,7 +2,7 @@
 #define ELLIPSE_H
 
 #include "../ImageChannel.h"
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 
 #include "../draw/Drawer.h"
 #include "../ImageFactory.h"

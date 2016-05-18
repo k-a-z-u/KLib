@@ -1,7 +1,7 @@
 #ifndef REGIONGROWING_H
 #define REGIONGROWING_H
 
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 #include "../ImageChannel.h"
 #include "../Bitmap.h"
 

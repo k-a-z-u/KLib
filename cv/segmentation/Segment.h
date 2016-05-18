@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "../ImageChannel.h"
-#include "../Point2.h"
-#include "../BBox2.h"
+#include "../../geo/Point2.h"
+#include "../../geo/BBox2.h"
 
 namespace K {
 

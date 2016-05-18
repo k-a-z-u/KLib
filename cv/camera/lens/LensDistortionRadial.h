@@ -2,7 +2,7 @@
 #define LENSDISTORTIONRADIAL_H
 
 #include "../../../Assertions.h"
-#include "../../Point2.h"
+#include "../../../geo/Point2.h"
 #include "../../ImageChannel.h"
 #include "../../filter/Interpolation.h"
 

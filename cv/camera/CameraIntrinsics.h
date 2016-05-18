@@ -2,7 +2,7 @@
 #define CAMERAINTRINSICS_H
 
 #include <eigen3/Eigen/Dense>
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 
 #include "../../math/optimization/NumOptAlgoGenetic.h"
 

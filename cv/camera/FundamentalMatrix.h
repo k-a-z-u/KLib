@@ -1,7 +1,7 @@
 #ifndef K_CV_CAMERA_FUNDAMENTALMATRIX_H
 #define K_CV_CAMERA_FUNDAMENTALMATRIX_H
 
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/SVD>
@@ -18,6 +18,19 @@ namespace K {
 	 * estimate the fundamental-matrix F
 	 * satisfying x * F * x' = 0 for
 	 * several given x,x' correspondences
+	 *
+	 *             | a b c |   |xl|
+	 * |xr yr 1| * | d e f | * |yl| = 0
+	 *             | g h i |   |1 |
+	 *
+	 *             | axl + byl + c |
+	 * |xr yr 1| * | dxl + eyl + f |
+	 *             | gxl + hyl + i |
+	 *
+	 * axlxr + bylxr + cxr +
+	 * dxlyr + eylyr + fyr +
+	 * gxl + hyl + i = 0
+	 *
 	 */
 	class FundamentalMatrix {
 
@@ -26,52 +39,69 @@ namespace K {
 
 		using Scalar = double;
 
-		Eigen::Matrix<Scalar,3,3> F;
+		using Vec2 = Eigen::Matrix<Scalar,2,1>;
+		using Vec3 = Eigen::Matrix<Scalar,3,1>;
+		using Mat3 = Eigen::Matrix<Scalar,3,3>;
 
-		std::vector<Point2f> img1;
-		std::vector<Point2f> img2;
+		Mat3 F;
+		Vec3 epipoleLeft;
+		Vec3 epipoleRight;
+
+		std::vector<Point2f> imgLeft;
+		std::vector<Point2f> imgRight;
 
 	public:
 
 		/** remove all correspondences */
 		void reset() {
-			img1.clear();
-			img2.clear();
+			imgLeft.clear();
+			imgRight.clear();
 		}
 
 
-		/** add a known correspondence between img1(x,y) and img2(x,y) */
-		void addCorrespondence(const float x1, const float y1, const float x2, const float y2) {
-			img1.push_back(Point2f(x1,y1));
-			img2.push_back(Point2f(x2,y2));
+		/** add a known correspondence between imgLeft(x,y) and imgRight(x,y) */
+		void addCorrespondence(const float xl, const float yl, const float xr, const float yr) {
+			imgLeft.push_back(Point2f(xl, yl));
+			imgRight.push_back(Point2f(xr, yr));
 		}
 
+		/** add a known correspondence between imgLeft(x,y) and imgRight(x,y) */
+		template <typename T> void addCorrespondence(const Point2<T> pl, const Point2<T> pr) {
+			imgLeft.push_back(Point2f(pl.x, pl.y));
+			imgRight.push_back(Point2f(pr.x, pr.y));
+		}
 
-		const Point2f getImg1(const int idx) {return img1[idx];}
-		const Point2f getImg2(const int idx) {return img2[idx];}
+		/** get the number of added correspondences */
+		int getNumCorrespondences() const {return imgLeft.size();}
+
+		/** get the idx-th correspondence point within the left image */
+		const Point2f getPointLeft(const int idx) const {return imgLeft[idx];}
+
+		/** get the idx-th correspondence point within the right image */
+		const Point2f getPointRight(const int idx) const {return imgRight[idx];}
 
 
 		/** estimate the Homography based on previously added correspondences */
 		void estimate() {
 
 			// normalize poth point-sets (zero-mean, std-dev=1)
-			normalize(img1);
-			normalize(img2);
+//			normalize(img1);
+//			normalize(img2);
 
 			// create the A-Matrix (n*9) of linear-equation-system A*x=0
 			Eigen::Matrix<Scalar, Eigen::Dynamic, 9> A;
-			A.conservativeResize(img1.size(), Eigen::NoChange);
+			A.conservativeResize(imgLeft.size(), Eigen::NoChange);
 
 			// fill the A-Matrix with one equation per point-correspondence
-			for (int i = 0; i < (int) img1.size(); ++i) {
+			for (int i = 0; i < (int) imgLeft.size(); ++i) {
 
-				const float x1 = img1[i].x;
-				const float y1 = img1[i].y;
-				const float x2 = img2[i].x;
-				const float y2 = img2[i].y;
+				const float xr = imgRight[i].x;
+				const float yr = imgRight[i].y;
+				const float xl = imgLeft[i].x;
+				const float yl = imgLeft[i].y;
 
 				Eigen::Matrix<Scalar, 1, 9> row;
-				row << (x1*x2), (x1*y2), (x1), (y1*x2), (y1*y2), (y1), (x2), (y2), 1;
+				row << (xr*xl), (xr*yl), (xr), (yr*xl), (yr*yl), (yr), (xl), (yl), 1;
 				A.row(i) = row;
 
 			}
@@ -85,10 +115,10 @@ namespace K {
 
 			// V is a 9x9 matrix. For F, we use the column, corresponding to the smallest singular value in D
 			const int smlIdx = getMinIdx(svdA.singularValues());
-			_assertEqual(V.cols()-1, smlIdx, "should always be the last index of the last column");
+			_assertEqual(svdA.singularValues().rows()-1, smlIdx, "should always be the index of the last row");
 			Eigen::Matrix<Scalar,9,1> F = V.col(smlIdx);
 
-			// reshape from 9x1 to 3x3
+			// reshape from 9xl to 3x3
 			Eigen::Matrix<Scalar,3,3> FF(F.data());
 
 			// why do we need this step?
@@ -121,30 +151,101 @@ namespace K {
 				std::cout << FFF << std::endl;
 
 				// done
-				this->F = FFF;
+				this->F = FFF.transpose(); // why the transpose?
 
 			}
 
-			// estimate the epipoles
-
+			// estimate right epipole
 			{
 
-				Eigen::Matrix<Scalar,3,3> FF = this->F * this->F.transpose();
-
+				const Mat3 FF = this->F * this->F.transpose();
 				Eigen::SelfAdjointEigenSolver<decltype(FF)> solver(FF);
 
-				solver.eigenvalues()
+				// get the eigenvector corresponding to the smallest eigenvalue
+				const Vec3 v3 = getMin(solver.eigenvectors(), solver.eigenvalues());
+				this->epipoleRight = normW(v3);
 
 			}
 
+			// estimate left epipole
+			{
+
+				const Mat3 FF = this->F.transpose() * this->F;
+				Eigen::SelfAdjointEigenSolver<decltype(FF)> solver(FF);
+
+				// get the eigenvector corresponding to the smallest eigenvalue
+				const Vec3 v3 = getMin(solver.eigenvectors(), solver.eigenvalues());
+				this->epipoleLeft = normW(v3);
+
+			}
+
+			int i = 0; (void) i;
 
 
 		}
 
 
 
+		/** get the index of the smallest element within the given vector */
+		template <typename Vec> int getMin(const Vec vec) {
+			int minI = -1;
+			float minV = INFINITY;
+			for (int i = 0; i < vec.rows(); ++i) {
+				if (vec(i) < minV) {minV = vec(i); minI = i;}
+			}
+			return minI;
+		}
+
+
+		/** get the eigenvector for the samllest eigenvalue */
+		template <typename Mat, typename Vec> Vec getMin(const Mat evec, const Vec eval) {
+			const int minIdx = getMin(eval);
+			return evec.col(minIdx);
+		}
+
 		/** get the fundamental matrix */
-		Eigen::Matrix<Scalar,3,3> get() const {return F;}
+		Eigen::Matrix<Scalar,3,3> getFundamentalMatrix() const {return F;}
+
+		/**
+		 * get the equation for an epi-line within the right-image,
+		 * using the given point in the left image.
+		 * l_r = F * p_l
+		 * the equation is given as 3 parameters A,B,C denoting Ax + By + C = 0.
+		 * to transform this into a line, just rephrase the problem as y = mx+b:
+		 * Ax + By + C = 0
+		 * By = -Ax - C
+		 * y = -(Ax + C) / B
+		 */
+		Vec3 getEpilineRight(const Vec3& pLeft) const {
+			Vec3 v3 = F * pLeft;
+			Vec2 v2; v2 << v3(0), v3(1);		// only the first two coordinates
+			return v3 / v2.norm();				// normalize using only the first two coordinates (scales into image-space)
+		}
+
+		template <typename T> Vec3 getEpilineRight(Point2<T> pLeft) const {
+			return getEpilineRight(Vec3(pLeft.x, pLeft.y, 1));
+		}
+
+		/**
+		 * get the equation for an epi-line within the left-image,
+		 * using the given point in the right image.
+		 * l_l = F^T * p_r
+		 * see getEpilineRight()
+		 */
+		Vec3 getEpilineLeft(const Vec3& pRight) const {
+			Vec3 v3 = F.transpose() * pRight;	// transposed matrix
+			Vec2 v2; v2 << v3(0), v3(1);		// only the first two coordinates
+			return v3 / v2.norm();				// normalize using only the first two coordinates (scales into image-space)
+		}
+
+		/** get the right epipole */
+		Vec3 getEpipoleRight() const {return epipoleRight;}
+
+		/** get the left epipole */
+		Vec3 getEpipoleLeft() const {return epipoleLeft;}
+
+
+	private:
 
 		/** get the index of the smallest value in vec */
 		template <typename T> int getMinIdx(T vec) const {
@@ -155,6 +256,17 @@ namespace K {
 			}
 			return idx;
 
+		}
+
+		/** normalize v3's x/y component (distance = 1.0) */
+		inline Vec3 normXY(const Vec3 v3) const {
+			Vec2 v2; v2 << v3(0), v3(1);
+			return v3 / v2.norm();
+		}
+
+		/** convert v3 from homogenous to normal coordinates (ensure w = 1.0) */
+		inline Vec3 normW(const Vec3 v3) const {
+			return v3 / v3(2);
 		}
 
 		/**

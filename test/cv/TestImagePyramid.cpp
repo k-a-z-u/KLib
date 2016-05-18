@@ -1,7 +1,6 @@
 
 
 #ifdef WITH_TESTS
-#define WITH_ASSERTIONS
 
 #include "../Test.h"
 #include "../../cv/ImagePyramid.h"
