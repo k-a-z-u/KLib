@@ -29,7 +29,10 @@ namespace K {
 
 		/** filter using 2x1D gauss */
 		ImageChannel filter(const ImageChannel& src) const {
+
+			// 2 x 1D convolution
 			return Convolve::run(Convolve::run(src, kH), kV);
+
 		}
 
 	};

@@ -114,7 +114,7 @@ namespace K {
 		planes.push_back(img9);
 		planes.push_back(img10);
 
-		CameraIntrinsics::calibrate<10>(planes);
+//		CameraIntrinsics::calibrate<10>(planes);
 
 
 	}

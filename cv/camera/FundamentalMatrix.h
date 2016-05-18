@@ -49,6 +49,7 @@ namespace K {
 
 		std::vector<Point2f> imgLeft;
 		std::vector<Point2f> imgRight;
+		std::vector<Point2f> all;
 
 	public:
 
@@ -63,16 +64,21 @@ namespace K {
 		void addCorrespondence(const float xl, const float yl, const float xr, const float yr) {
 			imgLeft.push_back(Point2f(xl, yl));
 			imgRight.push_back(Point2f(xr, yr));
+			all.push_back(Point2f(xl, yl));
+			all.push_back(Point2f(xr, yr));
+
 		}
 
 		/** add a known correspondence between imgLeft(x,y) and imgRight(x,y) */
 		template <typename T> void addCorrespondence(const Point2<T> pl, const Point2<T> pr) {
-			imgLeft.push_back(Point2f(pl.x, pl.y));
-			imgRight.push_back(Point2f(pr.x, pr.y));
+			imgLeft.push_back(Point2f((float)pl.x, (float)pl.y));
+			imgRight.push_back(Point2f((float)pr.x, (float)pr.y));
+			all.push_back(Point2f((float)pl.x, (float)pl.y));
+			all.push_back(Point2f((float)pr.x, (float)pr.y));
 		}
 
 		/** get the number of added correspondences */
-		int getNumCorrespondences() const {return imgLeft.size();}
+		int getNumCorrespondences() const {return (int) imgLeft.size();}
 
 		/** get the idx-th correspondence point within the left image */
 		const Point2f getPointLeft(const int idx) const {return imgLeft[idx];}
@@ -84,9 +90,12 @@ namespace K {
 		/** estimate the Homography based on previously added correspondences */
 		void estimate() {
 
-			// normalize poth point-sets (zero-mean, std-dev=1)
-//			normalize(img1);
-//			normalize(img2);
+			// matrix that normalizes image coordinates (zero-mean, std-dev=1)
+			const Mat3 T = getNormalization(all);
+//			Mat3 T; T <<
+//							2,	0,	0,
+//							0,	2,	0,
+//							0,	0,	1;
 
 			// create the A-Matrix (n*9) of linear-equation-system A*x=0
 			Eigen::Matrix<Scalar, Eigen::Dynamic, 9> A;
@@ -95,10 +104,14 @@ namespace K {
 			// fill the A-Matrix with one equation per point-correspondence
 			for (int i = 0; i < (int) imgLeft.size(); ++i) {
 
-				const float xr = imgRight[i].x;
-				const float yr = imgRight[i].y;
-				const float xl = imgLeft[i].x;
-				const float yl = imgLeft[i].y;
+				// convert from image-coordinates to normalized coordinates
+				const Point2f pl = normalize(imgLeft[i], T);
+				const Point2f pr = normalize(imgRight[i], T);
+
+				const float xr = pr.x;
+				const float yr = pr.y;
+				const float xl = pl.x;
+				const float yl = pl.y;
 
 				Eigen::Matrix<Scalar, 1, 9> row;
 				row << (xr*xl), (xr*yl), (xr), (yr*xl), (yr*yl), (yr), (xl), (yl), 1;
@@ -121,7 +134,8 @@ namespace K {
 			// reshape from 9xl to 3x3
 			Eigen::Matrix<Scalar,3,3> FF(F.data());
 
-			// why do we need this step?
+			// FF is almost complete. however, we need to ensure that det(FF) = 0 so we need another step
+			// https://courses.engr.illinois.edu/cs543/sp2011/lectures/Lecture%2023%20-%20Epipolar%20Geometry%20and%20Stereo%20-%20Vision_Spring2011.pdf
 			{
 
 				// calculate SVD for FF
@@ -154,6 +168,9 @@ namespace K {
 				this->F = FFF.transpose(); // why the transpose?
 
 			}
+
+			// de-normalize F (back to image coordinates)
+			this->F = T.transpose() * this->F * T;
 
 			// estimate right epipole
 			{
@@ -245,6 +262,22 @@ namespace K {
 		Vec3 getEpipoleLeft() const {return epipoleLeft;}
 
 
+		//http://research.microsoft.com/en-us/um/people/zhang/Papers/TR99-21.pdf
+		Mat3 getRectificationRight() {
+
+			// get one epiline within the right image
+			Vec3 w = getEpilineRight(imgLeft[0]);
+
+			Mat3 Ha; Ha <<
+				1,			0,			-200,
+				0,			1,			-200,
+				w(0)/w(2),	w(1)/w(2),	1;
+
+			return Ha;
+
+
+		}
+
 	private:
 
 		/** get the index of the smallest value in vec */
@@ -267,6 +300,39 @@ namespace K {
 		/** convert v3 from homogenous to normal coordinates (ensure w = 1.0) */
 		inline Vec3 normW(const Vec3 v3) const {
 			return v3 / v3(2);
+		}
+
+		Mat3 getNormalization(std::vector<Point2f>& pts) const {
+
+			Point2f sum(0,0);
+			Point2f sum2(0,0);
+			const int cnt = (int) pts.size();
+
+			// calculate the average and std-dev for the point-set
+			for (const Point2f p : pts) {
+				sum += p;
+				sum2 += p*p;
+			}
+
+			// calculate average, variance and sigma
+			const Point2f avg = sum / (float)cnt;
+			const Point2f var =  (sum2 / (float)cnt) - (avg*avg);
+			const Point2f sigma( std::sqrt(var.x), std::sqrt(var.y) );
+
+			// construct normalization matrix T: x' = T x
+			Mat3 T;
+			T <<
+				1.0/sigma.x,	0,				-avg.x/sigma.x,
+				0,				1.0/sigma.y,	-avg.y/sigma.y,
+				0,				0,				1;
+
+			return T;
+
+		}
+
+		Point2f normalize(const Point2f p, const Mat3& T) {
+			const Vec3 v = T * Vec3(p.x, p.y, 1);
+			return Point2f(v(0), v(1));
 		}
 
 		/**

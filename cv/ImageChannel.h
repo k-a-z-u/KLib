@@ -21,6 +21,10 @@ namespace K {
 		/** ctor without data */
 		ImageChannel(const int width, const int height) : DataMatrix(width, height) {;}
 
+
+
+
+
 		/** set all pixels to zero */
 		void zero() {
 			std::fill(data.begin(), data.end(), 0);
@@ -33,17 +37,7 @@ namespace K {
 
 
 
-		/** call the given function for each of the channels's pixels.*/
-		void forEach(std::function<void(const int, const int, const float)> exec) const {
 
-			// run function for each element
-			for (int y = 0; y < height; ++y) {
-				for (int x = 0; x < width; ++x) {
-					exec(x, y, get(x,y));
-				}
-			}
-
-		}
 
 		/** call the given function for each of the channels's pixels.*/
 		void setEach(std::function<float(const int, const int)> func) {

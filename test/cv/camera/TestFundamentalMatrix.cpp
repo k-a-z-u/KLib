@@ -2,6 +2,8 @@
 
 #include "../../Test.h"
 #include "../../../cv/camera/FundamentalMatrix.h"
+#include "../../../cv/camera/Homography.h"
+
 #include "../../../cv/ImageFactory.h"
 #include "../../../cv/draw/Drawer.h"
 
@@ -337,7 +339,11 @@ namespace K {
 			ImageChannel imgDepth(desc.imgLeft.getWidth(), desc.imgLeft.getHeight());
 			imgDepth.ones();
 
-			MatchingSAD sad(desc.imgLeft, desc.imgRight, 9);
+			Gauss g(1.0);
+			desc.imgLeft = g.filter(desc.imgLeft);
+			desc.imgRight = g.filter(desc.imgRight);
+
+			MatchingSAD sad(desc.imgLeft, desc.imgRight, 13);
 			MatchingConvolution conv(desc.imgLeft, desc.imgRight, 9);
 			Matching matcher;
 
@@ -417,28 +423,28 @@ namespace K {
 					// follow the epipolar line
 					while (iter.hasNext()) {
 
-						const Point2i pR = iter.next();
+						const Point2i _pR = iter.next();
 
 						const int maxD = desc.imgLeft.getWidth() / 4;
-						if(pL.getDistance(pR) > maxD) {continue;}
+						if(pL.getDistance(_pR) > maxD) {continue;}
 						//if(pL.getDistance(pR) < 10) {continue;}
 
 						//const int w = 0;
-						//for (int oy = -w; oy <= +w; ++oy) {
+						for (int oy = -1; oy <= +1; ++oy) {
 						//	for (int ox = -w; ox <= +w; ++ox) {
-								//const Point2i pR = _pR + (Point2i(ox, oy));
+								const Point2i pR = _pR + (Point2i(0, oy));
 								if (pR.x < 2 || pR.y < 2 || pR.x >= desc.imgRight.getWidth() - 2 || pR.y >= desc.imgRight.getHeight() - 2) {continue;}
 								//float err = - fLeft.get(pL.x, pL.y).diff(fRight.get(pR.x, pR.y));
-								//float err = sad.getError(pL, pR);
+								float err = sad.getError(pL, pR);
 								//float err = -conv.getScore(pL, pR);
-								float err = HOG::getDistance( hogLeft.get(pL.x, pL.y), hogRight.get(pR.x, pR.y) );
+								//float err = HOG::getDistance( hogLeft.get(pL.x, pL.y), hogRight.get(pR.x, pR.y) );
 
 								//if (err < vMin) {vMin = err; pMin = pR;}
 								queue.push(QueueElem(err, pR));
 								//errLine.add( GnuplotPoint2(pR.x, err) );
 								//std::cout << pR.x << "," << pR.y << std::endl;
 						//	}
-						//}
+						}
 
 					}
 
@@ -506,16 +512,16 @@ namespace K {
 
 	TEST(FundamentalMatrix, estimate) {
 
-		//Garden desc;
+		Garden desc;
 		//IDIS desc;
 		//Metal1 desc;
-		House3D desc;
+		//House3D desc;
 
 
 		StereoPlot plot(desc);
 
 		StereoReconstruction sr(desc);
-		sr.perform();
+		//sr.perform();
 
 
 		for (int i = 0; i < 8; ++i) {
@@ -567,7 +573,10 @@ namespace K {
 
 		}
 
-//		ImageFactory::writeJPEG("/tmp/1.jpg", img);
+		ImageChannel test(desc.imgRight.getWidth(), desc.imgRight.getHeight());
+		Transform::affine(desc.fm.getRectificationRight(), desc.imgRight, test);
+
+		ImageFactory::writeJPEG("/tmp/1.jpg", test);
 
 
 
