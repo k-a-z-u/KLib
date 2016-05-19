@@ -49,7 +49,7 @@ TEST(Corners, Harris) {
 	cdh.setBlurSigma(3.0f);
 	std::vector<Corner> corners = cdh.getCorners(img);
 
-	HOG hog(8);
+	HOG hog(img, 8);
 	std::ofstream o("/tmp/1.dat");
 
 

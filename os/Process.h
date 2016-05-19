@@ -154,14 +154,19 @@ namespace K {
 		/** flush to process */
 		void flush() {
 			const std::string data = ss.str();
-			const ssize_t ret = write( pipeToProcess[WRITE], data.c_str(), data.length() );
-			if (ret != (long) data.length()) {
-				throw new ProcessException("error writing complete data block to child. FIXME.");
+			int start = 0;
+			int todo = data.length();
+			while(todo > 0) {
+				const ssize_t ret = write( pipeToProcess[WRITE], data.c_str()+start, data.length() );
+				if (ret == -1) { throw new ProcessException("error while writing to process"); }
+				todo -= ret;
+				start += ret;
 			}
+//			if (ret != (long) data.length()) {
+//				throw new ProcessException("error writing complete data block to child. FIXME.");
+//			}
 			ss.str("");
-			if (ret == -1) {
-				throw new ProcessException("error while writing to process");
-			}
+
 		}
 
 		/** close the streams */

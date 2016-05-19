@@ -10,16 +10,25 @@
 
 
 #include "NumOptAlgo.h"
+#include "NumOptDataVector.h"
+
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 namespace K {
+
 
 	/**
 	 * performs n-dimensional optimization using the
 	 * downhill-simplex algorithm
+	 *
+	 * http://www.scholarpedia.org/article/Nelder-Mead_algorithm
 	 */
-	template <int numArgs> class NumOptAlgoDownhillSimplex : public NumOptAlgo<numArgs> {
+	template <typename Scalar, int numArgs> class NumOptAlgoDownhillSimplex {
+
+
+	using Data = NumOptDataVector<Scalar>;
 
 	public:
 
@@ -27,10 +36,13 @@ namespace K {
 		struct SimplexEntry {
 
 			/** the parameters for the function to optimize */
-			NumOptVector<numArgs> param;
+			Data param;
 
 			/** the result f(param) = y */
-			double value;
+			Scalar value;
+
+			/** ctor */
+			SimplexEntry() : param(numArgs), value(0) {;}
 
 		};
 
@@ -38,22 +50,22 @@ namespace K {
 		 * ctor
 		 * @param abortAt abort when difference between current worst and best value is below this value
 		 * @param alpha reflection
-		 * @param rho contraction
+		 * @param beta contraction
 		 * @param gamma expansion
 		 * @param sigma reduction
 		 */
-		NumOptAlgoDownhillSimplex(double abortAt = 0.001, double alpha = 1.0, double rho = -0.5, double gamma = 2.0, double sigma = 0.5) :
-			abortAt(abortAt), alpha(alpha), rho(rho), gamma(gamma), sigma(sigma), maxIterations(5000), numRestarts(0) {
+		NumOptAlgoDownhillSimplex(Scalar abortAt = 0.001, Scalar alpha = 1.0, Scalar beta = 0.5, Scalar gamma = 2.0, Scalar sigma = 0.5) :
+			abortAt(abortAt), alpha(alpha), beta(beta), gamma(gamma), sigma(sigma), maxIterations(100), numRestarts(0) {
 			;
 		}
 
 		/** set a callback-function to inform after every run */
-		void setCallback(std::function<void(const int iteration, const float error, const NumOptVector<numArgs>&)> func) {
+		void setCallback(std::function<void(const int iteration, const Scalar error, const Scalar* params)> func) {
 			this->callback = func;
 		}
 
 		/** optimize the functions only parameter until epsilon is reached */
-		void calculateOptimum(NumOptFunction<numArgs>& func, NumOptVector<numArgs>& param) override {
+		template <typename Func> void calculateOptimum(Func& func, Scalar* dst) {
 
 			const auto& lambda = [] (const SimplexEntry& a, const SimplexEntry& b) {return a.value < b.value;};
 
@@ -64,20 +76,25 @@ namespace K {
 			// we need n+1 parameter-sets during optimization
 			SimplexEntry set[numArgs+1];
 
+
 			// how often to refine the solution
 			for (unsigned int run = 0; run <= numRestarts; ++run) {
 
 				//std::cout << "run: " << run << std::endl;
 
 				// init parameter set
-				set[0].param = param;				// first value = given start-vector (or 0-vector)
-				for (unsigned int i = 1; i < numArgs+1; ++i) {
+
+				for (unsigned int i = 0; i < numArgs+1; ++i) {
+
+					set[i].param = dst;				// start with the given start-vector (or 0-vector)
 
 					// for each following entry, slightly adjust one of the n parameters
-					if (set[i].param[i-1] == 0) {
-						set[i].param[i-1] = 1.0;
-					} else {
-						set[i].param[i-1] *= 1.10;
+					if (i > 0) {
+						if (set[i].param[i-1] == 0) {
+							set[i].param[i-1] = 1.0f;
+						} else {
+							set[i].param[i-1] *= 1.10f;
+						}
 					}
 
 				}
@@ -87,79 +104,15 @@ namespace K {
 
 					// calculate f(param) = y for each of the n+1 entries
 					for (unsigned int i = 0; i < numArgs+1; ++i) {
-						set[i].value = func(set[i].param);
+						set[i].value = func(set[i].param.constPtr());
 					}
 
-					// now sort the n+1 entries by their result (= function value)
+					// now sort the n+1 entries by their result (= function value) smallest error comes first
 					std::sort(std::begin(set), std::end(set), lambda);
-
-
-					// -------------------------------- REFLECTION --------------------------------
-
-					// calculate the gravity center
-					// (all points BUT the worst -> numArgs (and not numArgs+1))
-					NumOptVector<numArgs> center;
-					for (unsigned int i = 0; i < numArgs; ++i) {center += set[i].param;}
-					center /= numArgs;
-
-					// get reflection point
-					const NumOptVector<numArgs> reflect = set[0].param + (set[0].param - set[IDX_WORST].param) * alpha;
-					const double reflectValue = func(reflect);
-
-
-					if (set[0].value <= reflectValue && reflectValue < set[IDX_2ND_WORST].value) {
-
-						// REFLECTION
-						// reflect is better than second worst, but not better than current best
-						//std::cout << "reflection" << std::endl;
-
-						set[IDX_WORST].param = reflect;
-
-					} else if (reflectValue < set[0].value) {
-
-						// EXPANSION
-						// reflect is better than the current best
-						//std::cout << "expansion" << std::endl;
-
-						const NumOptVector<numArgs> expand = set[0].param + (set[0].param - set[IDX_WORST].param) * gamma;
-						const double expandValue = func(expand);
-
-						// is expansion better than reflection?
-						if (expandValue < reflectValue) {
-							set[IDX_WORST].param = expand;
-						} else {
-							set[IDX_WORST].param = reflect;
-						}
-
-					} else {
-
-						// CONTRACTION
-						// reflection is worst than second worst
-						//std::cout << "contraction" << std::endl;
-
-						const NumOptVector<numArgs> contract = set[0].param + (set[0].param - set[IDX_WORST].param) * rho;
-						const double contractValue = func(contract);
-
-						// contraction better than worst? -> replace worst
-						if (contractValue < set[IDX_WORST].value) {
-							set[IDX_WORST].param = contract;
-						} else {
-
-							// REDUCTION
-							// 'resize' the simplex
-							// std::cout << "reduction" << std::endl;
-
-							for (unsigned int i = 1; i < numArgs+1; ++i) {
-								set[i].param = set[IDX_BEST].param + (set[i].param - set[IDX_BEST].param) * sigma;
-							}
-
-						}
-
-					}
 
 					// inform callback (if any) about the current optimum
 					if (callback) {
-						callback(iter, set[IDX_BEST].value, set[IDX_BEST].param);
+						callback(iter, set[IDX_BEST].value, set[IDX_BEST].param.constPtr());
 					}
 
 					// done?
@@ -167,10 +120,96 @@ namespace K {
 						break;
 					}
 
+
+
+					// -------------------------------- REFLECTION --------------------------------
+
+					// calculate the gravity center
+					// (all sets BUT the worst -> sorted: 0 to numArgs (and not numArgs+1))
+					Data center(numArgs);
+					for (unsigned int i = 0; i < numArgs; ++i) {center += set[i].param;}
+					center /= numArgs;
+
+					// get reflection point
+					const Data reflect = center + (center - set[IDX_WORST].param) * alpha;
+					const Scalar reflectValue = func(reflect.constPtr());
+
+
+					if (set[IDX_BEST].value <= reflectValue && reflectValue < set[IDX_2ND_WORST].value) {
+
+						// USE REFLECTION
+						// reflect is better than second worst, but not better than current best
+						set[IDX_WORST].param = reflect;
+						continue;
+					}
+
+					if (reflectValue < set[IDX_BEST].value) {
+
+						// USE EXPANSION
+						// reflect is better than the current best
+
+						const Data expand = center + (reflect - center) * gamma;
+						const Scalar expandValue = func(expand.constPtr());
+
+						// is expansion better than reflection?
+						if (expandValue < reflectValue) {
+							set[IDX_WORST].param = expand;
+							continue;
+						} else {
+							set[IDX_WORST].param = reflect;
+							continue;
+						}
+
+					}
+
+					if (reflectValue >= set[IDX_2ND_WORST].value) {
+
+						// CONTRACTION
+						// reflection is worst than second worst
+						//std::cout << "contraction" << std::endl;
+
+						if (set[IDX_2ND_WORST].value <= reflectValue && reflectValue < set[IDX_WORST].value) {
+
+							const Data contract = center + (reflect - center) * beta;
+							const Scalar contractValue = func(contract.constPtr());
+
+							// contraction better than worst? -> replace worst
+							if (contractValue <= reflectValue) {
+								set[IDX_WORST].param = contract;
+								continue;
+							}
+
+						} else {
+
+							const Data contract = center + (set[IDX_WORST].param - center) * beta;
+							const Scalar contractValue = func(contract.constPtr());
+
+							// contraction better than worst? -> replace worst
+							if (contractValue < set[IDX_WORST].value) {
+								set[IDX_WORST].param = contract;
+								continue;
+							}
+
+						}
+
+					}
+
+
+
+					// REDUCTION
+					// 'resize' the simplex
+					for (unsigned int i = 1; i < numArgs+1; ++i) {
+						set[i].param = set[IDX_BEST].param + (set[i].param - set[IDX_BEST].param) * sigma;
+					}
+
+
+
 				}
 
 				// the best result
-				param = set[IDX_BEST].param;
+				set[IDX_BEST].param.copyTo(dst);
+				//param = set[IDX_BEST].param;
+
 
 			}
 
@@ -189,19 +228,19 @@ namespace K {
 	private:
 
 		/** when to abort the algorithm */
-		double abortAt;
+		Scalar abortAt;
 
 		/** the reflection factor */
-		double alpha;
+		Scalar alpha;
 
 		/** the contraction factor */
-		double rho;
+		Scalar beta;
 
 		/** the expansion factor */
-		double gamma;
+		Scalar gamma;
 
 		/** the reduction factor */
-		double sigma;
+		Scalar sigma;
 
 		/** stop after the given number of iterations */
 		unsigned int maxIterations;
@@ -210,7 +249,7 @@ namespace K {
 		unsigned int numRestarts;
 
 		/** callback-function to inform after every run */
-		std::function<void(const int iteration, const float error, const NumOptVector<numArgs>&)> callback;
+		std::function<void(const int iteration, const Scalar error, const Scalar* params)> callback;
 
 
 	};

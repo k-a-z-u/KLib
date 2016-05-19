@@ -98,35 +98,37 @@ namespace K {
 
 		static std::vector<float> calibrate(std::vector<Path>& paths, const Point2f& imageSize, const int num) {
 
-			class Func : public NumOptFunction<2> {
-				const std::vector<Path>& paths;
-			public:
-				Func(const std::vector<Path>& paths) : paths(paths){;}
-				virtual double getValue(const NumOptVector<2>& args) const override {
+//			class Func : public NumOptFunction<2> {
+//				const std::vector<Path>& paths;
+//			public:
+//				Func(const std::vector<Path>& paths) : paths(paths){;}
+//				virtual double getValue(const NumOptVector<2>& args) const override {
 
-					double cumErr = 0;
+//					double cumErr = 0;
 
-					for (const Path& path : paths) {
-						const float err = getError(path, &args[0], 2);
-						cumErr += err;
-					}
+//					for (const Path& path : paths) {
+//						const float err = getError(path, &args[0], 2);
+//						cumErr += err;
+//					}
 
-					std::cout << "err: " << cumErr << std::endl;
-					std::cout << "\t" << args[0] << ":" << args[1] << std::endl;
-					return cumErr;
+//					std::cout << "err: " << cumErr << std::endl;
+//					std::cout << "\t" << args[0] << ":" << args[1] << std::endl;
+//					return cumErr;
 
-				}
-			} func(paths);
+//				}
+//			} func(paths);
 
-			NumOptVector<2> vec;
-			NumOptAlgoDownhillSimplex<2> opt;
+//			NumOptVector<2> vec;
+//			NumOptAlgoDownhillSimplex<2> opt;
 
-			for (Path& p : paths) {
-				p.center(imageSize);
-			}
+//			for (Path& p : paths) {
+//				p.center(imageSize);
+//			}
 
-			opt.calculateOptimum(func, vec);
-			return std::vector<float>(&vec[0], &vec[num]);
+//			opt.calculateOptimum(func, vec);
+//			return std::vector<float>(&vec[0], &vec[num]);
+
+			return std::vector<float>();
 
 		}
 

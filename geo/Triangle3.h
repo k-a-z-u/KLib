@@ -3,6 +3,8 @@
 
 #include "Point3.h"
 
+#include <eigen3/Eigen/Dense>
+
 namespace K {
 
 	/** triangle in 3D space */
@@ -41,11 +43,11 @@ namespace K {
 		}
 
 		/**
-		 * get the distance between the given point and the triangle
+		 * get the distance between the given point and the triangle (perpendicular)
 		 * giving a delta-factor [0.0:0.5] allows intersections sligthly
 		 * outside of the triangle!
 		 */
-		float getDistance(const Point3<T>& P, const float delta = 0) const {
+		float getDistancePerp(const Point3<T>& P, const float delta = 0) const {
 
 			const P3 B = p1;		// base
 			const P3 E0 = p2-p1;	// 1st vector
@@ -58,6 +60,75 @@ namespace K {
 			} else {
 				return INFINITY;
 			}
+
+		}
+
+		struct D {
+			Point3<T> isect;
+			float dist;
+			D(Point3<T> isect, float dist) : isect(isect), dist(dist) {;}
+		};
+
+
+
+		std::vector<P3> pts;
+
+		/**
+		 * get the minimum distance betwenn the given point and the triangle
+		 */
+		D getDistanceAny(const Point3<T>& p) const {
+
+//			if (pts.empty()) {
+
+//				const P3 B = p1;		// base
+//				const P3 E0 = p2-p1;	// 1st vector
+//				const P3 E1 = p3-p1;	// 2nd vector
+
+//				for (int i = 0; i < 10; ++i) {
+//					float r1 = rand() / (float) RAND_MAX / 2;
+//					float r2 = rand() / (float) RAND_MAX / 2;
+//					P3 np = B + (E0*r1) + (E1*r2);
+//					((std::vector<P3>&)pts).push_back(np);
+//				}
+
+//			}
+
+//			auto comp = [&] (const P3& a, const P3& b) {return a.getDistance(p) < b.getDistance(p);};
+//			auto it = std::min_element(pts.begin(), pts.end(), comp);
+//			P3 res = *it;
+
+//			return D(res, res.getDistance(p));
+
+
+			const K::Point3<T> A = p1;
+			const K::Point3<T> B = (p2-p1);
+			const K::Point3<T> C = (p3-p1);
+
+			Eigen::Matrix<float,5,1> res; res << (p.x - A.x), (p.y - A.y), (p.z - A.z), 1, 0;
+
+			Eigen::Matrix<float,5,2> mat; mat <<
+				(float)B.x, (float)C.x,
+				(float)B.y, (float)C.y,
+				(float)B.z, (float)C.z,
+				1,			1,
+				1,			1;
+
+			auto mati = (mat.transpose() * mat).inverse() * mat.transpose();
+
+			Eigen::Vector2f unknown = mati * res;
+
+			const float norm = std::abs(unknown(0)) + std::abs(unknown(1));
+			if (norm > 1) {	unknown /= norm; }
+
+			if (unknown(0) < 0) {unknown(0) = 0;}
+			if (unknown(1) < 0) {unknown(1) = 0;}
+
+			if (unknown(0) > 1) {unknown(0) = 1;}
+			if (unknown(1) > 1) {unknown(1) = 1;}
+
+			const Point3<T> xx = A + (B*unknown(0)) + (C*unknown(1));
+			const float dist = xx.getDistance(p);
+			return D(xx, dist);
 
 		}
 

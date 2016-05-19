@@ -2,9 +2,9 @@
 #define K_CV_FEATURES_OUTLINE_H
 
 #include "../ImageChannel.h"
-#include "../Point2.h"
+#include "../../geo/Point2.h"
 
-#include "../../math/filter/MovingAVG.h"
+//#include "../../math/
 
 #include <vector>
 #include <fstream>

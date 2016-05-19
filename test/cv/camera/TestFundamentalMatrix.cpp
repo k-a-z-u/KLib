@@ -384,23 +384,24 @@ namespace K {
 
 			DataMatrix<std::vector<float>> hogLeft(desc.imgLeft.getWidth(), desc.imgRight.getHeight());
 			DataMatrix<std::vector<float>> hogRight(desc.imgLeft.getWidth(), desc.imgRight.getHeight());
-			HOG hog(10);
+			HOG hog1(desc.imgLeft, 10);
+			HOG hog2(desc.imgRight, 10);
 
-			for (int y = 0; y < desc.imgLeft.getHeight(); ++y) {
-				for (int x = 0; x < desc.imgLeft.getWidth(); ++x) {
+//			for (int y = 0; y < desc.imgLeft.getHeight(); ++y) {
+//				for (int x = 0; x < desc.imgLeft.getWidth(); ++x) {
 
 
-					std::vector<HOGGradient> gLeft =	hog.getGradients(desc.imgLeft, x, y);
-					std::vector<HOGGradient> gRight =	hog.getGradients(desc.imgRight, x, y);
-					hog.relativeToBestOne(gLeft);
-					hog.relativeToBestOne(gRight);
-					hog.normalize(gLeft);
-					hog.normalize(gRight);
-					hogLeft.set(x,y,hog.binify(gLeft, 8));
-					hogRight.set(x,y,hog.binify(gRight, 8));
+//					std::vector<HOGGradient> gLeft =	hog1.getGradients(desc.imgLeft, x, y);
+//					std::vector<HOGGradient> gRight =	hog2.getGradients(desc.imgRight, x, y);
+//					hog.relativeToBestOne(gLeft);
+//					hog.relativeToBestOne(gRight);
+//					hog.normalize(gLeft);
+//					hog.normalize(gRight);
+//					hogLeft.set(x,y,hog.binify(gLeft, 8));
+//					hogRight.set(x,y,hog.binify(gRight, 8));
 
-				}
-			}
+//				}
+//			}
 
 
 

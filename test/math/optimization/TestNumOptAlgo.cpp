@@ -29,16 +29,25 @@ namespace K {
 		double getValue(const NumOptVector<2>& data) const override {
 			return data[0]*data[0] + (data[1]+1.0)*(data[1]+1.0);
 		};
+		double operator() (const double* data) const {
+			return data[0]*data[0] + (data[1]+1.0)*(data[1]+1.0);
+		};
 	} TNOAfunc1;
 
 	static struct TNOAfunc2 : NumOptFunction<2> {
 		double getValue(const NumOptVector<2>& data) const override {
 			return pow(data[0]-2,2) + pow(data[1]-4,2);
 		};
+		double operator() (const double* data) const {
+			return pow(data[0]-2,2) + pow(data[1]-4,2);
+		};
 	} TNOAfunc2;
 
 	static struct TNOAfunc3 : NumOptFunction<2> {
 		double getValue(const NumOptVector<2>& data) const override {
+			return 0.00025*pow(data[0],4) + data[0] + 0.1*pow(data[1]-4,2);
+		};
+		double operator() (const double* data) const {
 			return 0.00025*pow(data[0],4) + data[0] + 0.1*pow(data[1]-4,2);
 		};
 	} TNOAfunc3;
@@ -48,10 +57,16 @@ namespace K {
 		double getValue(const NumOptVector<2>& data) const override {
 			return pow( (data[0]*data[0] + data[1] - 11), 2) + pow( (data[0]+data[1]*data[1]-7), 2);
 		};
+		double operator() (const double* data) const {
+			return pow( (data[0]*data[0] + data[1] - 11), 2) + pow( (data[0]+data[1]*data[1]-7), 2);
+		};
 	} TNOAfuncHimmelblau;
 
 	static struct TNOAfuncRosenbrock : NumOptFunction<2> {
 		double getValue(const NumOptVector<2>& data) const override {
+			return pow(1 - data[0], 2) + 100 * pow( (data[1] - data[0]*data[0]), 2);
+		};
+		double operator() (const double* data) const {
 			return pow(1 - data[0], 2) + 100 * pow( (data[1] - data[0]*data[0]), 2);
 		};
 	} TNOAfuncRosenbrock;
@@ -230,11 +245,11 @@ namespace K {
 
 	TEST(NumericalOptimizationAlgo, downhillSimplex1) {
 
-		NumOptVector<2> data;
+		double data[2];
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<2> opt;
+		NumOptAlgoDownhillSimplex<double, 2> opt;
 		opt.calculateOptimum(TNOAfunc1, data);
 
 		ASSERT_NEAR(0, data[0], 0.1);
@@ -244,12 +259,15 @@ namespace K {
 
 	TEST(NumericalOptimizationAlgo, downhillSimplex2) {
 
-		NumOptVector<2> data;
+		double data[2];
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<2> opt;
+		NumOptAlgoDownhillSimplex<double, 2> opt;
+		opt.setNumRestarts(2);
+		opt.setMaxIterations(100);
 		opt.calculateOptimum(TNOAfunc2, data);
+
 
 		ASSERT_NEAR(2, data[0], 0.1);
 		ASSERT_NEAR(4, data[1], 0.1);
@@ -258,11 +276,11 @@ namespace K {
 
 	TEST(NumericalOptimizationAlgo, downhillSimplex3) {
 
-		NumOptVector<2> data;
+		double data[2];
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<2> opt;
+		NumOptAlgoDownhillSimplex<double, 2> opt;
 		opt.calculateOptimum(TNOAfunc3, data);
 
 		ASSERT_NEAR(-10, data[0], 0.1);
@@ -272,11 +290,11 @@ namespace K {
 
 	TEST(NumericalOptimizationAlgo, downhillSimplexHimmelblau) {
 
-		NumOptVector<2> data;
+		double data[2];
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<2> opt;
+		NumOptAlgoDownhillSimplex<double, 2> opt;
 		opt.calculateOptimum(TNOAfuncHimmelblau, data);
 
 		ASSERT_NEAR(3.584428, data[0], 0.01);
@@ -286,11 +304,13 @@ namespace K {
 
 	TEST(NumericalOptimizationAlgo, downhillSimplexRosenbrock) {
 
-		NumOptVector<2> data;
+		double data[2];
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<2> opt;
+		NumOptAlgoDownhillSimplex<double, 2> opt;
+		opt.setNumRestarts(2);
+		opt.setMaxIterations(100);
 		opt.calculateOptimum(TNOAfuncRosenbrock, data);
 
 		ASSERT_NEAR(1, data[0], 0.01);

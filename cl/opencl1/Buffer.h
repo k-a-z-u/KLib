@@ -38,7 +38,8 @@ namespace K {
 			static Buffer* createReadOnly(Context* ctx, const void* data, const size_t size) {
 				Buffer* buf = new Buffer();
 				cl_int status;
-				cl_mem_flags memFlags = CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR;
+				cl_mem_flags memFlags = CL_MEM_READ_ONLY ;
+				buf->data = (void*)data;
 				buf->dataSize = size;
 				buf->readable = true;
 				buf->writeable = false;
@@ -51,7 +52,7 @@ namespace K {
 			static Buffer* createWriteOnly(Context* ctx, const size_t size) {
 				Buffer* buf = new Buffer();
 				cl_int status;
-				cl_mem_flags memFlags = CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR;
+				cl_mem_flags memFlags = CL_MEM_WRITE_ONLY ;
 				buf->data = (uint8_t*) malloc(size);
 				buf->dataSize = size;
 				buf->readable = false;
