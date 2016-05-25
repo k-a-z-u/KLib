@@ -70,6 +70,17 @@ namespace K {
 		};
 
 
+		/** get a point within the triangle by using fractions (s,t) of the triangle's sides */
+		Point3f getPoint(const float s, const float t) const {
+
+			const P3 B = p1;		// base
+			const P3 E0 = p2-p1;	// 1st vector
+			const P3 E1 = p3-p1;	// 2nd vector
+
+			return B + (E0*s) + (E1*t);
+
+		}
+
 
 		std::vector<P3> pts;
 
