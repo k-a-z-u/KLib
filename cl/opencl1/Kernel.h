@@ -3,6 +3,7 @@
 
 #include "Base.h"
 #include "Buffer.h"
+#include "Image.h"
 #include "Event.h"
 #include "Range.h"
 #include "Program.h"
@@ -13,7 +14,11 @@
 namespace K {
 	namespace CL {
 
+		class KernelFactory;
+
 		class Kernel {
+
+			CLASS_NAME("Kernel");
 
 		private:
 
@@ -26,15 +31,21 @@ namespace K {
 			/** the created kernel handle */
 			cl_kernel kernel;
 
-		public:
+		private:
+
+			friend class KernelFactory;
 
 			/** ctor */
 			Kernel(Program* program, const std::string& kernelName) : program(program), kernelName(kernelName) {
+				verboseMe("ctor");
 				init();
 			}
 
+		public:
+
 			/** dtor */
 			~Kernel() {
+				verboseMeID(kernel, "dtor");
 				clReleaseKernel(kernel); kernel = 0;
 			}
 
@@ -57,6 +68,14 @@ namespace K {
 				cl_int res = clSetKernelArg(kernel, argIdx, sizeof(mem), &mem);
 				check(res);
 			}
+
+			/** attach the given image to the kernel's n-th argument */
+			void setArg(const cl_uint argIdx, Image* img) {
+				cl_mem mem = img->getHandle();
+				cl_int res = clSetKernelArg(kernel, argIdx, sizeof(mem), &mem);
+				check(res);
+			}
+
 
 			/** copy the given integer into the kernel's n-th argument */
 			void setArg(const cl_uint argIdx, const cl_int val) {

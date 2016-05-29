@@ -3,6 +3,7 @@
 
 #include "Base.h"
 #include "Context.h"
+#include "KernelFactory.h"
 
 #include <fstream>
 #include <string>
@@ -12,6 +13,8 @@ namespace K {
 
 		class Program {
 
+			CLASS_NAME("Program");
+
 		private:
 
 			/** the context this program belongs to */
@@ -20,15 +23,26 @@ namespace K {
 			/** the internal handle for the program */
 			cl_program program;
 
-		public:
+			/** the kernel factory */
+			KernelFactory kernFac;
+
+			/** build options */
+			std::string options;
+
+		private:
+
+			friend class ProgramFactory;
 
 			/** ctor */
-			Program(Context* context) : context(context) {
-				;
+			Program(Context* context) : context(context), kernFac(this) {
+				verboseMe("ctor");
 			}
+
+		public:
 
 			/** dtor */
 			~Program() {
+				verboseMeID(program, "dtor");
 				clReleaseProgram(program); program = 0;
 			}
 
@@ -40,6 +54,9 @@ namespace K {
 
 		public:
 
+			/** the KernelFactory */
+			KernelFactory& kernels() {return kernFac;}
+
 			/** get the program's internal handle */
 			cl_program getHandle() const {
 				return program;
@@ -50,8 +67,32 @@ namespace K {
 				return context;
 			}
 
-			/** set the source-code and build the program */
-			void setSource(const std::string& code) {
+
+			/** add paths to include in the search for #include files */
+			void addIncludePath(const std::string& path) {
+				options += " -I " + getPathForInc(path);
+			}
+
+			/** add the given definition to the compiler */
+			void addDefinition(const std::string& def) {
+				options += " -D " + def;
+			}
+
+			/** add the given definition to the compiler */
+			void addDefinition(const std::string& def, const std::string& val) {
+				options += " -D " + def + "=" + "\"" + val + "\"";
+			}
+
+			/**
+			 * set the source-code and build the program.
+			 * use "options" to supply additional build-options like:
+			 *	-I /path/to/include
+			 *	-D name=def
+			 *	-D def
+			 */
+			void setSource(const std::string& code, const std::string& options = "") {
+
+				verboseMe("settings source-code");
 
 				const char* codeArr[1] = {code.data()};
 				const size_t sizeArr[1] = {code.length()};
@@ -71,16 +112,23 @@ namespace K {
 					deviceIDs[i] = devices[i]->getID();
 				}
 
+				// construct the final options string: given + global options
+				const std::string opts = options + this->options;
+
 				// build the program
-				const std::string options;
-				cl_int res = clBuildProgram(program, numDevices, deviceIDs, options.data(), nullptr, nullptr);
+				cl_int res = clBuildProgram(program, numDevices, deviceIDs, opts.data(), nullptr, nullptr);
 				dumpBuildStats(program, devices);
 				check(res);
 
 			}
 
-			/** set the program's source-code by reading the given file and build the program */
+			/**
+			 * set the program's source-code by reading the given file and build the program
+			 * the given file's folder is automatically added as include path
+			 */
 			void setSourceFromFile(const std::string& file) {
+
+				verboseMe("loading source file");
 
 				std::ifstream fs (file, std::ios::ate);		// open at the end of the file
 				if (!fs.good()) {throw "file not found?";}
@@ -95,14 +143,40 @@ namespace K {
 				const std::string code(buf, size);
 				delete buf;
 
-				setSource(code);
+				// determine the file's include directory
+				const std::string inc = getFolderForFile(file);
+
+				// construct options strng
+				const std::string opts = ("-I " + getPathForInc(inc));
+
+				// compile
+				setSource(code, opts);
 
 			}
 
 		private:
 
+			/** get the given file's path-name */
+			std::string getFolderForFile(const std::string file) const {
+
+				#ifdef _WIN32
+					const char sep = '\\';
+				#else
+					const char sep ='/';
+				#endif
+
+				const size_t pos = file.find_last_of(sep);
+				return (pos == std::string::npos) ? ("") : (file.substr(0, pos));
+
+			}
+
+			/** modify the path to be safe for including */
+			inline std::string getPathForInc(const std::string& path) const {
+				return '"' + path + '"';
+			}
+
 			/** console dump of the build result */
-			void dumpBuildStats(cl_program program, const std::vector<Device*> devices) {
+			void dumpBuildStats(cl_program program, const std::vector<Device*> devices) const {
 
 				char buffer[64*1024];
 				size_t used = 0;

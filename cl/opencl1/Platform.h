@@ -4,17 +4,37 @@
 #include "Base.h"
 #include "Device.h"
 
+#include <unordered_map>
 #include <string>
 #include <vector>
 
 namespace K {
 	namespace CL {
 
+		class System;
+
+		/** describes one platform attribute */
+		struct PlatformAttr {
+			std::string name;
+			PlatformAttr(const std::string& name) : name(name) {;}
+		};
+
+		/** supported platform attributes */
+		namespace PlatformAttrs {
+			static const PlatformAttr PROFILE = PlatformAttr("profile");
+			static const PlatformAttr VERSION = PlatformAttr("version");
+			static const PlatformAttr NAME = PlatformAttr("name");
+			static const PlatformAttr VENDOR = PlatformAttr("vendor");
+			static const PlatformAttr EXTENSIONS = PlatformAttr("extensions");
+		}
+
 		/**
 		 * describes one platform (CPU, GPU, ..)
 		 * available to OpenCL on this system
 		 */
 		class Platform {
+
+			CLASS_NAME("Platform");
 
 		private:
 
@@ -24,22 +44,26 @@ namespace K {
 			/** all devices attached to this platform */
 			std::vector<Device*> devices;
 
-			std::string profile;
-			std::string version;
-			std::string name;
-			std::string vendor;
-			std::string extensions;
+			/** all platform attributes */
+			std::unordered_map<const PlatformAttr*, std::string> attrs;
 
-		public:
+		private:
 
-			/** ctor */
+			friend class System;
+
+			/** hidden ctor. use System.getPlatforms() */
 			Platform(const cl_platform_id id) : id(id) {
+				verboseMeID(id, "ctor");
 				fetchDetails(id);
 				fetchDevices(id);
 			}
 
+		public:
+
 			/** dtor */
 			~Platform() {
+				verboseMeID(id, "dtor");
+				// cl_platform_id does not need to be released
 				for(Device* dev : devices) {delete dev;}
 			}
 
@@ -56,14 +80,28 @@ namespace K {
 				return id;
 			}
 
+			/** get the value for the given attribute */
+			std::string getAttr(const PlatformAttr& attr) const {
+				auto it = attrs.find(&attr);
+				return (it == attrs.end()) ? ("?") : (it->second);
+			}
+
 			/** cast to string */
 			operator std::string() const {
-				return "PLATFORM: '" + name + "' (" + vendor + "): " + version + " [" + profile + "]";
+				return	"PLATFORM: '" + getAttr(PlatformAttrs::NAME) +
+						"' (" + getAttr(PlatformAttrs::VENDOR) + "): " +
+						getAttr(PlatformAttrs::VERSION) +
+						" [" + getAttr(PlatformAttrs::PROFILE) + "]";
 			}
 
 			/** get a list of all availble devices within this platform */
-			const std::vector<Device*>& getDevices() {
+			const std::vector<Device*>& getDevices() const {
 				return devices;
+			}
+
+			/** get the idx-th device within this platform */
+			Device* getDevice(const int idx) const {
+				return devices[idx];
 			}
 
 		private:
@@ -71,27 +109,32 @@ namespace K {
 			/** fetch all details for the platform identified by ID */
 			void fetchDetails(const cl_platform_id id) {
 
+				verboseMeID(id, "fetching details");
+
 				static constexpr int MAX = 10240;
 				char buffer[MAX];
 
 				check(clGetPlatformInfo(id, CL_PLATFORM_PROFILE, MAX, buffer, nullptr));
-				this->profile = buffer;
+				attrs[&PlatformAttrs::PROFILE] = buffer;
 
 				check(clGetPlatformInfo(id, CL_PLATFORM_VERSION, MAX, buffer, nullptr));
-				this->version = buffer;
+				attrs[&PlatformAttrs::VERSION] = buffer;
 
 				check(clGetPlatformInfo(id, CL_PLATFORM_NAME, MAX, buffer, nullptr));
-				this->name = buffer;
+				attrs[&PlatformAttrs::NAME] = buffer;
 
 				check(clGetPlatformInfo(id, CL_PLATFORM_VENDOR, MAX, buffer, nullptr));
-				this->vendor = buffer;
+				attrs[&PlatformAttrs::VENDOR] = buffer;
 
 				check(clGetPlatformInfo(id, CL_PLATFORM_EXTENSIONS, MAX, buffer, nullptr));
-				this->extensions = buffer;
+				attrs[&PlatformAttrs::EXTENSIONS] = buffer;
 
 			}
 
+			/** fetch a list of all devices that belong to this platform */
 			void fetchDevices(const cl_platform_id id) {
+
+				verboseMeID(id, "fetching devices");
 
 				static constexpr int MAX = 100;
 				cl_device_id ids[MAX];

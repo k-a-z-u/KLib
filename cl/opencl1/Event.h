@@ -8,6 +8,8 @@ namespace K {
 
 		class Event {
 
+			CLASS_NAME("Event");
+
 		private:
 
 			cl_event event;
@@ -16,24 +18,35 @@ namespace K {
 
 			/** ctor from an existing event handle */
 			Event(const cl_event event) : event(event) {
-				;
+				verboseMeID(event, "create");
 			}
 
 			/** dtor */
 			~Event() {
+				verboseMeID(event, "release");
 				clReleaseEvent(event);
 			}
 
 			/** no-copy */
 			Event(const Event& o) = delete;
 
+			/** no-assign */
+			Event& operator = (const Event& o) = delete;
+
 			/** move ctor */
 			Event(Event&& o)  : event(o.event) {
+				verboseMe("move ctor");
 				o.event = 0;
 			}
 
-			/** no-assign */
-			Event& operator = (const Event& o) = delete;
+			/** move assign */
+			Event& operator = (Event&& o) {
+				verboseMe("move assign");
+				this->event = o.event; o.event = nullptr;
+				return *this;
+			}
+
+
 
 
 

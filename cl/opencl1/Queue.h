@@ -8,6 +8,8 @@ namespace K {
 
 	class Queue {
 
+			CLASS_NAME("Queue");
+
 		private:
 
 			/** the openCL queue handle */
@@ -19,13 +21,14 @@ namespace K {
 
 			/** ctor with OpenCL queue handle */
 			Queue(cl_command_queue queue) : queue(queue) {
-				;
+				verboseMeID(queue, "ctor");
 			}
 
 		public:
 
 			/** dtor */
 			~Queue() {
+				verboseMeID(queue, "dtor");
 				clReleaseCommandQueue(queue);
 			}
 
