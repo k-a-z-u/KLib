@@ -24,10 +24,14 @@ namespace K {
 			std::vector<Vec3> normals;
 		} data;
 
+	private:
+
+		bool swapXY;
+
 	public:
 
 		/** ctor with the file to load */
-		XYZFileReader(const std::string& file) {
+		XYZFileReader(const std::string& file, const bool swapXY = false) : swapXY(swapXY) {
 
 			std::ifstream is(file);
 			std::string line;
@@ -37,7 +41,7 @@ namespace K {
 		}
 
 		/** get the internal data structure */
-		const Data& getData() {return data;}
+		const Data& getData() const {return data;}
 
 	private:
 
@@ -66,7 +70,11 @@ namespace K {
 
 			// vertices available?
 			if (cnt >= 3) {
-				data.vertices.push_back(Vec3(tmp[0], tmp[1], tmp[2]));
+				if (swapXY) {
+					data.vertices.push_back(Vec3(tmp[0], tmp[2], tmp[1]));
+				} else {
+					data.vertices.push_back(Vec3(tmp[0], tmp[1], tmp[2]));
+				}
 			}
 
 			// normals available?

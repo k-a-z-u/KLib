@@ -51,6 +51,8 @@ namespace K {
 			return std::atan2(y,x);
 		}
 
+
+
 		Point2& operator += (const Point2& right) {this->x += right.x; this->y += right.y; return *this;}
 
 		Point2& operator -= (const Point2& right) {this->x -= right.x; this->y -= right.y; return *this;}
@@ -59,9 +61,13 @@ namespace K {
 
 		Point2& operator /= (const Point2& right) {this->x /= right.x; this->y /= right.y; return *this;}
 
+
 		Point2& operator *= (const T right) {this->x *= right; this->y *= right; return *this;}
 
 		Point2& operator /= (const T right) {this->x /= right; this->y /= right; return *this;}
+
+
+		Point2 operator - () const {return Point2(-this->x, -this->y);}
 
 
 		Point2 operator + (const Point2& right) const {return Point2(this->x+right.x, this->y+right.y);}
@@ -71,6 +77,7 @@ namespace K {
 		Point2 operator * (const Point2& right) const {return Point2(this->x*right.x, this->y*right.y);}
 
 		Point2 operator / (const Point2& right) const {return Point2(this->x/right.x, this->y/right.y);}
+
 
 		Point2 operator * (const T right) const {return Point2((this->x*right), (this->y*right));}
 

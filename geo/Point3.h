@@ -45,9 +45,13 @@ namespace K {
 
 		Point3& operator /= (const Point3& right) {this->x /= right.x; this->y /= right.y; this->z /= right.z; return *this;}
 
+
 		Point3& operator *= (const T right) {this->x *= right; this->y *= right; this->z *= right; return *this;}
 
 		Point3& operator /= (const T right) {this->x /= right; this->y /= right; this->z /= right; return *this;}
+
+
+		Point3 operator - () const {return Point3(-this->x, -this->y, -this->z);}
 
 
 		Point3 operator + (const Point3& right) const {return Point3(this->x+right.x, this->y+right.y, this->z+right.z);}
@@ -57,6 +61,7 @@ namespace K {
 		Point3 operator * (const Point3& right) const {return Point3(this->x*right.x, this->y*right.y, this->z*right.z);}
 
 		Point3 operator / (const Point3& right) const {return Point3(this->x/right.x, this->y/right.y, this->z/right.z);}
+
 
 		Point3 operator * (const T right) const {return Point3((this->x*right), (this->y*right), (this->z*right));}
 
