@@ -25,7 +25,21 @@ namespace K {
 
 		}
 
+		/** normalize the image = set all values between [0.0:1.0] */
+		static ImageChannel run(ImageChannel& img) {
+
+			// copy
+			ImageChannel out = img;
+
+			// normalize
+			inplace(out);
+
+			return out;
+
+		}
+
 	};
+
 
 }
 

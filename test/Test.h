@@ -19,6 +19,8 @@
 		}\
 }
 
+#define ASSERT_ARRAY_EQ
+
 static inline std::string getDataFile(const std::string& name) {
 	const std::string file = __FILE__;
 	const std::string folder = file.substr(0, file.find_last_of("/")) + "/_files/";
