@@ -14,28 +14,59 @@ private:
 public:
 
 	/** ctor */
-	NumOptDataVector(const size_t size) : size(size), data(nullptr) {
-		data = new Scalar[size];
+	NumOptDataVector() : size(0), data(nullptr) {
+		;
+	}
+
+	/** ctor */
+	NumOptDataVector(const size_t size) {
+		resize(size);
 		zero();
 	}
 
-	/** dtor */
-	~NumOptDataVector() {
-		delete data;
-		data = nullptr;
+	/** ctor with data */
+	NumOptDataVector(const size_t size, const Scalar* data) {
+		resize(size);
+		copyFrom(data);
 	}
 
-	/** copy */
+	/** copy ctor */
 	NumOptDataVector(const NumOptDataVector& o) : size(o.size) {
-		data = new Scalar[o.size];
+		if (!o.data) {
+			throw "other data is null!";
+		}
+		resize(o.size);
 		memcpy(data, o.data, bytes());
 	}
 
-	/** move */
+	/** move ctor */
 	NumOptDataVector(NumOptDataVector&& o) : size(o.size), data(o.data) {
 		o.data = nullptr;
 		o.size = -1;
 	}
+
+	/** dtor */
+	~NumOptDataVector() {
+		free();
+	}
+
+
+	/** assign the given data-vector by copy */
+	NumOptDataVector& operator = (const NumOptDataVector& o) {
+		if (size != o.size) { resize(o.size); }
+		memcpy(data, o.data, bytes());
+		return *this;
+	}
+
+	/** move assign */
+	NumOptDataVector& operator = (NumOptDataVector&& o) {
+		free();
+		this->data = o.data; o.data = nullptr;
+		this->size = o.size; o.size = -1;
+		return *this;
+	}
+
+
 
 //	/** assign the given data-vector by copy */
 //	void operator = (NumOptDataVector* o) {
@@ -43,16 +74,7 @@ public:
 //		memcpy(data, o->data, bytes());
 //	}
 
-	/** assign the given data-vector by copy */
-	NumOptDataVector& operator = (const NumOptDataVector& o) {
-		if (size != o.size) {
-			delete data;
-			this->size = o.size;
-			this->data = new Scalar[size];
-		}
-		memcpy(data, o.data, bytes());
-		return *this;
-	}
+
 
 	void zero() {
 		memset(data, 0, bytes());
@@ -61,10 +83,12 @@ public:
 	/** size in bytes */
 	inline size_t bytes() const {return size * sizeof(Scalar);}
 
+	/** number of entries */
+	inline size_t getSize() const {return size;}
+
 	/** assign the given data-array by copy */
 	void operator = (const Scalar* s) {
 		memcpy(data, s, bytes());
-		int i = 0; (void) i;
 	}
 
 
@@ -72,6 +96,11 @@ public:
 	/** copy this vector into the given output */
 	void copyTo(Scalar* dst) {
 		memcpy(dst, data, bytes());
+	}
+
+	/** copy the given data into this vector */
+	void copyFrom(const Scalar* src) {
+		memcpy(data, src, bytes());
 	}
 
 
@@ -87,6 +116,8 @@ public:
 
 	/** data access */
 	Scalar* ptr() {return data;}
+
+
 
 #define FOR_I for (unsigned int i = 0; i < size; ++i)
 
@@ -163,6 +194,9 @@ public:
 	}
 
 
+#undef FOR_I
+
+
 
 	/** get the length (euclid) of this vector */
 	Scalar getLength() const {
@@ -171,7 +205,19 @@ public:
 		return std::sqrt(sum);
 	}
 
-#undef FOR_I
+private:
+
+	void free() {
+		::free(data);
+		data = nullptr;
+	}
+
+	void resize(const size_t size) {
+		free();
+		this->size = size;
+		this->data = (Scalar*) malloc(bytes());
+	}
+
 
 
 
