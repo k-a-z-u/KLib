@@ -44,10 +44,20 @@ namespace Opt {
 	}
 
 
+	/** f(x,y) = z. minimum: f(1,1) = 0 */
 	static float fRosenbrock (const float* data) {
-			return pow(1 - data[0], 2) + 100 * pow( (data[1] - data[0]*data[0]), 2);
+			return std::pow(1 - data[0], 2) + 100 * std::pow( (data[1] - data[0]*data[0]), 2);
 	};
 
+	/**
+	 * f ( 3.0 , 2.0 ) = 0.0
+	 * f ( − 2.805118 , 3.131312 ) = 0.0
+	 * f ( − 3.779310 , − 3.283186 ) = 0.0
+	 * f ( 3.584428 , − 1.848126 ) = 0.0
+	 */
+	static float fHimmelblau (const float* data) {
+		return pow( (data[0]*data[0] + data[1] - 11), 2) + pow( (data[0]+data[1]*data[1]-7), 2);
+	};
 
 
 }
