@@ -2,6 +2,7 @@
 #define IMAGEFACTORY_H
 
 #include "ImageChannel.h"
+#include <cstdint>
 
 #ifdef WITH_PNG
 #include <png.h>
@@ -115,6 +116,66 @@ namespace K {
 			return img;
 
 		}
+
+		/** read a PNG from the given file */
+		static ImageChannel readPNG(const uint8_t bytes[]) {
+
+			png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+			if (!png) {throw "Could not allocate read struct\n";}
+
+			png_infop info_ptr = png_create_info_struct(png);
+			if (!info_ptr) {throw "error 2";}
+
+
+			auto io = [] (png_structp png, png_bytep data, png_size_t length) -> void {
+				uint8_t** bytes = (uint8_t**) png_get_io_ptr(png);
+				memcpy(data, *bytes, length);
+				*bytes += length;
+			};
+
+			// initialize and read the PNG-header
+			const uint8_t* ptr = bytes;
+			png_set_read_fn(png, &ptr, io);
+			png_read_info(png, info_ptr);
+
+			uint32_t width, height;
+			int bitdepth, colortype, interlacetype;
+
+			// get image information
+			const int channels = png_get_channels(png, info_ptr);
+			const size_t bytesPerRow = png_get_rowbytes(png, info_ptr);
+			png_get_IHDR(png, info_ptr, &width, &height, &bitdepth, &colortype, &interlacetype, nullptr, nullptr);
+
+			// sanity checks
+			if (bitdepth != 8) {throw "currently only 8-bit pngs are supported";}
+
+			// allocate memory for each line of the image
+			uint8_t* buffer = (uint8_t*) malloc(height*bytesPerRow);
+			uint8_t* rows[height];
+			for (uint32_t y = 0; y < height; ++y) {
+				rows[y] = &buffer[y*bytesPerRow];
+			}
+
+			// read the image
+			png_read_image(png, rows);
+
+			// convert it to grey
+			ImageChannel img(width, height);
+			for (uint32_t y = 0; y < height; ++y) {
+				for (uint32_t x = 0; x < width; ++x) {
+					const float g = toGrey(&rows[y][x*channels], channels);
+					img.set(x,y,g);
+				}
+			}
+
+			// cleanup
+			free(buffer);
+			png_destroy_read_struct(&png, &info_ptr, nullptr);
+
+			return img;
+
+		}
+
 
 #endif
 

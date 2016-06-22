@@ -30,7 +30,7 @@ namespace K {
 		}
 
 		void addHeaderTo(std::ostream& ss) const override {
-			ss << "'-' ";
+			ss << "'-' with pm3d ";
 		}
 
 		void addDataTo(std::ostream& ss) const override {

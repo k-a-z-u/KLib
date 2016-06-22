@@ -46,6 +46,17 @@ namespace K {
 
 	}
 
+	TEST(BBox2, intersection) {
+
+		BBox2<float> bb1(Point2f(1,0), Point2f(3,2));
+		BBox2<float> bb2(Point2f(0,1), Point2f(5,4));
+
+		BBox2<float> bb3 = bb1.intersection(bb2);
+		ASSERT_EQ(Point2f(1,1), bb3.getMin());
+		ASSERT_EQ(Point2f(3,2), bb3.getMax());
+
+	}
+
 }
 
 

@@ -32,6 +32,12 @@ namespace K {
 		}
 
 
+		/** clear/reset the BBox */
+		void clear() {
+			pMin = Point2<T>(_MAX, _MAX);
+			pMax = Point2<T>(_MIN, _MIN);
+		}
+
 		/** "resize" the bounding-box by adding the given point */
 		void add(const Point2<T>& p) {
 
@@ -134,10 +140,20 @@ namespace K {
 		/** get the BBox's center */
 		Point2<T> getCenter() const {return (pMin + pMax)/2;}
 
+
+		/** get the intersection between this bbox and the given bbox */
+		BBox2<T> intersection(const BBox2<T>& o) const {
+			const Point2<T> min( std::max(pMin.x, o.pMin.x), std::max(pMin.y, o.pMin.y) );
+			const Point2<T> max( std::min(pMax.x, o.pMax.x), std::min(pMax.y, o.pMax.y) );
+			return BBox2<T>(min, max);
+		}
+
 		T getWidth() const {return pMax.x - pMin.x;}
 		T getHeight() const {return pMax.y - pMin.y;}
 
 	};
+
+
 
 	typedef BBox2<float> BBox2f;
 	typedef BBox2<int> BBox2i;
