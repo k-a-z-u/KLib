@@ -4,6 +4,7 @@
 #include "../ImageChannel.h"
 #include "../../geo/Point2.h"
 #include "Fonts.h"
+#include "../../geo/BBox2.h"
 
 namespace K {
 
@@ -95,6 +96,17 @@ namespace K {
 		/** draw a rectangle */
 		void drawRect(const Point2i p1, const Point2i p2) {
 			drawRect(p1.x, p1.y, p2.x, p2.y);
+		}
+
+		/** fill everything that is NOT part of the rect */
+		void fillRectI(int x1, int y1, const int x2, const int y2) {
+			BBox2i bbox(x1,y1, x2,y2);
+			for (int y = 0; y < img.getHeight(); ++y) {
+				for (int x = 0; x < img.getWidth(); ++x) {
+					if (bbox.contains(x,y)) {continue;}
+					this->img.set(x,y,bg);
+				}
+			}
 		}
 
 		/** draw a line */

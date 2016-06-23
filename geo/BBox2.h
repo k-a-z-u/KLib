@@ -31,6 +31,11 @@ namespace K {
 			;
 		}
 
+		/** ctor */
+		BBox2 (const T minX, const T minY, const T maxX, const T maxY) :
+			pMin(minX, minY), pMax(maxX, maxY) {
+			;
+		}
 
 		/** clear/reset the BBox */
 		void clear() {
@@ -75,13 +80,16 @@ namespace K {
 		}
 
 		/** does the bounding-box contain the given point? */
+		bool contains(const T x, const T y) const {
+			return	(pMin.x <= x) &&
+					(pMin.y <= y) &&
+					(pMax.x >= x) &&
+					(pMax.y >= y);
+		}
+
+		/** does the bounding-box contain the given point? */
 		bool contains(const Point2<T>& p) const {
-
-			return	(pMin.x <= p.x) &&
-					(pMin.y <= p.y) &&
-					(pMax.x >= p.x) &&
-					(pMax.y >= p.y);
-
+			return contains(p.x, p.y);
 		}
 
 		/** does the bounding-box fully contain the given bounding box? */
