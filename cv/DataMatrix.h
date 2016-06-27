@@ -152,6 +152,22 @@ namespace K {
 
 		}
 
+		/** add the given matrix */
+		DataMatrix<T>& operator += (const DataMatrix<T>& o) {
+			for (int i = 0; i < (int) data.size(); ++i) {
+				data[i] += o.data[i];
+			}
+			return *this;
+		}
+
+		/** multiply the given matrix */
+		DataMatrix<T>& operator *= (const DataMatrix<T>& o) {
+			for (int i = 0; i < (int) data.size(); ++i) {
+				data[i] *= o.data[i];
+			}
+			return *this;
+		}
+
 	};
 
 }

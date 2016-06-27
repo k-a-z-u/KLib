@@ -31,6 +31,17 @@ namespace K {
 			;
 		}
 
+		/** ctor */
+		BBox2 (const T minX, const T minY, const T maxX, const T maxY) :
+			pMin(minX, minY), pMax(maxX, maxY) {
+			;
+		}
+
+		/** clear/reset the BBox */
+		void clear() {
+			pMin = Point2<T>(_MAX, _MAX);
+			pMax = Point2<T>(_MIN, _MIN);
+		}
 
 		/** "resize" the bounding-box by adding the given point */
 		void add(const Point2<T>& p) {
@@ -69,13 +80,16 @@ namespace K {
 		}
 
 		/** does the bounding-box contain the given point? */
+		bool contains(const T x, const T y) const {
+			return	(pMin.x <= x) &&
+					(pMin.y <= y) &&
+					(pMax.x >= x) &&
+					(pMax.y >= y);
+		}
+
+		/** does the bounding-box contain the given point? */
 		bool contains(const Point2<T>& p) const {
-
-			return	(pMin.x <= p.x) &&
-					(pMin.y <= p.y) &&
-					(pMax.x >= p.x) &&
-					(pMax.y >= p.y);
-
+			return contains(p.x, p.y);
 		}
 
 		/** does the bounding-box fully contain the given bounding box? */
@@ -96,6 +110,19 @@ namespace K {
 					(pMax.x >= b.pMin.x) &&
 					(pMax.y >= b.pMin.y);
 
+		}
+
+		/** genter the BBox at (0,0) */
+		void center() {
+			const Point2<T> size = pMax-pMin;
+			pMin = -size/2;
+			pMax =  size/2;
+		}
+
+		/** move the bbox by the given amount */
+		void moveBy(const Point2<T> pos) {
+			pMin += pos;
+			pMax += pos;
 		}
 
 //		/** does the bouding-box intersect with the given bounding-box? */
@@ -121,10 +148,20 @@ namespace K {
 		/** get the BBox's center */
 		Point2<T> getCenter() const {return (pMin + pMax)/2;}
 
+
+		/** get the intersection between this bbox and the given bbox */
+		BBox2<T> intersection(const BBox2<T>& o) const {
+			const Point2<T> min( std::max(pMin.x, o.pMin.x), std::max(pMin.y, o.pMin.y) );
+			const Point2<T> max( std::min(pMax.x, o.pMax.x), std::min(pMax.y, o.pMax.y) );
+			return BBox2<T>(min, max);
+		}
+
 		T getWidth() const {return pMax.x - pMin.x;}
 		T getHeight() const {return pMax.y - pMin.y;}
 
 	};
+
+
 
 	typedef BBox2<float> BBox2f;
 	typedef BBox2<int> BBox2i;

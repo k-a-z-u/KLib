@@ -45,6 +45,10 @@ namespace K {
 			return lambda * std::exp(-lambda * val);
 		}
 
+		static double getCDF(const double lambda, const double val) {
+			return 1.0 - std::exp(-lambda * val);
+		}
+
 	};
 
 }

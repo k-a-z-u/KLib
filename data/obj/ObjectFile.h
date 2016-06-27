@@ -55,10 +55,14 @@ namespace K {
 			std::vector<Face> faces;
 		} data;
 
+	private:
+
+		bool swapYZ;
+
 	public:
 
 		/** ctor with the file to load */
-		ObjFileReader(const std::string& file) {
+		ObjFileReader(const std::string& file, const bool swapYZ = false) : swapYZ(swapYZ) {
 
 			std::ifstream is(file);
 			std::string line;
@@ -93,7 +97,11 @@ namespace K {
 			const float x = std::stof(t.getToken(' '));
 			const float y = std::stof(t.getToken(' '));
 			const float z = std::stof(t.getToken(' '));
-			data.vertices.push_back(Vec3(x,y,z));
+			if (!swapYZ) {
+				data.vertices.push_back(Vec3(x,y,z));
+			} else {
+				data.vertices.push_back(Vec3(x,z,y));
+			}
 		}
 
 		/** parse one texture-coordinate from the tokenizer */
@@ -108,7 +116,11 @@ namespace K {
 			const float x = std::stof(t.getToken(' '));
 			const float y = std::stof(t.getToken(' '));
 			const float z = std::stof(t.getToken(' '));
-			data.normals.push_back(Vec3(x,y,z));
+			if (!swapYZ) {
+				data.normals.push_back(Vec3(x,y,z));
+			} else {
+				data.normals.push_back(Vec3(x,z,y));
+			}
 		}
 
 		/** parse one face from the tokenizer */
