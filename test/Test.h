@@ -19,6 +19,18 @@
 		}\
 }
 
+template <typename T> void ASSERT_ARRAY_EQ(const T* arr1, const T* arr2, int len) {
+	for (int i = 0; i < len; ++i) {\
+		ASSERT_EQ((arr1)[i], (arr2)[i]);\
+	}
+}
+
+template <typename T> void ASSERT_ARRAY_EQ(std::initializer_list<T>* arr1, const T* arr2, int len) {
+	for (int i = 0; i < len; ++i) {\
+		ASSERT_EQ((arr1)[i], (arr2)[i]);\
+	}
+}
+
 static inline std::string getDataFile(const std::string& name) {
 	const std::string file = __FILE__;
 	const std::string folder = file.substr(0, file.find_last_of("/")) + "/_files/";
