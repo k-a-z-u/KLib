@@ -137,7 +137,7 @@ namespace K {
 
 					// command-queue properties
 					cl_command_queue_properties qprops = 0;
-					qprops |= CL_QUEUE_PROFILING_ENABLE;		// profiling?
+					//qprops |= CL_QUEUE_PROFILING_ENABLE;		// profiling?
 
 					// create command-queue
 					cl_command_queue queue = clCreateCommandQueue(ctx, dev->getID(), qprops, &status);

@@ -11,8 +11,9 @@ namespace K {
 		 */
 		enum class ImageFormat {
 
-			RGBA_UINT8,
-			RGBA_UINT16,
+			RGBA_UINT8_255,
+			RGBA_UINT8_1,
+			RGBA_UINT16_1,
 			RGBA_FLOAT,
 
 			GRAY_UINT8,

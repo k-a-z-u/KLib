@@ -43,19 +43,24 @@ namespace K {
 			/** create a write-only buffer */
 			Image* createWriteOnly(const ImageDesc desc, const ImageFormat fmt, uint8_t* data, const size_t len);
 
+			/** manually delete the given image */
+			void dispose(Image* img);
+
 		private:
 
 			/** convert enum to image-format-struct */
 			static inline cl_image_format getImageFormat(const ImageFormat fmt) {
 				switch(fmt) {
 
-				case ImageFormat::RGBA_UINT8:	return getImageFormat(CL_RGBA, CL_UNORM_INT8);
-				case ImageFormat::RGBA_UINT16:	return getImageFormat(CL_RGBA, CL_UNORM_INT16);
-				case ImageFormat::RGBA_FLOAT:	return getImageFormat(CL_RGBA, CL_FLOAT);
+				case ImageFormat::RGBA_UINT8_255:	return getImageFormat(CL_RGBA, CL_UNSIGNED_INT8);
 
-				case ImageFormat::GRAY_UINT8:	return getImageFormat(CL_INTENSITY, CL_UNORM_INT8);
-				case ImageFormat::GRAY_UINT16:	return getImageFormat(CL_INTENSITY, CL_UNORM_INT16);
-				case ImageFormat::GRAY_FLOAT:	return getImageFormat(CL_INTENSITY, CL_FLOAT);
+				case ImageFormat::RGBA_UINT8_1:		return getImageFormat(CL_RGBA, CL_UNORM_INT8);
+				case ImageFormat::RGBA_UINT16_1:	return getImageFormat(CL_RGBA, CL_UNORM_INT16);
+				case ImageFormat::RGBA_FLOAT:		return getImageFormat(CL_RGBA, CL_FLOAT);
+
+				case ImageFormat::GRAY_UINT8:		return getImageFormat(CL_INTENSITY, CL_UNORM_INT8);
+				case ImageFormat::GRAY_UINT16:		return getImageFormat(CL_INTENSITY, CL_UNORM_INT16);
+				case ImageFormat::GRAY_FLOAT:		return getImageFormat(CL_INTENSITY, CL_FLOAT);
 
 				}
 
