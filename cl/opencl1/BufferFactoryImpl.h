@@ -4,6 +4,8 @@
 #include "Context.h"
 #include "BufferFactory.h"
 
+#include <algorithm>
+
 namespace K {
 	namespace CL {
 
