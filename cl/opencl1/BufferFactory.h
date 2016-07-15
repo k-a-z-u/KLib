@@ -35,6 +35,9 @@ namespace K {
 			/** dtor */
 			~BufferFactory();
 
+			/** manually delete the given buffer */
+			void dispose(Buffer* buf);
+
 			/** create a read-only buffer */
 			Buffer* createReadOnly(const void* data, const size_t size);
 

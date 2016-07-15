@@ -64,8 +64,6 @@ namespace K {
 
 		public:
 
-
-
 			/** transfer the image's content from the host to the device. returns an event to wait for */
 			Event upload(Queue* queue) {
 				verboseMeID(mem, "upload");

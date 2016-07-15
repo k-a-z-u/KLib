@@ -4,6 +4,8 @@
 #include "Context.h"
 #include "BufferFactory.h"
 
+#include <algorithm>
+
 namespace K {
 	namespace CL {
 
@@ -13,6 +15,11 @@ namespace K {
 
 		BufferFactory::~BufferFactory() {
 			for (Buffer* buf : buffers) {delete buf;}
+		}
+
+		void BufferFactory::dispose(Buffer* buf) {
+			buffers.erase(std::find(buffers.begin(), buffers.end(), buf));
+			delete buf;
 		}
 
 		/** create a buffer, the kernel is allowed to read only */

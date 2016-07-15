@@ -16,6 +16,11 @@ namespace K {
 			for (Image* img : images) {delete img;}
 		}
 
+		void ImageFactory::dispose(Image* img) {
+			images.erase(std::find(images.begin(), images.end(), img));
+			delete img;
+		}
+
 		/** create a new image, readable by the kernel, writeable by the host */
 		Image* ImageFactory::createReadOnly(const ImageDesc desc, const ImageFormat fmt, const uint8_t* data, const size_t len) {
 
