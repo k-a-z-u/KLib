@@ -48,23 +48,35 @@ namespace K {
 		void parseLine(const std::string& line) {
 
 			// store temporal values. uninitialized!
-			float tmp[32];
+			double tmp[32];
 
-			// read all space-separated float values
+			// read all space/tab-separated float values
 			int cnt = 0;
 			size_t start = 0;
-			while (true) {
 
-				// find the next end
-				size_t end = line.find(' ', start);
+			for (int i = 0; i < (int) line.length(); ++i) {
 
-				// line done?
-				if (end == std::string::npos) {break;}
+				// next char
+				const char c = line[i];
 
-				// parse and start over
-				tmp[cnt] = std::stof(line.substr(start, end-start));
-				start = end+1;
-				++cnt;
+				// what to do
+				switch (c) {
+					case ' ':
+					case '\t':
+					case '\n':
+					case '\r':
+						const size_t end = i;
+						const size_t len = end-start;
+						if (len > 0) {
+							const std::string number = line.substr(start, end-start);
+							tmp[cnt] = std::stod(number);
+							start = end+1;
+							++cnt;
+						}
+				}
+
+				if (c == '\r') {break;}
+				if (c == '\n') {break;}
 
 			}
 

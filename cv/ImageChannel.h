@@ -5,6 +5,7 @@
 #include "DataMatrix.h"
 #include <functional>
 #include <algorithm>
+#include "../math/statistics/Statistics.h"
 
 namespace K {
 
@@ -50,6 +51,11 @@ namespace K {
 		}
 
 
+		K::Statistics<float> getStats() const {
+			K::Statistics<float> stats;
+			for (float f : data) {stats.add(f);}
+			return stats;
+		}
 
 		/** call the given function for each of the channels's pixels.*/
 		void setEach(std::function<float(const int, const int)> func) {

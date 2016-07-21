@@ -20,6 +20,9 @@ namespace K {
 
 	public:
 
+		/**
+		 * calculate matrix M describing:		p2 = M * p1
+		 */
 		template <typename T> static Mat4f solve(const std::vector<Point3<T>>& set1, const std::vector<Point3<T>>& set2) {
 
 			const int cnt = (int) set1.size();
@@ -66,7 +69,7 @@ namespace K {
 			Mat4f tra1 = MatrixHelper::getTranslation(-avg2.x, -avg2.y, -avg2.z);
 			Mat4f tra2 = MatrixHelper::getTranslation(+avg1.x, +avg1.y, +avg1.z);
 
-			return tra2*rot4*tra1;
+			return (tra2*rot4*tra1).inverse();
 
 		}
 
