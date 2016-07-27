@@ -4,6 +4,7 @@
 #include "../../../cv/features/Ellipse.h"
 #include "../../../cv/ImageFactory.h"
 
+#ifdef OLD_STUFF
 
 using namespace K;
 
@@ -19,5 +20,7 @@ TEST(Ellipses, detect) {
 	int i = 0; (void) i;
 
 }
+
+#endif
 
 #endif

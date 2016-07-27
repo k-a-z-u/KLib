@@ -7,6 +7,8 @@
 #include "../draw/Drawer.h"
 #include "../ImageFactory.h"
 
+#ifdef OLD_STUFF
+
 namespace K {
 
 	struct Ellipse {
@@ -155,5 +157,7 @@ namespace K {
 
 
 }
+
+#endif
 
 #endif // ELLIPSE_H

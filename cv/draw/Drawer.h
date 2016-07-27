@@ -5,6 +5,7 @@
 #include "../../geo/Point2.h"
 #include "Fonts.h"
 #include "../../geo/BBox2.h"
+#include "../../geo/Ellipse.h"
 
 namespace K {
 
@@ -49,10 +50,9 @@ namespace K {
 
 			for (int y = 0; y < img.getHeight(); ++y) {
 				for (int x = 0; x < img.getWidth(); ++x) {
-					int x1 = dst.x + x;
-					int y1 = dst.y + y;
-					if (x1 < 0 || x1 >= this->img.getWidth()) {continue;}
-					if (y1 < 0 || y1 >= this->img.getHeight()) {continue;}
+					const int x1 = dst.x + x;
+					const int y1 = dst.y + y;
+					if (isOutside(x1, y1)) {continue;}
 					const float val = img.get(x,y);
 					if (val == transparent) {continue;}
 					this->img.set(x1, y1, val);
@@ -69,10 +69,9 @@ namespace K {
 
 			for (int y = 0; y < img.getHeight(); ++y) {
 				for (int x = 0; x < img.getWidth(); ++x) {
-					int x1 = dst.x + x;
-					int y1 = dst.y + y;
-					if (x1 < 0 || x1 >= this->img.getWidth()) {continue;}
-					if (y1 < 0 || y1 >= this->img.getHeight()) {continue;}
+					const int x1 = dst.x + x;
+					const int y1 = dst.y + y;
+					if (isOutside(x1, y1)) {continue;}
 					const float newVal = img.get(x,y);				// value within the new image
 					const float oldVal = this->img.get(x1,y1);		// value within the current image (to overwrite)
 					const float val = mix(oldVal, newVal);			// determine mixing value
@@ -80,6 +79,17 @@ namespace K {
 				}
 			}
 
+		}
+
+		/** draw an ellipse */
+		void drawEllipse(const Ellipse::GeometricParams& params) {
+			const float circ = params.getCircumfence();
+			const float stepSize = M_PI*2 / circ;
+			for (float rad = 0; rad < (float) M_PI*2; rad += stepSize) {
+				const Point2f p = params.getPointFor(rad);
+				if (isOutside((int)p.x, (int)p.y)) {continue;}
+				img.set((int)p.x, (int)p.y, fg);
+			}
 		}
 
 		/** draw a rectangle */
@@ -125,6 +135,20 @@ namespace K {
 				if (e2 < dx) { err += dx; y1 += sy; }
 			}
 
+		}
+
+	private:
+
+		template <typename T> inline bool isOutside(const T x, const T y) const {
+			if (x < 0)					{return true;}
+			if (y < 0)					{return true;}
+			if (x >= img.getWidth())	{return true;}
+			if (y >= img.getHeight())	{return true;}
+			return false;
+		}
+
+		template <typename T> inline bool isOutside(const Point2<T>& p) const {
+			return isOutside(p.x, p.y);
 		}
 
 	};
