@@ -6,6 +6,7 @@
 #include "Fonts.h"
 #include "../../geo/BBox2.h"
 #include "../../geo/Ellipse.h"
+#include "../filter/Interpolation.h"
 
 namespace K {
 
@@ -84,11 +85,12 @@ namespace K {
 		/** draw an ellipse */
 		void drawEllipse(const Ellipse::GeometricParams& params) {
 			const float circ = params.getCircumfence();
-			const float stepSize = M_PI*2 / circ;
+			const float stepSize = (float)(M_PI*2) / circ * 0.85f;
 			for (float rad = 0; rad < (float) M_PI*2; rad += stepSize) {
 				const Point2f p = params.getPointFor(rad);
-				if (isOutside((int)p.x, (int)p.y)) {continue;}
-				img.set((int)p.x, (int)p.y, fg);
+				if (isOutside((int)p.x, (int)p.y, 1)) {continue;}
+				//img.set((int)p.x, (int)p.y, fg);
+				Interpolation::Bilinear::set(img, p.x, p.y, fg);
 			}
 		}
 
@@ -139,16 +141,16 @@ namespace K {
 
 	private:
 
-		template <typename T> inline bool isOutside(const T x, const T y) const {
-			if (x < 0)					{return true;}
-			if (y < 0)					{return true;}
-			if (x >= img.getWidth())	{return true;}
-			if (y >= img.getHeight())	{return true;}
+		template <typename T> inline bool isOutside(const T x, const T y, const int frame = 0) const {
+			if (x < frame)						{return true;}
+			if (y < frame)						{return true;}
+			if (x >= img.getWidth() - frame)	{return true;}
+			if (y >= img.getHeight() - frame)	{return true;}
 			return false;
 		}
 
-		template <typename T> inline bool isOutside(const Point2<T>& p) const {
-			return isOutside(p.x, p.y);
+		template <typename T> inline bool isOutside(const Point2<T>& p, const int frame = 0) const {
+			return isOutside(p.x, p.y, frame);
 		}
 
 	};

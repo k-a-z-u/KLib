@@ -19,6 +19,8 @@ namespace K {
 
 		virtual void addDataTo(std::ostream& ss) const = 0;
 
+		virtual bool empty() const = 0;
+
 	};
 
 }

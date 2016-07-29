@@ -5,6 +5,8 @@
 
 #include "Point2.h"
 
+#include <eigen3/Eigen/Dense>
+
 namespace K {
 
 	class Ellipse {
@@ -53,8 +55,8 @@ namespace K {
 			/** get the ellipse's both axis lengths */
 			K::Point2f getRadi() const {
 				const double Fx = F + ( D*(B*E - C*D) - A*E*E ) / (4*A*C - B*B);
-				const float a = std::sqrt( (-2*Fx) / (A+C + std::sqrt(B*B + (A-C)*(A-C)) ) );
-				const float b = std::sqrt( (-2*Fx) / std::abs(A+C - std::sqrt(B*B + (A-C)*(A-C)) ) );
+				const float a = (float) std::sqrt( (-2*Fx) / (A+C + std::sqrt(B*B + (A-C)*(A-C)) ) );
+				const float b = (float) std::sqrt( (-2*Fx) / std::abs(A+C - std::sqrt(B*B + (A-C)*(A-C)) ) );
 				return K::Point2f(b,a);
 			}
 
@@ -65,7 +67,7 @@ namespace K {
 			}
 
 			/** get the error for (x,y) not belonging to the ellipse */
-			float getError(float x, float y) const {
+			float getError(const float x, const float y) const {
 
 				// very important constraint! otherwise error-calculation fails!
 				// // https://en.wikipedia.org/wiki/Ellipse#General_ellipse
@@ -73,6 +75,51 @@ namespace K {
 
 				return A*x*x + B*x*y + C*y*y + D*x + E*y + F;
 				//return A*x*x + B*x*y + C*y*y + fo*(D*x + E*y) + fo*fo*F;
+
+			}
+
+			void normalize() {
+				const float v = A*A + B*B + C*C + D*D + E*E + F*F;
+				A/=v; B/=v; C/=v, D/=v, E/=v, F/=v;
+			}
+
+
+			float getErrorSampson(const float x, const float y) const {
+
+//				Eigen::Matrix<float, 6, 1> xi; xi << x*x, x*y, y*y, x, y, 1;
+//				Eigen::Matrix<float, 6, 1> theta; theta << A,B,C,D,E,F;
+//				Eigen::Matrix<float, 6, 6> covar; covar <<
+//					x*x,	x*y,	0,		x,		0,		0,
+//					x*y,	x*x+y*y,x*y,	y,		x,		0,
+//					0,		x*y,	y*y,	0,		y,		0,
+//					x,		y,		0,		1,		0,		0,
+//					0,		x,		y,		0,		1,		0,
+//					0,		0,		0,		0,		0,		0;
+//				covar = 4*covar;
+
+////				std::cout << xi << std::endl << std::endl;
+////				std::cout << theta << std::endl << std::endl;
+////				std::cout << covar << std::endl << std::endl;
+
+//				const float a = xi.dot(theta);				// same as "getError()"
+//				const float b = theta.dot(covar*theta);
+//				return a*a/b;
+
+				Eigen::Matrix<double, 3, 1> X; X << x, y, 1;
+				Eigen::Matrix<double, 3, 3> Q; Q <<
+					A,B,D,
+					B,C,E,
+					D,E,F;
+				Eigen::Matrix<double, 3, 3> P; P <<
+					1,0,0,
+					0,1,0,
+					0,0,0;
+
+				const double a = X.dot(Q*X);
+				const double b = (Q*X).dot(P*Q*X);
+				const double res = a/(4*b);
+				return (float)res;
+
 
 			}
 

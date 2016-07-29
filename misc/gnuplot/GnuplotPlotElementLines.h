@@ -38,6 +38,16 @@ namespace K {
 			points.clear();
 		}
 
+		/** remove the given index */
+		void remove(const int idx) {
+			points.erase(points.begin() + idx);
+		}
+
+		/** number of entries */
+		size_t size() const {
+			return points.size();
+		}
+
 		/** add an unnconected segment from A to B */
 		void addSegment(const GnuplotPoint2 from, const GnuplotPoint2 to) {
 			points.push_back(from);

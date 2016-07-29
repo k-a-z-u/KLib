@@ -15,11 +15,70 @@ namespace K {
 
 	public:
 
+		/** do not use any interpolation. just round to the nearest pixel */
+		struct None {
+
+			static Scalar get(const ImageChannel& img, const float x, const float y) {
+				return img.get((int)std::round(x), (int)std::round(y));
+			}
+
+			static void set(ImageChannel& img, const float x, const float y, const float val) {
+				img.set((int)std::round(x), (int)std::round(y), val);
+			}
+
+		};
+
+		/** bilinear interpolation (4 samples) */
+		struct Bilinear {
+
+			static Scalar get(const ImageChannel& img, const float x, const float y) {
+
+				const int x1 =		(int) std::floor(x);	// low
+				const int x2 =		(int) std::ceil(x);		// high
+
+				const int y1 =		(int) std::floor(y);	// low
+				const int y2 =		(int) std::ceil(y);		// high
+
+				const float px1 =	(float)x2 - x;
+				const float py1 =	(float)y2 - y;
+
+				const float vy1 = img.getClamped(x1,y1) * px1 + img.getClamped(x2,y1) * (1-px1);
+				const float vy2 = img.getClamped(x1,y2) * px1 + img.getClamped(x2,y2) * (1-px1);
+				return vy1 * py1 + vy2 * (1-py1);
+
+			}
+
+			static void set(ImageChannel& img, const float x, const float y, const float val) {
+
+				const float x1 =	std::floor(x);	// low
+				const float x2 =	std::ceil(x);		// high
+				const float y1 =	std::floor(y);	// low
+				const float y2 =	std::ceil(y);		// high
+
+				const float d11 =	std::sqrt( (x-x1)*(x-x1) + (y-y1)*(y-y1) );
+				const float d21 =	std::sqrt( (x-x2)*(x-x2) + (y-y1)*(y-y1) );
+				const float d12 =	std::sqrt( (x-x1)*(x-x1) + (y-y2)*(y-y2) );
+				const float d22 =	std::sqrt( (x-x2)*(x-x2) + (y-y2)*(y-y2) );
+				const float d =		std::sqrt( 2.0f );
+
+				img.set((int)x1,(int)y1, img.get((int)x1,(int)y1)*(d11/d) + val*(d-d11)/d);
+				img.set((int)x2,(int)y1, img.get((int)x2,(int)y1)*(d21/d) + val*(d-d21)/d);
+				img.set((int)x1,(int)y2, img.get((int)x1,(int)y2)*(d12/d) + val*(d-d12)/d);
+				img.set((int)x2,(int)y2, img.get((int)x2,(int)y2)*(d22/d) + val*(d-d22)/d);
+
+			}
+
+		};
+
+
+
 
 		/** do not use any interpolation. just round to the nearest pixel */
 		static Scalar none(const ImageChannel& img, const float x, const float y) {
 			return img.get((int)std::round(x), (int)std::round(y));
 		}
+
+
 
 		/** use bilinear interpolation (4 samples) */
 		static Scalar bilinear(const ImageChannel& img, const float x, const float y) {

@@ -18,19 +18,13 @@ namespace K {
 		/** set the line-width to use for drawing */
 		void setLineWidth(const int lineWidth) {this->lineWidth = lineWidth;}
 
-
-
 		void addHeaderTo(std::ostream& ss) const override {
+			if (empty()) {return;}
 			ss << "'-' with lines ";
 			ss << attrCustom << " ";
 			ss << " lw " << lineWidth;
 			ss << " lc " << color;
 			ss << " title '" << title << "'";
-		}
-
-		/** add a new point to output */
-		void add(const GnuplotPoint3 p) {
-			points.push_back(p);
 		}
 
 		/** add an empty line */

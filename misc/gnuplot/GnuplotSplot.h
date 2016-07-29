@@ -33,14 +33,18 @@ namespace K {
 
 			// append the drawing-header for each element
 			for (const GnuplotSplotElement* elem : elements) {
-				elem->addHeaderTo(ss);
-				ss << ", ";
+				if (!elem->empty()) {
+					elem->addHeaderTo(ss);
+					ss << ", ";
+				}
 			}
 			ss << "\n";
 
 			// append the drawing data for each element
 			for (const GnuplotSplotElement* elem : elements) {
-				elem->addDataTo(ss);
+				if (!elem->empty()) {
+					elem->addDataTo(ss);
+				}
 			}
 			ss << "\n\n";
 

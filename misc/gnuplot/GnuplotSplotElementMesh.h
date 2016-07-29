@@ -29,6 +29,10 @@ namespace K {
 			points.push_back(p);
 		}
 
+		bool empty() const override {
+			return points.empty();
+		}
+
 		void addHeaderTo(std::ostream& ss) const override {
 			ss << "'-' with pm3d ";
 		}

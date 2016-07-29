@@ -1,6 +1,7 @@
 #ifndef GNUPLOTSPLOTELEMENTCOLORPOINTS_H
 #define GNUPLOTSPLOTELEMENTCOLORPOINTS_H
 
+#include <vector>
 #include "GnuplotSplotElement.h"
 
 namespace K {
@@ -34,6 +35,7 @@ namespace K {
 			ss << " pt " << pointType;
 			ss << " ps " << pointSize;
 			ss << " title '" << title << "'";
+			ss << " ";
 		}
 
 		/** add a new point to output */
@@ -46,12 +48,15 @@ namespace K {
 			points.clear();
 		}
 
+		bool empty() const override {
+			return points.empty();
+		}
+
 		void addDataTo(std::ostream& ss) const override {
 			for (const ColorPoint& p : points) {
 					ss << p.p.x << ' ' << p.p.y << ' ' << p.p.z << ' ' << p.color << "\n";
 			}
 			ss << "e\n";
-
 		}
 
 	};

@@ -30,6 +30,7 @@ namespace K {
 
 		GnuplotPoint3 operator + (const GnuplotPoint3& o) const	{return GnuplotPoint3(x+o.x, y+o.y, z+o.z);}
 		GnuplotPoint3 operator * (const float f) const			{return GnuplotPoint3(x*f, y*f, z*f);}
+		GnuplotPoint3 operator / (const float f) const			{return GnuplotPoint3(x/f, y/f, z/f);}
 
 		static GnuplotPoint3 getEmpty() {return GnuplotPoint3(NAN, NAN, NAN);}
 

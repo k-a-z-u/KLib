@@ -1,6 +1,7 @@
 #ifndef GNUPLOTSPLOTELEMENTRAW_H
 #define GNUPLOTSPLOTELEMENTRAW_H
 
+#include <vector>
 #include "GnuplotSplotElement.h"
 
 namespace K {
@@ -17,22 +18,33 @@ namespace K {
 
 	public:
 
-		/** remove all added elements */
-		void clear() {
-			points.clear();
-		}
-
 		void addDataTo(std::ostream& ss) const override {
 
 			for (const GnuplotPoint3& p : points) {
-				if (p.isEmpty()) {
-					ss << "\n";
-				} else {
-					ss << p.x << ' ' << p.y << ' ' << p.z << "\n";
-				}
+				ss << p.x << ' ' << p.y << ' ' << p.z << "\n";
 			}
 			ss << "e\n";
 
+		}
+
+		/** add a new point to output */
+		void add(const GnuplotPoint3 p) {
+			points.push_back(p);
+		}
+
+		/** get the number of entries */
+		size_t size() const {
+			return points.size();
+		}
+
+		/** does this element contain any points? */
+		bool empty() const override {
+			return points.empty();
+		}
+
+		/** remove all added elements */
+		void clear() {
+			points.clear();
 		}
 
 	};

@@ -31,11 +31,6 @@ namespace K {
 			ss << " title '" << title << "'";
 		}
 
-		/** add a new point to output */
-		void add(const GnuplotPoint3 p) {
-			points.push_back(p);
-		}
-
 	};
 
 }
