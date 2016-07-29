@@ -6,6 +6,7 @@
 #include "Point2.h"
 
 #include <eigen3/Eigen/Dense>
+#include "../Assertions.h"
 
 namespace K {
 
@@ -28,10 +29,14 @@ namespace K {
 			float F;
 
 			/** empty ctor */
-			CanonicalParams() : A(1), B(1), C(1), D(1), E(1), F(1) {;}
+			CanonicalParams() : A(0), B(0), C(0), D(0), E(0), F(1) {
+				;
+			}
 
 			/** ctor */
-			CanonicalParams(const float A, const float B, const float C, const float D, const float E, const float F) : A(A), B(B), C(C), D(D), E(E), F(F) {;}
+			CanonicalParams(const float A, const float B, const float C, const float D, const float E, const float F) : A(A), B(B), C(C), D(D), E(E), F(F) {
+				;
+			}
 
 			/** ctor with geometric details */
 			template <typename Scalar> CanonicalParams(const K::Point2<Scalar> center, const float a, const float b, const float rad) {
@@ -43,6 +48,8 @@ namespace K {
 				D = -2*A*center.x - B*center.y;
 				E = -B*center.x - 2*C*center.y;
 				F = A*center.x*center.x + B*center.x*center.y + C*center.y*center.y - a*a*b*b;
+				normalize();
+				checkMe();
 			}
 
 			/** get the ellipse's center */
@@ -78,54 +85,32 @@ namespace K {
 
 			}
 
+			/** normalize the ellipse-parameters */
 			void normalize() {
-				const float v = A*A + B*B + C*C + D*D + E*E + F*F;
+				const float v = std::sqrt(A*A + B*B + C*C + D*D + E*E + F*F);
 				A/=v; B/=v; C/=v, D/=v, E/=v, F/=v;
+				const float v2 = A*A + B*B + C*C + D*D + E*E + F*F;
+				(void) v2;
 			}
 
 
-			float getErrorSampson(const float x, const float y) const {
-
-//				Eigen::Matrix<float, 6, 1> xi; xi << x*x, x*y, y*y, x, y, 1;
-//				Eigen::Matrix<float, 6, 1> theta; theta << A,B,C,D,E,F;
-//				Eigen::Matrix<float, 6, 6> covar; covar <<
-//					x*x,	x*y,	0,		x,		0,		0,
-//					x*y,	x*x+y*y,x*y,	y,		x,		0,
-//					0,		x*y,	y*y,	0,		y,		0,
-//					x,		y,		0,		1,		0,		0,
-//					0,		x,		y,		0,		1,		0,
-//					0,		0,		0,		0,		0,		0;
-//				covar = 4*covar;
-
-////				std::cout << xi << std::endl << std::endl;
-////				std::cout << theta << std::endl << std::endl;
-////				std::cout << covar << std::endl << std::endl;
-
-//				const float a = xi.dot(theta);				// same as "getError()"
-//				const float b = theta.dot(covar*theta);
-//				return a*a/b;
-
-				Eigen::Matrix<double, 3, 1> X; X << x, y, 1;
-				Eigen::Matrix<double, 3, 3> Q; Q <<
-					A,B,D,
-					B,C,E,
-					D,E,F;
-				Eigen::Matrix<double, 3, 3> P; P <<
-					1,0,0,
-					0,1,0,
-					0,0,0;
-
-				const double a = X.dot(Q*X);
-				const double b = (Q*X).dot(P*Q*X);
-				const double res = a/(4*b);
-				return (float)res;
 
 
-			}
 
 			/** convert to geometric parameters */
 			GeometricParams toGeometric() const;
 
+		private:
+
+			// sanity checks (unit-length, correct F factor, ..)
+			void checkMe() const {
+				const float len = A*A + B*B + C*C + D*D + E*E + F*F;
+				if (len < 0.99 || len > 1.01 || F <= 0.0) {
+					int i = 0;
+				}
+				_assertNear(len, 1.0, 0.01, "vector is not normalized!");
+				_assertTrue(F > 0, "F must be positive!");
+			}
 
 		};
 
@@ -173,7 +158,43 @@ namespace K {
 			/** APX circumfence */
 			float getCircumfence() const {
 				const float h = ((a-b)*(a-b)) / ((a+b)*(a+b));
-				return M_PI * (a+b) * ( 1 + (3*h) / (10+std::sqrt(4-3*h)) );
+				return (float)M_PI * (a+b) * ( 1.0f + (3.0f * h) / (10.0f + std::sqrt(4.0f - 3.0f * h)) );
+			}
+
+			K::Point2f getNearest(const float x, const float y) const {
+
+//				// determine the angle for (x,y) from the center (cx,cy)
+//				const float rad = std::atan2(y-center.y, x-center.x);
+
+				Point2f v1(cos(0), sin(0)); v1.normalize();
+				Point2f v2(x-center.x, y-center.y); v2.normalize();
+
+				float xrad = (v1.x*v2.x) + (v1.y*v2.y);
+				xrad += rad;
+
+				K::Point2f p1 = getPointFor(xrad);
+				K::Point2f p2 = getPointFor(xrad+M_PI);
+
+				const float d1 = p1.getDistance(Point2f(x,y));
+				const float d2 = p2.getDistance(Point2f(x,y));
+
+				return (d1<d2) ? (p1) : (p2);
+
+			}
+
+			/** get the distance of the given point from the ellipse */
+			float getDistance(const float x, const float y) const {
+
+				// fetch the corresponding point on the ellipse
+				const Point2f pOnEllipse = getNearest(x, y);
+
+				// determine distance
+				const float dist = pOnEllipse.getDistance(Point2f(x,y));
+
+				// done
+				return dist;
+
+
 			}
 
 			/** convert to canonical parameters */
@@ -181,10 +202,41 @@ namespace K {
 
 		};
 
+		struct DistanceEstimator {
+
+			std::vector<Point2f> points;
+
+			DistanceEstimator(GeometricParams& geo) {
+
+				const float stepSize = (float)(M_PI*2) / geo.getCircumfence() * 2;
+				for (float i = 0; i < (float)(M_PI*2); i+= stepSize) {
+					const Point2f pos = geo.getPointFor(i);
+					points.push_back(pos);
+				}
+
+			}
+
+			Point2f getNearest(const float x, const float y) const {
+
+				const Point2f p(x,y);
+				auto comp = [p] (const Point2f& p1, const Point2f& p2) {
+					return p1.getDistance(p) < p2.getDistance(p);
+				};
+
+				return *std::min_element(points.begin(), points.end(), comp);
+
+			}
+
+			float getDistance(const float x, const float y) const {
+				return getNearest(x,y).getDistance(Point2f(x,y));
+			}
+
+		};
 
 	};
 
 	inline Ellipse::GeometricParams Ellipse::CanonicalParams::toGeometric() const {
+		checkMe();
 		return GeometricParams(getCenter(), getRadi().x, getRadi().y, getAngle());
 	}
 

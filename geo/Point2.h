@@ -89,6 +89,12 @@ namespace K {
 		std::string asString() const {return "(" + std::to_string(x) + "," + std::to_string(y) + ")";}
 
 
+		void normalize() {
+			const float len = getLength();
+			x /= len;
+			y /= len;
+		}
+
 	};
 
 	typedef Point2<float> Point2f;

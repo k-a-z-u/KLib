@@ -4,19 +4,86 @@
 #include "../../geo/Ellipse.h"
 
 #include "../../math/random/RandomIterator.h"
+#include "../../math/EigenHelper.h"
 
 #include <eigen3/Eigen/Dense>
+
+#include "../../misc/gnuplot/Gnuplot.h"
+#include "../../misc/gnuplot/GnuplotPlot.h"
+#include "../../misc/gnuplot/GnuplotPlotElementLines.h"
 
 namespace K {
 
 	/** estimate ellipse from a point-set */
 	struct EllipseEstimator {
 
+	private:
+
+		struct Estimation {
+
+			// raw ellipse parameters A,B,C,D,E,F
+			Eigen::Matrix<float, 6, 1> params;
+
+			// scaling (used for numerical stability)
+			float s;
+
+			Estimation() : s(1) {
+				params << 0,0,0,0,0,1;
+			}
+
+			Estimation(Eigen::Matrix<float, 6, 1>& params, const float s) : params(params), s(s) {;}
+
+			/** @see getParams(); */
+			Ellipse::CanonicalParams toEllipse() const {
+
+				Eigen::Matrix<float, 6, 1> vec = params;
+
+				// [re-adjust the scaling we added initially
+				vec << vec(0), 2*vec(1), vec(2), 2*s*vec(3), 2*s*vec(4), s*s*vec(5);									// Eq 2.2
+
+				// ensure vec is unit-length [this does NOT change the ellipse!]
+				vec /= vec.norm();
+
+				// ensure the F component is positive (otherwise negate the whole vector)
+				if (vec(5) < 0) {vec = -vec;}
+
+				// construct cannonical parameters
+				return Ellipse::CanonicalParams(vec(0), vec(1), vec(2), vec(3), vec(4), vec(5));
+
+			}
+
+			float getErrorSampson(const float x, const float y) const {
+
+				//const float s = 100;
+				Eigen::Matrix<float, 6, 1> xi; xi << x*x, 2*x*y, y*y, 2*s*x, 2*s*y, s*s*1;
+
+				Eigen::Matrix<float, 6, 1> theta = params;
+
+				Eigen::Matrix<float, 6, 6> covar; covar <<
+					x*x,	x*y,	0,		x,		0,		0,
+					x*y,	x*x+y*y,x*y,	y,		x,		0,
+					0,		x*y,	y*y,	0,		y,		0,
+					x,		y,		0,		1,		0,		0,
+					0,		x,		y,		0,		1,		0,
+					0,		0,		0,		0,		0,		0;
+
+				const float a = xi.dot(theta);				// same as "getError()"
+				const float b = theta.dot(4*covar*theta);
+				return (a*a) / b;
+
+			}
+
+
+
+		};
+
 	public:
 
 		template <typename Scalar> static Ellipse::CanonicalParams get(const std::vector<Point2<Scalar>>& points) {
-			return get<Scalar>(points, (int) points.size());
+			Estimation est = getParams<Scalar>(points);
+			return est.toEllipse();
 		}
+
 
 		/**
 		 * estimate the ellipse for the given point-set using SVD.
@@ -25,40 +92,71 @@ namespace K {
 		 * for this point. thus we add one of those equations per given point.
 		 * the SVD estimates those A,B,C,D,E,F with the lowest overall error among all points.
 		 */
-		template <typename Scalar, typename List> static Ellipse::CanonicalParams get(const List& points, const int size) {
+		template <typename Scalar, typename List> static Estimation getParams(const List& points) {
 
-			// number of points to use
-			const int num = std::min(64, size);
+			// num x num matrix
+			Eigen::Matrix<float, 6, 6> squared = Eigen::Matrix<float, 6, 6>::Zero();
 
-			// matrix with one row (equation) per point
-			Eigen::Matrix<float, Eigen::Dynamic, 6> mat;
-
-			// we need points.size() rows
-			mat.conservativeResize(num, Eigen::NoChange);
+			// according to "ellipse fitting for computer vision, using a scaling factor of Apx. the image's size, makes everything more stable
+			const float s = 100.0f;
 
 			// append one row (one equation) per point
-			for (int i = 0; i < num; ++i) {
-				const int idx = i * size / num;
-				const Point2<Scalar>& p = points[idx];
+			for (const Point2<Scalar>& p : points) {
 				const float x = (float) p.x;
 				const float y = (float) p.y;
-				mat.row(i) << x*x,	x*y,	y*y,	x,		y,		1;			// Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
+				Eigen::Matrix<float, 6, 1> xi;
+				//xi << x*x,	x*y,	y*y,	x,		y,		1;			// Eq 1.1	Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
+				xi << x*x,	2*x*y,	y*y,	2*s*x,	2*s*y,	1*s*s;			// Eq 2.1	Ax^2 + 2Bxy + Cy^2 + 2fDx + 2fEy + ffF = 0
+				squared += xi * xi.transpose();
 			}
 
-			// calculate SVD with FullV (U is NOT needed but compilation fails when using thinU)
-			const Eigen::JacobiSVD<decltype(mat)> svd(mat, Eigen::ComputeFullU | Eigen::ComputeFullV);
-			const Eigen::JacobiSVD<decltype(mat)>::MatrixVType V = svd.matrixV();
-			const Eigen::JacobiSVD<decltype(mat)>::SingularValuesType D = svd.singularValues();
+			// normalize
+			//squared = squared / (float) points.size();
 
-			// the 6 canonical parameters [A-F] are given by the vector in V corresponding to the smallest singular value
-			// the smallest singular value belongs to the last index in U: thus "5"
-			const Eigen::Matrix<float,6,1> vec = V.col(5);
+			// calculate eigenvalues
+			Eigen::SelfAdjointEigenSolver<decltype(squared)> solver(squared);
 
-			// construct cannonical parameters
-			const Ellipse::CanonicalParams cParams(vec(0), vec(1), vec(2), vec(3), vec(4), vec(5));
+			// get the eigenvector for the smallest eigenvalue
+			Eigen::Matrix<float, 6, 1> vec = EigenHelper::getMinEigenVector(solver.eigenvectors(), solver.eigenvalues());
 
 			// done
-			return cParams;
+			return Estimation(vec, s);
+
+
+
+
+//			// number of points to use
+//			const int num = std::min(64, (int)points.size());
+
+//			// matrix with one row (equation) per point
+//			Eigen::Matrix<float, Eigen::Dynamic, 6> mat;
+
+//			// we need points.size() rows
+//			mat.conservativeResize(num, Eigen::NoChange);
+
+//			// append one row (one equation) per point
+//			for (int i = 0; i < num; ++i) {
+//				const int idx = i * (int)points.size() / num;
+//				const Point2<Scalar>& p = points[idx] / 100.0f;
+//				const float x = (float) p.x;
+//				const float y = (float) p.y;
+//				mat.row(i) << x*x,	x*y,	y*y,	x,		y,		1;			// Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
+//			}
+
+//			// calculate SVD with FullV (U is NOT needed but compilation fails when using thinU)
+//			const Eigen::JacobiSVD<decltype(mat)> svd(mat, Eigen::ComputeFullU | Eigen::ComputeFullV);
+//			const Eigen::JacobiSVD<decltype(mat)>::MatrixVType V = svd.matrixV();
+//			const Eigen::JacobiSVD<decltype(mat)>::SingularValuesType D = svd.singularValues();
+
+//			// the 6 canonical parameters [A-F] are given by the vector in V corresponding to the smallest singular value
+//			// the smallest singular value belongs to the last index in U: thus "5"
+//			const Eigen::Matrix<float,6,1> vec = V.col(5);
+
+//			// construct cannonical parameters
+//			const Ellipse::CanonicalParams cParams(vec(0), vec(1), vec(2), vec(3), vec(4), vec(5));
+
+//			// done
+//			return cParams;
 
 		}
 
@@ -75,16 +173,53 @@ namespace K {
 //		}
 
 		/** get the number of points that have an error below the given threshold */
-		template <typename Scalar> static int getNumBelowThreshold(const Ellipse::CanonicalParams& params, const float threshold, const std::vector<Point2<Scalar>>& points) {
+		template <typename Scalar> static int getNumBelowThreshold(const Estimation& params, const float distance, const std::vector<Point2<Scalar>>& points) {
 
-			int cnt = 0;
-			for (const Point2<Scalar>& p : points) {
-				const float curErr = params.getError((float)p.x, (float)p.y);
-				const float err2 = params.getErrorSampson((float)p.x, (float)p.y);
-				//if (std::abs(curErr) < threshold) {++cnt;}
-				if (std::abs(err2) < 15000.5) {++cnt;}
+			Ellipse::GeometricParams geo = params.toEllipse().toGeometric();
+
+
+			static Gnuplot gp;
+			gp << "set xrange[0:400]\n";
+			gp << "set yrange[400:0]\n";
+
+			GnuplotPlot plot;
+			GnuplotPlotElementLines lines; plot.add(&lines);		lines.setColorHex("#999999");
+			GnuplotPlotElementLines ellipse; plot.add(&ellipse);
+
+
+			for (float f = 0; f < M_PI*2; f+= 0.1) {
+				const Point2f pt = geo.getPointFor(f);
+				ellipse.add(GnuplotPoint2(pt.x, pt.y));
 			}
+
+			Ellipse::DistanceEstimator dist(geo);
+
+			//const float dist2 = distance*distance;
+			int cnt = 0;
+			int xx = 0;
+			for (const Point2<Scalar>& p : points) {
+				//const float curErr = params.getError((float)p.x, (float)p.y);
+				//if (std::abs(curErr) < 2) {++cnt;}
+				//if (std::abs(curErr) < threshold) {++cnt;}
+				//const float apxDistance = params.getErrorSampson((float)p.x, (float)p.y);
+				//if (std::abs(apxDistance) < dist2) {++cnt;}
+
+				if (++xx % 20 == 0) {
+					const Point2f n = dist.getNearest(p.x, p.y);
+					lines.addSegment( GnuplotPoint2(p.x, p.y), GnuplotPoint2(n.x, n.y) );
+				}
+
+				const float dst = dist.getDistance((float)p.x, (float)p.y);
+				if (dst < distance) {++cnt;}
+			}
+
+			gp.draw(plot);
+			gp.flush();
+
+
 			return cnt;
+
+
 
 		}
 
@@ -115,19 +250,21 @@ namespace K {
 		}
 
 
-		template <typename Scalar> static Ellipse::CanonicalParams getRANSAC(const std::vector<Point2<Scalar>>& _points) {
+
+
+		template <typename Scalar> static Ellipse::CanonicalParams getRANSAC(const std::vector<Point2<Scalar>>& points) {
 
 			// TODO: is there something better than this?
-			std::vector<Point2<Scalar>> points = _points;
-			std::shuffle(points.begin(), points.end(), std::default_random_engine(_points.size()));
+//			std::vector<Point2<Scalar>> points = _points;
+//			std::shuffle(points.begin(), points.end(), std::default_random_engine(_points.size()));
 
-			const int numSamples = 12;									// 6 would suffice but 14 is more stable
-			const int numRuns = 64;
+			const int numSamples = 6*3;									// 6 would suffice but 12 is more stable
+			const int numRuns = 128;
 			const int minMatch = (int)(0.5f * (float)points.size());	// at least 50% must match
 
 
 			int bestVal = 0;
-			Ellipse::CanonicalParams bestParams(0,0,0,0,0,0);
+			Estimation bestParams;
 
 			for (int i = 0; i < numRuns; ++i) {
 
@@ -135,11 +272,11 @@ namespace K {
 				RandomIterator<Point2<Scalar>> it(points, numSamples);
 
 				// estimate params from a random sample-set
-				Ellipse::CanonicalParams params = get<Scalar>(it, numSamples);
+				Estimation params = getParams<Scalar>(it);
 				//params.normalize();
 
 				// get the number of inliers
-				const int numMatch = getNumBelowThreshold(params, 0.02f, points);
+				const int numMatch = getNumBelowThreshold(params, 1.5f, points);
 
 				// found a better sample-set?
 				if (numMatch > bestVal) {//{ && numMatch > minMatch) {
@@ -149,7 +286,7 @@ namespace K {
 
 			}
 
-			return bestParams;
+			return bestParams.toEllipse();
 
 		}
 

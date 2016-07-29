@@ -148,8 +148,8 @@ namespace K {
 			const Segment segment = RegionGrowing::get(img, seeds[i]);
 
 			// estimate and check error
-			//K::Ellipse::CanonicalParams cano = EllipseEstimator::getRANSAC(segment.points);
-			K::Ellipse::CanonicalParams cano = EllipseEstimator::getRemoveWorst(segment.points);
+			K::Ellipse::CanonicalParams cano = EllipseEstimator::getRANSAC(segment.points);
+			//K::Ellipse::CanonicalParams cano = EllipseEstimator::getRemoveWorst(segment.points);
 
 			drawer.drawEllipse(cano.toGeometric());
 

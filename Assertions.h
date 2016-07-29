@@ -24,7 +24,7 @@
 #define _assertNotEmpty(str, errorString)				if (str.empty()) {_throwAssertion(errorString);}
 #define _assertNot0(val, errorString)					if (val == 0) {_throwAssertion(errorString);}
 #define _assertBetween(val, min, max, errorString)		if (val < min || val > max) {_throwAssertion(errorString+ " (" + std::to_string(min) + " <= " + std::to_string(val) + " <= " + std::to_string(max) + ")");}
-
+#define _assertNear(val, exp, delta, errorString)		if (std::abs(val-exp) > delta) {_throwAssertion(errorString);}
 #else
 
 #define _assertEqual(val1, val2, errorString)

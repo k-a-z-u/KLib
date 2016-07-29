@@ -23,9 +23,11 @@ namespace K {
 		/** ctor */
 		RandomIterator(const std::vector<Element>& vec, const int cnt) : vec(vec), cnt(cnt) {
 
-			static std::minstd_rand seedGen;
-			static std::uniform_int_distribution<int> seedDist(1337, 65535);
-			const int seed = seedDist(seedGen);
+			//static std::minstd_rand seedGen;
+			//static std::uniform_int_distribution<int> seedDist(1337, 65535);
+			//const int seed = seedDist(seedGen);
+
+			static int seed = 1337; ++seed;
 
 			//std::mt19937 gen(seed);
 			std::minstd_rand gen(seed);
@@ -57,6 +59,8 @@ namespace K {
 		};
 
 		const Element& operator [] (const int idx) const {return vec[indices[idx]]; }
+
+		size_t size() const {return cnt;}
 
 		Iterator begin() const { return Iterator(0, vec, indices); }
 		Iterator end() const { return Iterator(cnt, vec, indices); }
