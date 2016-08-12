@@ -2,6 +2,7 @@
 #define K_CV_ELLIPSEDETECTION_H
 
 #include "../../geo/Ellipse.h"
+#include "../../geo/EllipseDistance.h"
 
 #include "../../math/random/RandomIterator.h"
 #include "../../math/EigenHelper.h"
@@ -11,6 +12,8 @@
 #include "../../misc/gnuplot/Gnuplot.h"
 #include "../../misc/gnuplot/GnuplotPlot.h"
 #include "../../misc/gnuplot/GnuplotPlotElementLines.h"
+#include "../../misc/gnuplot/GnuplotPlotElementPoints.h"
+
 
 namespace K {
 
@@ -172,49 +175,58 @@ namespace K {
 
 //		}
 
-		/** get the number of points that have an error below the given threshold */
-		template <typename Scalar> static int getNumBelowThreshold(const Estimation& params, const float distance, const std::vector<Point2<Scalar>>& points) {
+		/** get the number of points that have a distance-error below the given threshold */
+		template <typename Scalar> static int getNumBelowThreshold(const Ellipse::GeometricParams& geo, const float distance, const std::vector<Point2<Scalar>>& points, const int stepSize) {
 
-			Ellipse::GeometricParams geo = params.toEllipse().toGeometric();
+//			debug draw the ellipse
+//			static Gnuplot gp;
+//			gp << "set xrange[0:400]\n";
+//			gp << "set yrange[400:0]\n";
+//			GnuplotPlot plot;
+//			GnuplotPlotElementLines lines; plot.add(&lines);		lines.setColorHex("#999999");
+//			GnuplotPlotElementLines ellipse; plot.add(&ellipse);
+//			GnuplotPlotElementPoints pts; plot.add(&pts);
+//			for (float f = 0; f < M_PI*2; f+= 0.1) {
+//				const Point2f pt = geo.getPointFor(f);
+//				ellipse.add(GnuplotPoint2(pt.x, pt.y));
+//			}
+//			int xx = 0;
 
 
-			static Gnuplot gp;
-			gp << "set xrange[0:400]\n";
-			gp << "set yrange[400:0]\n";
-
-			GnuplotPlot plot;
-			GnuplotPlotElementLines lines; plot.add(&lines);		lines.setColorHex("#999999");
-			GnuplotPlotElementLines ellipse; plot.add(&ellipse);
-
-
-			for (float f = 0; f < M_PI*2; f+= 0.1) {
-				const Point2f pt = geo.getPointFor(f);
-				ellipse.add(GnuplotPoint2(pt.x, pt.y));
-			}
-
-			Ellipse::DistanceEstimator dist(geo);
+			//Ellipse::DistanceEstimatorBruteForce dist(geo);
+			//Ellipse::DistanceEstimatorBisect dist(geo);
+			EllipseDistance::AlignedSplit dist(geo, 9);			// a quality around 7 and 8 should already suffice
 
 			//const float dist2 = distance*distance;
 			int cnt = 0;
-			int xx = 0;
-			for (const Point2<Scalar>& p : points) {
-				//const float curErr = params.getError((float)p.x, (float)p.y);
-				//if (std::abs(curErr) < 2) {++cnt;}
-				//if (std::abs(curErr) < threshold) {++cnt;}
-				//const float apxDistance = params.getErrorSampson((float)p.x, (float)p.y);
-				//if (std::abs(apxDistance) < dist2) {++cnt;}
 
-				if (++xx % 20 == 0) {
-					const Point2f n = dist.getNearest(p.x, p.y);
-					lines.addSegment( GnuplotPoint2(p.x, p.y), GnuplotPoint2(n.x, n.y) );
-				}
 
+			for (int i = 0; i < (int) points.size(); i += stepSize) {
+
+				const Point2<Scalar> p = points[i];
+
+				//				const float curErr = params.getError((float)p.x, (float)p.y);
+				//				if (std::abs(curErr) < 2) {++cnt;}
+				//				if (std::abs(curErr) < threshold) {++cnt;}
+				//				const float apxDistance = params.getErrorSampson((float)p.x, (float)p.y);
+				//				if (std::abs(apxDistance) < dist2) {++cnt;}
+
+//				if (++xx % 20 == 0) {
+//					const Point2f n = dist.getNearest(p.x, p.y);
+//					lines.addSegment( GnuplotPoint2(p.x, p.y), GnuplotPoint2(n.x, n.y) );
+//					pts.add( GnuplotPoint2(p.x, p.y) );
+//				}
+
+				//const Point2f n = dist.getNearest((float)p.x, (float)p.y);
+				//const float dst = n.getDistance(p);
 				const float dst = dist.getDistance((float)p.x, (float)p.y);
 				if (dst < distance) {++cnt;}
+
 			}
 
-			gp.draw(plot);
-			gp.flush();
+//			gp.draw(plot);
+//			gp.flush();
+			//usleep(1000*100);
 
 
 			return cnt;
@@ -251,41 +263,48 @@ namespace K {
 
 
 
-
-		template <typename Scalar> static Ellipse::CanonicalParams getRANSAC(const std::vector<Point2<Scalar>>& points) {
+		template <typename Scalar> static Ellipse::CanonicalParams getRANSAC(const std::vector<Point2<Scalar>>& _points) {
 
 			// TODO: is there something better than this?
-//			std::vector<Point2<Scalar>> points = _points;
-//			std::shuffle(points.begin(), points.end(), std::default_random_engine(_points.size()));
+			std::vector<Point2<Scalar>> points = _points;
+			std::shuffle(points.begin(), points.end(), std::default_random_engine(_points.size()));
 
-			const int numSamples = 6*3;									// 6 would suffice but 12 is more stable
+			const int numSamples = 6+4;												// 6 suffice but using some more is a little more stable? espicially for thicker boarders!
 			const int numRuns = 128;
-			const int minMatch = (int)(0.5f * (float)points.size());	// at least 50% must match
-
+			const int stepSize = 1;													// speed-up using step-size 2
+			const int minMatch = (int)(0.20f * (float)points.size() / stepSize);	// at least 25% (of the used points) must match
+			const float maxDistance = 1.75f;										// maximum distance for a point from the ellipse
 
 			int bestVal = 0;
 			Estimation bestParams;
 
+			// provides random samples
+			RandomIterator<Point2<Scalar>> it(points, numSamples);
+
+			// process X RANSAC runs
 			for (int i = 0; i < numRuns; ++i) {
 
-				// provides random samples
-				RandomIterator<Point2<Scalar>> it(points, numSamples);
-
 				// estimate params from a random sample-set
-				Estimation params = getParams<Scalar>(it);
-				//params.normalize();
+				it.randomize();
+				const Estimation params = getParams<Scalar>(it);
+
+				// get geometric representation (if possible)
+				const Ellipse::GeometricParams geo = params.toEllipse().toGeometric();
+				if (geo.a != geo.a) {continue;}
+				if (geo.b != geo.b) {continue;}
 
 				// get the number of inliers
-				const int numMatch = getNumBelowThreshold(params, 1.5f, points);
+				const int numMatch = getNumBelowThreshold(geo, maxDistance, points, stepSize);
 
-				// found a better sample-set?
-				if (numMatch > bestVal) {//{ && numMatch > minMatch) {
+				// have we found a better sample-set?
+				if ((numMatch > bestVal) && (numMatch > minMatch)) {
 					bestVal = numMatch;
 					bestParams = params;
 				}
 
 			}
 
+			// done
 			return bestParams.toEllipse();
 
 		}

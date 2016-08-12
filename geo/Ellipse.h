@@ -8,6 +8,10 @@
 #include <eigen3/Eigen/Dense>
 #include "../Assertions.h"
 
+#include "../misc/gnuplot/Gnuplot.h"
+#include "../misc/gnuplot/GnuplotPlot.h"
+#include "../misc/gnuplot/GnuplotPlotElementLines.h"
+
 namespace K {
 
 	class Ellipse {
@@ -16,6 +20,7 @@ namespace K {
 
 		struct CanonicalParams;
 		struct GeometricParams;
+		struct VectorParams;
 
 		// https://en.wikipedia.org/wiki/Ellipse#General_ellipse
 		// http://math.stackexchange.com/questions/1824910/how-to-get-the-coordinates-of-the-center-of-the-ellipse-after-approximation
@@ -135,7 +140,12 @@ namespace K {
 			GeometricParams() {;}
 
 			/** ctor */
-			GeometricParams(const K::Point2f center, const float a, const float b, const float rad) : center(center), a(a), b(b), rad(rad) {;}
+			GeometricParams(const K::Point2f center, const float a, const float b, const float rad) : center(center), a(a), b(b), rad(rad) {
+
+				// ensure major-axis is > minor axis
+				if(b > a) {std::swap(this->a, this->b); this->rad += (float)M_PI_2;}
+
+			}
 
 			/** get a point on this ellipse for the position identified by rad [0:2PI] */
 			K::Point2f getPointFor(const float rad) const {
@@ -200,13 +210,55 @@ namespace K {
 			/** convert to canonical parameters */
 			CanonicalParams toCanonical() const;
 
+			/** convert to vector parameters */
+			VectorParams toVector() const;
+
+		private:
+
+			void check() const {
+				_assertNotNAN(a, "major axis is NaN");
+				_assertNotNAN(b, "minor axis is NaN");
+				_assertTrue(a >= b, "major axis is smaller than minor axis");
+			}
+
 		};
 
-		struct DistanceEstimator {
+
+		/**
+		 * Point-On-Ellipse = CENTER + u*VEC_MAJOR + v*VEC_MINOR
+		 * u = cos(rad);
+		 * v = sin(rad);
+		 */
+		struct VectorParams {
+
+			/** ellipse center */
+			Point2f center;
+
+			/** vector for the major axis (including length!) */
+			Point2f vecMajor;
+
+			/** vector for the minor axis (including length!) */
+			Point2f vecMinor;
+
+			/** ctor */
+			VectorParams(const Point2f center, const Point2f major, const Point2f minor) : center(center), vecMajor(major), vecMinor(minor) {;}
+
+			/** get point-on-ellipse given the angle [0:2PI] */
+			const Point2f getPointFor(const float rad) const {
+				const float u = std::cos(rad);
+				const float v = std::sin(rad);
+				return center + (vecMajor * u) + (vecMinor * v);
+			}
+
+		};
+
+
+
+		struct DistanceEstimatorBruteForce {
 
 			std::vector<Point2f> points;
 
-			DistanceEstimator(GeometricParams& geo) {
+			DistanceEstimatorBruteForce(const GeometricParams& geo) {
 
 				const float stepSize = (float)(M_PI*2) / geo.getCircumfence() * 2;
 				for (float i = 0; i < (float)(M_PI*2); i+= stepSize) {
@@ -233,6 +285,126 @@ namespace K {
 
 		};
 
+
+
+
+		struct DistanceEstimatorBisect {
+
+			float minRadChange;
+			const Ellipse::VectorParams params;
+
+			/** ctor */
+			DistanceEstimatorBisect(const Ellipse::GeometricParams params) : params(params.toVector()) {
+
+				// circumfence of a circle induced by the major-axis
+				const float circ = (float)M_PI * params.a * 2;
+
+				// ~ 0.5 ellipse-pixels in radians (indicator for stopping the refinement)
+				minRadChange = (float)(M_PI*2) / circ * 0.33f;
+
+			}
+
+			/** optimize the functions only parameter until epsilon is reached */
+			template <typename Func, typename Scalar> void calculateOptimum(const Func& func, Scalar& dst) const {
+
+				struct POS {
+					float rad;
+					float dist;
+					POS(float rad, float dist) : rad(rad), dist(dist) {;}
+				};
+
+				// 4 starting points, 0°, 90°, 180°, 270° -> find the best one
+				POS pBest(0, 999999);
+				for (float rad = 0; rad < (float)(M_PI*2); rad += (float)(M_PI/2)) {
+					const POS p (rad, func(rad));
+					if (p.dist < pBest.dist) {pBest = p;}
+				}
+
+				// analyze region [best-PI/2:best+PI/2]
+				// the real value lies somewhere within this regio
+				const float pi2 = (float) M_PI_2;
+				POS p1(pBest.rad-pi2, func(pBest.rad-pi2));		// p1 = best - PI/2
+				POS p2(pBest.rad+pi2, func(pBest.rad+pi2));		// p2 = best + PI/2
+
+				// refine the higher(p2) and lower(p1) bound
+				// after some iterations, the changes are already very small
+				// and we safely can stop the refinement
+				while(true) {
+
+					const float reg = p2.rad - p1.rad;
+					const float adv = reg * 0.20f;				// if * x is too high, approximation will fail in some cases!
+
+					// refine the worse one of both
+					if (p2.dist > p1.dist) {
+						p2.rad -= adv;
+						p2.dist = func(p2.rad);
+					} else {
+						p1.rad += adv;
+						p1.dist = func(p1.rad);
+					}
+
+					// limit reached?
+					if (adv < minRadChange) {break;}
+
+				}
+
+				// done
+				dst = (p1.rad+p2.rad) / 2;
+
+			}
+
+
+			Point2f getNearest(const float x, const float y) const {
+				return getNearest(Point2f(x,y));
+			}
+
+			Point2f getNearest(const Point2f query) const {
+
+	//			static K::Gnuplot gp;
+	//			K::GnuplotPlot plot;
+	//			K::GnuplotPlotElementLines lines; plot.add(&lines);
+	//			K::GnuplotPlotElementLines test; plot.add(&test);
+	//
+	//			gp << "set view equal xy\n";
+	//			gp << "set xrange [-20:+20]\n";
+	//			gp << "set yrange [-20:+20]\n";
+	//
+	//			for (float f = 0; f < M_PI*2; f += 0.1) {
+	//				const float u = std::sin(f);
+	//				const float v = std::cos(f);
+	//				const Point2f p = params.center + (params.vecMajor*u) + (params.vecMinor*v);
+	//				lines.add(K::GnuplotPoint2(p.x, p.y));
+	//			}
+
+				auto distance = [&] (const float param) {
+
+					const Point2f p = params.getPointFor(param);
+
+	//				test.clear();
+	//				test.add(K::GnuplotPoint2(query.x, query.y));
+	//				test.add(K::GnuplotPoint2(p.x, p.y));
+	//				gp.draw(plot);
+	//				gp.flush();
+	//				usleep(1000*100);
+
+					const float dist = p.getDistance(query);
+					return dist;
+
+				};
+
+				float param = 0;
+				calculateOptimum(distance, param);
+
+				//distance(param);
+				//sleep(1);
+
+				return params.getPointFor(param);
+
+			}
+
+		};
+
+
 	};
 
 	inline Ellipse::GeometricParams Ellipse::CanonicalParams::toGeometric() const {
@@ -242,6 +414,13 @@ namespace K {
 
 	inline Ellipse::CanonicalParams Ellipse::GeometricParams::toCanonical() const {
 		return CanonicalParams(center, a, b, rad);
+	}
+
+	inline Ellipse::VectorParams Ellipse::GeometricParams::toVector() const {
+		check();
+		const Point2f vec1 = Point2f(1,0).getRotated(rad) * a;		// major axis
+		const Point2f vec2 = Point2f(0,1).getRotated(rad) * b;		// minor axis
+		return VectorParams(center, vec1, vec2);
 	}
 
 }

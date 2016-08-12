@@ -26,6 +26,45 @@ namespace K {
 
 	}
 
+
+	TEST(Ellipse, paramConvert2) {
+
+		Ellipse::GeometricParams geo (K::Point2f(10, 15), 8, 6, 1.2f);
+		Ellipse::VectorParams vec = geo.toVector();
+
+		// geo and vec must provide the same ellipse points for a given angle
+		ASSERT_NEAR(0, geo.getPointFor(0).getDistance(vec.getPointFor(0)), 0.01);
+		ASSERT_NEAR(0, geo.getPointFor(1).getDistance(vec.getPointFor(1)), 0.01);
+		ASSERT_NEAR(0, geo.getPointFor(2).getDistance(vec.getPointFor(2)), 0.01);
+		ASSERT_NEAR(0, geo.getPointFor(3).getDistance(vec.getPointFor(3)), 0.01);
+		ASSERT_NEAR(0, geo.getPointFor(4).getDistance(vec.getPointFor(4)), 0.01);
+		ASSERT_NEAR(0, geo.getPointFor(5).getDistance(vec.getPointFor(5)), 0.01);
+
+	}
+
+	TEST(Ellipse, getPointFor) {
+
+		Ellipse::GeometricParams geo (K::Point2f(0, 0), 8, 3, 0.0f);
+
+		ASSERT_NEAR(8, geo.getPointFor(0).x, 0.001);		// 0° = major-axis to the right
+		ASSERT_NEAR(0, geo.getPointFor(0).y, 0.001);
+
+		ASSERT_NEAR(0, geo.getPointFor((float)M_PI_2).x, 0.001);	// 90° = minor-axis to the top
+		ASSERT_NEAR(3, geo.getPointFor((float)M_PI_2).y, 0.001);
+
+	}
+
+	TEST(Ellipse, getNearest) {
+
+		Ellipse::GeometricParams geo (K::Point2f(0, 0), 10, 2, 0.0f);
+		Ellipse::DistanceEstimatorBisect bisect(geo);
+		bisect.getNearest(K::Point2f(15, 15));
+
+		//Ellipse::GeometricParams geo (K::Point2f(0, 0), 10, 2, 0.9f);
+		//EllipseEstimator::getNearest(geo, K::Point2f(20, 0));
+
+	}
+
 	TEST(Ellipse, fromPhoto) {
 
 		// ellipse image
