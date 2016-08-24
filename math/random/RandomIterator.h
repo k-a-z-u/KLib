@@ -17,9 +17,9 @@ namespace K {
 		/** the number of random indices */
 		int cnt;
 
-
-		/** the next seed */
-		int seed = 0;
+		/** the random number generator */
+		std::minstd_rand gen;
+		bool isRandomized = false;
 
 		/** X random indices */
 		std::vector<int> indices;
@@ -35,11 +35,7 @@ namespace K {
 		/** create random samples (vector-indicies) that are hereafter available for iteration */
 		void randomize() {
 
-			// update the seed
-			seed += 1337;
-
 			// random-number generator between [0:size-1]
-			std::minstd_rand gen(seed);
 			std::uniform_int_distribution<int> dist(0, (int) vec.size()-1);
 
 			// ensure we use each vector-index only ONCE
@@ -53,6 +49,9 @@ namespace K {
 				indices[i] = rnd;				// add to the index
 				++i;
 			}
+
+			// the vector is setup correctly
+			isRandomized = true;
 
 		}
 
@@ -98,7 +97,7 @@ private:
 
 		/** ensure the coder called randomize() before using the iterator */
 		void ensureRandomized() const {
-			_assertNot0(seed, "call randomize() before using the iterator!");
+			_assertTrue(isRandomized, "call randomize() before using the iterator!");
 		}
 
 	};

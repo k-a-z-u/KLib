@@ -100,6 +100,11 @@ namespace K {
 			y /= len;
 		}
 
+		/** cast. e.g. from int to float or vice versa */
+		template <typename T2> operator Point2<T2> () const {
+			return Point2<T2>(x, y);
+		}
+
 	};
 
 	typedef Point2<float> Point2f;

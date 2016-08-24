@@ -30,6 +30,12 @@ namespace K {
 
 		}
 
+		/** change the foreground color */
+		void setForeground(const float fg) {
+			this->fg = fg;
+		}
+
+
 		void drawString(const std::string& str, const Point2i& pos) {
 
 			Point2i p = pos;
@@ -80,6 +86,11 @@ namespace K {
 				}
 			}
 
+		}
+
+		/** draw the given dot */
+		void drawDot(const float x, const float y) {
+			Interpolation::Bilinear::set(img, x, y, fg);
 		}
 
 		/** draw an ellipse */
