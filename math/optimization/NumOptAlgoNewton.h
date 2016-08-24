@@ -65,6 +65,54 @@ namespace K {
 
 		}
 
+//		/** get f(x) */
+//		template <typename Func, typename Scalar> Scalar getF0(const Func& func, const Scalar x) const {
+//			return func(x);
+//		}
+
+//		/** get 1st derivation at x f'(x) */
+//		template <typename Func, typename Scalar> Scalar getF1(const Func& func, const Scalar x, const Scalar delta = 0.00001f) const {
+//			const Scalar v1 = func(x + delta/2);
+//			const Scalar v2 = func(x - delta/2);
+//			return ( v1 - v2 ) / delta;
+//		}
+
+//		/** get 2nd derivation at x f''(x) */
+//		template <typename Func, typename Scalar> Scalar getF2(const Func& func, const Scalar x, const Scalar delta = 0.00001f) const {
+//			const Scalar v1 = getF1(func, x + delta/2, delta);
+//			const Scalar v2 = getF1(func, x - delta/2, delta);
+//			return ( v1 - v2 ) / delta;
+//		}
+
+//		/** optimize the functions only parameter until epsilon is reached */
+//		template <typename Func, typename Scalar> void calculateOptimumNew(const Func& func, Scalar& dst, const Scalar delta = 0.00001f) {
+
+//			Scalar cur = dst;
+//			Scalar next = cur;
+
+//			// optimize until |cur - next| < epsilon
+//			while(true) {
+
+//				// calculate next value
+//				const Scalar f1 = getF0(func, cur);
+//				const Scalar f2 = getF1(func, cur, delta);
+//				next = cur - (f1 / f2) * 0.1;
+
+//				// done?
+//				Scalar delta = std::abs(cur - next);
+//				if (delta < epsilon) {break;}
+
+//				// proceed
+//				cur = next;
+
+//			}
+
+//			// done -> return
+//			dst = cur;
+
+//		}
+
+
 	private:
 
 		double epsilon;

@@ -9,6 +9,7 @@
 #define K_MATH_FILTER_PARTICLES_PARTICLEFILTERRESAMPLINGSIMPLE_H_
 
 #include <algorithm>
+#include <random>
 
 #include "ParticleFilterResampling.h"
 #include "../ParticleAssertions.h"

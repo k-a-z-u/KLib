@@ -11,6 +11,8 @@
 #include "../../../optimization/NumOptVector.h"
 #include "../../../optimization/NumOptAlgoDownhillSimplex.h"
 
+
+
 namespace K {
 
 	template <typename State, int numParams>
@@ -18,11 +20,11 @@ namespace K {
 
 		Gnuplot gp;
 
-		K::NumOptAlgoDownhillSimplex<numParams> simplex;
+		K::NumOptAlgoDownhillSimplex<float, numParams> simplex;
 
 	private:
 
-		class OptFunc : public NumOptFunction<numParams> {
+		class OptFunc  {
 
 		private:
 
@@ -34,17 +36,18 @@ namespace K {
 			/** ctor */
 			OptFunc(const std::vector<Particle<State>>& particles) : particles(particles) {;}
 
-			virtual double getValue(const NumOptVector<numParams>& args) const {
+			float operator () (const float* params) const {
 
 				double prob = 0;
 				const int size = particles.size();
 
-				#pragma omp parallel for
-				for (int i = 0; i < size; ++i) {
+				//#pragma omp parallel for
+				for (int i = 0; i < size; i+=10) {
 					const Particle<State>& p = particles[i];
-					prob += p.state.getKernelDensityProbability(args) * p.weight;
+					prob += p.state.getKernelDensityProbability(params) * p.weight;
 				}
 
+				// convert probability to "error"
 				return -prob;
 
 			}
@@ -60,87 +63,89 @@ namespace K {
 			// comparator
 			auto comp = [] (const Particle<State>& p1, const Particle<State>& p2) { return p1.weight < p2.weight; };
 
-			// find max state
-			auto el = std::max_element(particles.begin(), particles.end(), comp);
-			State max =  el->state;
+//			// find max state
+//			auto el = std::max_element(particles.begin(), particles.end(), comp);
+//			State max =  el->state;
 
-//			// start using the particle with the max-weight
-//			NumOptVector<numParams> params;
-//			max.fillKernelDenstityParameters(params);
+
+//			// region to check
+//			BBox2 bbox;
+//			bbox.add(Point2f(-50,-50));
+//			bbox.add(Point2f(100,100));
+
+//			const float stepSize = 1.0f;
+
+//			const int pxX = (bbox.getMax().x - bbox.getMin().x) / stepSize;
+//			const int pxY = (bbox.getMax().y - bbox.getMin().y) / stepSize;
 
 //			// optimize using simplex
 			OptFunc func(particles);
-
-
 
 //			// calculate the optimum
 //			simplex.calculateOptimum(func, params);
 //			std::cout << params << std::endl;
 
 
-			NumOptVector<numParams> params = getGlobalMax(particles);
+			float params[numParams];
+			getGlobalMax(particles, params);
 
 			// create output state from optimized params
 			State res(params);
 
 
-
-
 			gp << "splot '-' with lines\n";
 
-			int x1 = params[0]-1200;
-			int x2 = params[0]+1200;
-			int y1 = params[1]-1200;
-			int y2 = params[1]+1200;
+			int x1 = 0;//params[0]-2500;
+			int x2 = 100*100;//params[0]+2500;
+			int y1 = 0;//params[1]-2500;
+			int y2 = 60*100;//params[1]+2500;
 
-			for (int x = x1; x < x2; x += 300) {
-				for (int y = y1; y < y2; y += 300) {
+			for (int x = x1; x < x2; x += 400) {
+				for (int y = y1; y < y2; y += 400) {
 					params[0] = x;
 					params[1] = y;
-					params[2] = 3;
-					gp << x << " " << y << " " << -func.getValue(params) << "\n";
+					params[2] = 0;
+					gp << x << " " << y << " " << -func(params) << "\n";
 				}
 				gp << "\n";
 			}
 			gp << "e\n";
 			gp.flush();
 
-
-
-
 			return res;
 
 		}
 
-		NumOptVector<numParams> getGlobalMax(const std::vector<Particle<State>>& particles) {
+		void getGlobalMax(const std::vector<Particle<State>>& particles, float* startParams) {
 
-			NumOptVector<numParams> startParams;
 			OptFunc func(particles);
 			double bestP = 0;
-			NumOptVector<numParams> bestParams;
+			float bestParams[numParams];
 
-			simplex.setMaxIterations(20);
-			simplex.setNumRestarts(3);
+			simplex.setMaxIterations(10);
+			simplex.setNumRestarts(0);
 
 
-			for (int i = 0; i < 25; ++i) {
+			for (int i = 0; i < 15; ++i) {
 
-				int idx = rand() % particles.size();
+				// start at a random particle
+				const int idx = rand() % particles.size();
 
+				// start optimization at this particle's paramters
 				particles[idx].state.fillKernelDenstityParameters(startParams);
 
 				simplex.calculateOptimum(func, startParams);
 
-				double p = -func.getValue(startParams);
-				if (p > bestP) {
-					bestP = p;
-					bestParams = startParams;
-					std::cout << bestParams << std::endl;
+				const float prob = -func(startParams);
+				if (prob > bestP) {
+					bestP = prob;
+					memcpy(bestParams, startParams, numParams*sizeof(float));
+					//std::cout << bestParams << std::endl;
 				}
 
 			}
 
-			return bestParams;
+			memcpy(startParams, bestParams, numParams*sizeof(float));
 
 		}
 

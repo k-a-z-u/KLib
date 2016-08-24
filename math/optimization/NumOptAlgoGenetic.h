@@ -15,7 +15,17 @@
 
 namespace K {
 
+
 	template <typename Scalar> class NumOptAlgoGenetic {
+
+	public:
+
+		struct MinMax {
+			Scalar min;
+			Scalar max;
+			MinMax(const Scalar min, const Scalar max) : min(min), max(max) {;}
+			const Scalar diff() const {return max - min;}
+		};
 
 	private:
 
@@ -36,6 +46,9 @@ namespace K {
 
 		/** the random value range for mutation */
 		std::vector<Scalar> valRange;
+
+		/** the region [min:max] values are allowed within */
+		std::vector<MinMax> valRegion;
 
 		/** random number generator */
 		std::minstd_rand gen;
@@ -86,6 +99,15 @@ namespace K {
 			this->valRange = range;
 		}
 
+		/** limit the region values are allowed within, and set the random range for initial values */
+		void setValRegion(const std::vector<MinMax>& region) {
+			this->valRegion = region;
+			this->valRange.clear();
+			for (const MinMax& mm : region) {
+				const float range = mm.diff() / 33.0;
+				this->valRange.push_back(range);			// if region is e.g. [-3:+4] use 7 / 33 as random modification
+			}
+		}
 
 		/** represents one entry within the population */
 		struct Entity {
@@ -97,6 +119,8 @@ namespace K {
 		void setCallback(std::function<void(const int iteration, const Scalar error, const Scalar* params)> func) {
 			this->callback = func;
 		}
+
+
 
 		/**
 		 * how it works:
@@ -123,20 +147,25 @@ namespace K {
 			const int toSurvive = (int) std::ceil(elitism * populationSize);	// ceil: round up to at-least 1
 
 			// initialize the 1st poulation
+			// one entry is the given parameter-set (Scalar* dst)
+			// all other entries are random within the provided valueRegion (setValRegion())
 			for (int p = 0; p < populationSize; ++p) {
 
-				// start with the given initial genes (if any)
-				std::copy(&dst[0], &dst[numParams], currentPopulation[p].genes);
+				// first entry = parameters as-is
+				if (p == 0) {
 
-				// the first entry of the population remains as-is (elitism) the others are mutated
-				if (p > 0) {
+					// start with the given initial genes (if any)
+					std::copy(&dst[0], &dst[numParams], currentPopulation[p].genes);
 
-					// add random mutation to all genes
-					mutate(currentPopulation[p].genes);
+				// all other entries = truely random
+				} else {
+
+					// initialize with random values, but use the given values (if any) as a hint
+					initWithRandomValues(currentPopulation[p], dst);
 
 				}
 
-				// calculate the fitness
+				// calculate the fitness for the chosen random values
 				currentPopulation[p].fitness = getFitness(func, currentPopulation[p].genes);
 
 			}
@@ -195,6 +224,31 @@ namespace K {
 
 
 	private:
+
+		/**
+		 * init the given genes with random values
+		 * based on the given hint or provided valRegion values (if any)
+		 */
+		void initWithRandomValues(Entity& e, Scalar* hint) {
+
+			// valRegion setting available? use it!
+			if (!this->valRegion.empty()) {
+
+				for (int i = 0; i < numParams; ++i) {
+					std::uniform_real_distribution<Scalar> dist(valRegion[i].min, valRegion[i].max);
+					const Scalar val = dist(gen);
+					e.genes[i] = val;
+				}
+
+			// no valRegion provided. use a mutated hint as fallback
+			} else {
+
+				std::copy(&hint[0], &hint[numParams], e.genes);
+				mutate(e.genes);
+
+			}
+
+		}
 
 		/** sort population by fitness (better ones [higher fitness] come first) */
 		inline void sort(std::vector<Entity>& population) {
