@@ -12,7 +12,7 @@ TEST(RegionGrowing, grow) {
 
 
 	{
-		Segment reg;
+		Segment<float> reg;
 
 		// the pixel itself
 		reg = RegionGrowing::get(img, Point2i(8,8));	ASSERT_EQ(1, reg.points.size());		ASSERT_EQ(1, reg.avg);
@@ -29,7 +29,7 @@ TEST(RegionGrowing, grow) {
 	img.set(8,9, 1);
 
 	{
-		Segment reg;
+		Segment<float> reg;
 
 		// the pixels in the center
 		reg = RegionGrowing::get(img, Point2i(8,8));	ASSERT_EQ(5, reg.points.size());		ASSERT_EQ(1, reg.avg);

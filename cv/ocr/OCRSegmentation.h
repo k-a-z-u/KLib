@@ -19,9 +19,9 @@ namespace K {
 
 		class Letters {
 		public:
-			std::vector<Segment> segments;
+			std::vector<Segment<float>> segments;
 		public:
-			Letters(std::vector<Segment>& segments) : segments(segments) {;}
+			Letters(std::vector<Segment<float>>& segments) : segments(segments) {;}
 			inline int kdGetValue(const KDIdx idx, const int axis) const {
 				//return segments[idx].calcBBox().getCenter()[axis];
 				return 0;// TODO
@@ -38,7 +38,7 @@ namespace K {
 		static void getLetters(const ImageChannel& img) {
 
 			// get all segments
-			std::vector<Segment> segments = getSegments(img);
+			std::vector<Segment<float>> segments = getSegments(img);
 			Letters l(segments);
 
 			// nearest neighbor search tree
@@ -54,7 +54,7 @@ namespace K {
 			int j = 0;
 			for (int s = 0; s < segments.size(); ++s) {
 
-				const Segment seg = segments[s];
+				const Segment<float> seg = segments[s];
 				BBox2i bb = seg.calcBBox();
 				std::vector<KDTreeNeighbor<int>> neighbors = KDTreeKNN::getNeighborsWithinRadius(tree, {bb.getCenter().x, bb.getMin().y}, bb.getHeight());
 
@@ -65,7 +65,7 @@ namespace K {
 
 					for (KDTreeNeighbor<int> nn : neighbors) {
 						if (nn.idx == s) {continue;}		// skip the segment itself
-						Segment& seg2 = segments[nn.idx];
+						Segment<float>& seg2 = segments[nn.idx];
 						const BBox2i bb2 = seg2.calcBBox();
 						if (bb.contains(bb2)) {
 							d.drawRect(bb.getMin(), bb.getMax());
@@ -92,7 +92,7 @@ namespace K {
 		}
 
 		// try to segmentize all connected regions within the image
-		static std::vector<Segment> getSegments(const ImageChannel& img) {
+		static std::vector<Segment<float>> getSegments(const ImageChannel& img) {
 
 			// apply threshold?
 			//Threshold:(img, 0.80f);

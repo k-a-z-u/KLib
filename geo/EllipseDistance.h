@@ -51,49 +51,70 @@ namespace K {
 
 			/** helper class for faster result calculation */
 			struct Result {
+
 				float alignedRad;
 				int origQuadrant;
 				float distance;
+
+				/** convert from aligned-radians [0:PI/2] (1st quadrant only) to unaligned radians [0:2PI], depending on the original quadrant */
+				float getOrigRad() const {
+					const float deg180 = (float) M_PI;
+					if (origQuadrant == 0) {return +alignedRad;}
+					if (origQuadrant == 1) {return deg180-alignedRad;}
+					if (origQuadrant == 2) {return deg180+alignedRad;}
+					if (origQuadrant == 3) {return -alignedRad;}
+					throw 1;
+				}
+
 			};
 
 		public:
 
 			/** ctor */
-			AlignedSplit(const Ellipse::GeometricParams params, const int numIterations = 10) : parOrig(params), aligned(params.a, params.b), numIterations(numIterations) {
+			AlignedSplit(const Ellipse::GeometricParams params, const int numIterations = 10) :  numIterations(numIterations), parOrig(params), aligned(params.a, params.b) {
 				;
 			}
 
 			/** get a point on the ellipse, nearest to (x,y) */
-			Point2f getNearest(const float x, const float y) const {
-				return getNearest(Point2f(x,y));
+			Point2f getBestPoint(const float x, const float y) const {
+				return getBestPoint(Point2f(x,y));
 			}
 
 			/** get a point on the ellipse, nearest to (x,y) */
-			Point2f getNearest(const Point2f query) const {
+			Point2f getBestPoint(const Point2f query) const {
 
 				// get the best result within Quadrant Q1 and re-translate everything to the original ellipse
 				const Result res = getBest(query);
 
 				// position on original ellipse including the correct quadrant
-				return getOrig(res.alignedRad, res.origQuadrant);
+				//return getOrig(res.alignedRad, res.origQuadrant);
+				return parOrig.getPointFor(res.getOrigRad());
 
 			}
 
 			/** just get the distance of the given query-point to the ellipse. FASTER than getNearest()! */
-			float getDistance(const float x, const float y) const {
-				return getDistance(Point2f(x,y));
+			float getBestDistance(const float x, const float y) const {
+				return getBestDistance(Point2f(x,y));
 			}
 
 			/** just get the distance of the given query-point to the ellipse. FASTER than getNearest()! */
-			float getDistance(const Point2f query) const {
-				return getBest(query).distance;
+			float getBestDistance(const Point2f query) const {
+				return _getBest(query).distance;
+			}
+
+			Result getBest(const Point2f query) const {
+				return _getBest(query);
+			}
+
+			Result getBest(const float x, const float y) const {
+				return getBest(Point2f(x,y));
 			}
 
 		private:
 
 
 			/** get a point on the ellipse, nearest to (x,y) */
-			Result getBest(const Point2f _query) const {
+			Result _getBest(const Point2f _query) const {
 
 				// translate the point into the coordinate-system of the axis-aligned ellipse (center and undo rotation)
 				const Point2f query = (_query - parOrig.center).getRotated(-parOrig.rad);
@@ -179,15 +200,15 @@ namespace K {
 				}
 			}
 
-			/** remove the alignment and add the original quadrant */
-			Point2f getOrig(const float alignedRad, const int quadrant) const {
-				const float deg180 = (float) M_PI;
-				if (quadrant == 0) {return parOrig.getPointFor(+alignedRad);}
-				if (quadrant == 1) {return parOrig.getPointFor(deg180-alignedRad);}
-				if (quadrant == 2) {return parOrig.getPointFor(deg180+alignedRad);}
-				if (quadrant == 3) {return parOrig.getPointFor(-alignedRad);}
-				throw 1;
-			}
+//			/** remove the alignment and add the original quadrant */
+//			Point2f getOrig(const float alignedRad, const int quadrant) const {
+//				const float deg180 = (float) M_PI;
+//				if (quadrant == 0) {return parOrig.getPointFor(+alignedRad);}
+//				if (quadrant == 1) {return parOrig.getPointFor(deg180-alignedRad);}
+//				if (quadrant == 2) {return parOrig.getPointFor(deg180+alignedRad);}
+//				if (quadrant == 3) {return parOrig.getPointFor(-alignedRad);}
+//				throw 1;
+//			}
 
 			/** position on ellipse + its distance (=error) from the query point */
 			struct POS {

@@ -220,6 +220,7 @@ namespace K {
 			int stepSize = 1;				// process only every 1th input point. HANDLE WITH CARE!
 			int numRuns = 64;				// number of iterations
 			int numSamples = 6+4;			// 6 suffice but using some more is a little more stable? espicially for thicker boarders!
+			float minCoverage = 0.50;		// at least 50% of the ellipse's outline must be covered by inliers
 			float minMatchRate = 0.50;		// at least 50% of the given points must reside on the ellipse;
 			float maxDistance = 1.75f;		// maximum distance for a point from the ellipse to count as "inlier"
 
@@ -231,14 +232,20 @@ namespace K {
 			/** set the minimum number of inliers [0.0:1.0] needed for an ellipse to be accepted */
 			void setMinMatchRate(const float rate) {this->minMatchRate = rate;}
 
+			/** set the percentage for the ellipse's outline that must be covered by inliers for a result to be accepted */
+			void setMinCoverage(const float coverage) {this->minCoverage = coverage;}
+
 			/** set the maximum distance for a point from the ellipse to count as inlier */
 			void setMaxDistance(const float dist) {this->maxDistance = dist;}
+
+
+
 
 			/** get an ellipse estimation */
 			template <typename Scalar> Ellipse::CanonicalParams get(const std::vector<Point2<Scalar>>& points) {
 
-				// number of matches needed at
-				const int minMatch = (int)(minMatchRate * (float)points.size() / stepSize);
+				// number of inliers needed for a solution to be accepted
+				const int minInliers = (int)(minMatchRate * (float)points.size() / stepSize);
 
 				int bestVal = 0;
 				Estimation bestParams;
@@ -258,12 +265,12 @@ namespace K {
 					if (geo.a != geo.a) {--i; continue;}
 					if (geo.b != geo.b) {--i; continue;}
 
-					// get the number of inliers
-					const int numMatch = getNumBelowThreshold(geo, maxDistance, points, stepSize);
+					// get match stats
+					const MatchStats stats = getStats(geo, maxDistance, points, stepSize);
 
-					// have we found a better sample-set?
-					if ((numMatch > bestVal) && (numMatch > minMatch)) {
-						bestVal = numMatch;
+					// have we found a better sample-set that is valid?
+					if ((stats.numInliers > bestVal) && (stats.numInliers >= minInliers) && (stats.outlineCoverage >= minCoverage)) {
+						bestVal = stats.numInliers;
 						bestParams = params;
 					}
 
@@ -276,21 +283,63 @@ namespace K {
 
 		private:
 
+			struct MatchStats {
+
+				/** how many have we found? */
+				int numInliers = 0;
+
+				/** how many percent of the ellipse's outline are covererd by inliers? */
+				float outlineCoverage = 0.0f;
+
+			};
+
+
 			/** get the number of points that have a distance-error below the given threshold */
-			template <typename Scalar> static int getNumBelowThreshold(const Ellipse::GeometricParams& geo, const float distance, const std::vector<Point2<Scalar>>& points, const int stepSize) {
+			template <typename Scalar> static MatchStats getStats(const Ellipse::GeometricParams& geo, const float distance, const std::vector<Point2<Scalar>>& points, const int stepSize) {
+
+				static constexpr int segments = 50;
+				MatchStats stats;
 
 				// ellipse-distance-estimator
 				const EllipseDistance::AlignedSplit dist(geo, 8);			// a quality around 7 and 8 should already suffice
 
+				// divide the ellipse into 50 segments and track, wether we got an inlier for each one
+				bool degCovered[segments] = {false};
+
 				// count the number of points within the threshold
-				int cnt = 0;
 				for (int i = 0; i < (int) points.size(); i += stepSize) {
+
 					const Point2<Scalar> p = points[i];
-					const float dst = dist.getDistance((float)p.x, (float)p.y);
-					if (dst < distance) {++cnt;}
+
+					// get matching information for this point on the ellipse
+					const EllipseDistance::AlignedSplit::Result res = dist.getBest(p);
+
+					// distance between point and ellipse?
+					const float dst = res.distance;
+
+					// is this one an inlier? (distance below threshold)
+					if (dst < distance) {
+
+						++stats.numInliers;
+
+						// which ellipse-segment is covered by this inlier?
+						int deg = res.getOrigRad() * 180 / M_PI;
+						if (deg < 0) {deg = 360+deg;}
+						if (deg > 360) {deg %= 360;}
+						deg = deg * segments / 360;
+
+						// previously uncovered segment? -> add and increase coverage
+						if (!degCovered[deg]) {
+							degCovered[deg] = true;
+							stats.outlineCoverage += 1.0f/segments;
+						}
+
+					}
+
 				}
 
-				return cnt;
+				// done
+				return stats;
 
 			}
 

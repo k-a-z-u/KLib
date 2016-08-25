@@ -133,6 +133,11 @@ namespace K {
 		}
 
 		/** draw a line */
+		void drawLine(const K::Point2f p1, const K::Point2f p2) {
+			drawLine((int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y);
+		}
+
+		/** draw a line */
 		void drawLine(int x1, int y1, const int x2, const int y2) {
 
 			const int dx =  std::abs(x2-x1), sx = (x1<x2 ? 1 : -1);

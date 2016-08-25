@@ -27,13 +27,13 @@ namespace K {
 		 * @param threshold the difference threshold to use
 		 * @return
 		 */
-		static Segment get(const ImageChannel& img, const Point2i& seed, Bitmap& used, const float threshold = 0.1f) {
+		static Segment<float> get(const ImageChannel& img, const Point2i& seed, Bitmap& used, const float threshold = 0.1f) {
 
 			// track all to-be-checked points
 			std::vector<Point2i> toCheck;
 
 			// the detected region
-			Segment seg;
+			Segment<float> seg;
 			seg.avg = 0;
 
 			// start at the seed
@@ -103,7 +103,7 @@ namespace K {
 		 * @param threshold the difference threshold to use
 		 * @return
 		 */
-		static Segment get(const ImageChannel& img, const Point2i& seed, const float threshold = 0.1f) {
+		static Segment<float> get(const ImageChannel& img, const Point2i& seed, const float threshold = 0.1f) {
 
 			// track all visited points
 			Bitmap used(img.getWidth(), img.getHeight());

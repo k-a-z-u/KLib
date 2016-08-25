@@ -83,15 +83,15 @@ namespace K {
 			// vertices available?
 			if (cnt >= 3) {
 				if (swapXY) {
-					data.vertices.push_back(Vec3(tmp[0], tmp[2], tmp[1]));
+					data.vertices.push_back(Vec3((float)tmp[0], (float)tmp[2], (float)tmp[1]));
 				} else {
-					data.vertices.push_back(Vec3(tmp[0], tmp[1], tmp[2]));
+					data.vertices.push_back(Vec3((float)tmp[0], (float)tmp[1], (float)tmp[2]));
 				}
 			}
 
 			// normals available?
 			if (cnt >= 6) {
-				data.normals.push_back(Vec3(tmp[3], tmp[4], tmp[5]));
+				data.normals.push_back(Vec3((float)tmp[3], (float)tmp[4], (float)tmp[5]));
 			}
 
 		}

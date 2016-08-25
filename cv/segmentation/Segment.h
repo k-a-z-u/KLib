@@ -11,15 +11,16 @@
 namespace K {
 
 	/**
-	 * describes one region (segment) detected within an image
+	 * describes one region (connected segment) detected within an image
 	 */
-	struct Segment {
+	template <typename Scalar> struct Segment {
 
-		/** all points belonging to the segment */
+		/** all points that belong to the segment */
 		std::vector<Point2i> points;
 
-		/** the average value for the segment */
-		float avg;
+		/** the average color-value for the segment */
+		Scalar avg;
+
 
 		/** ctor */
 		Segment() : points(), avg(NAN) {;}

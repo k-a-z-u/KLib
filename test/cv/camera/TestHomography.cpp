@@ -45,6 +45,36 @@ namespace K {
 
 	}
 
+	TEST(Homography, values) {
+
+		Homography h;
+		h.addCorrespondence(0, 0,		0, 0);
+		h.addCorrespondence(1, 0,		2, 0);
+		h.addCorrespondence(1, 1,		2, 2);
+		h.addCorrespondence(0, 1,		0, 2);
+
+		//h.addCorrespondence(0, 2,		0, 4);
+
+		h.estimate();
+
+		const float d = 0.00001;
+		float wx, wy;
+		h.imgToWorld(0, 0, wx, wy);	ASSERT_NEAR(0, wx, d); ASSERT_NEAR(0, wy, d);
+		h.imgToWorld(1, 0, wx, wy);	ASSERT_NEAR(2, wx, d); ASSERT_NEAR(0, wy, d);
+		h.imgToWorld(1, 1, wx, wy);	ASSERT_NEAR(2, wx, d); ASSERT_NEAR(2, wy, d);
+		h.imgToWorld(0, 1, wx, wy);	ASSERT_NEAR(0, wx, d); ASSERT_NEAR(2, wy, d);
+
+		float ix, iy;
+		h.worldToImg(0, 0, ix, iy);	ASSERT_NEAR(0, ix, d); ASSERT_NEAR(0, iy, d);
+		h.worldToImg(2, 0, ix, iy);	ASSERT_NEAR(1, ix, d); ASSERT_NEAR(0, iy, d);
+		h.worldToImg(2, 2, ix, iy);	ASSERT_NEAR(1, ix, d); ASSERT_NEAR(1, iy, d);
+		h.worldToImg(0, 2, ix, iy);	ASSERT_NEAR(0, ix, d); ASSERT_NEAR(1, iy, d);
+
+
+
+
+	}
+
 }
 
 #endif

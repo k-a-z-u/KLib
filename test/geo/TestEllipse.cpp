@@ -10,6 +10,8 @@
 #include "../../cv/segmentation/RegionGrowing.h"
 #include "../../cv/segmentation/Segmentation.h"
 
+
+
 namespace K {
 
 	TEST(Ellipse, paramConvert) {
@@ -71,13 +73,13 @@ namespace K {
 		const ImageChannel img = ImageFactory::readPNG( getDataFile("ellipseImg2.png") );
 
 		// get all segments
-		std::vector<Segment> segments = Segmentation::getSegments(img);
+		std::vector<Segment<float>> segments = Segmentation::getSegments(img);
 
 		K::ImageChannel iOut(img.getWidth(), img.getHeight()); iOut.ones();
 		K::Drawer drawer(iOut);
 
 		// process each segment
-		for (const Segment& seg : segments) {
+		for (const Segment<float>& seg : segments) {
 
 			// skip small segments
 			if (seg.points.size() < 100) {continue;}
@@ -87,8 +89,9 @@ namespace K {
 			if (seg.avg == 0) {continue;}
 
 			// process
+			K::EllipseEstimator::RANSAC ransac;
 			//K::Ellipse::CanonicalParams cano = EllipseEstimator::getRemoveWorst(seg.points);
-			K::Ellipse::CanonicalParams cano = EllipseEstimator::getRANSAC(seg.points);
+			K::Ellipse::CanonicalParams cano = ransac.get(seg.points);
 
 			// convert
 			K::Ellipse::GeometricParams geo = cano.toGeometric();
@@ -133,7 +136,7 @@ namespace K {
 		for (int i = 0; i < (int)seeds.size(); ++i) {
 
 			// get the segment connected to the seed
-			Segment segment = RegionGrowing::get(img, seeds[i]);
+			Segment<float> segment = RegionGrowing::get(img, seeds[i]);
 
 			// estimate
 			K::Ellipse::CanonicalParams cano = EllipseEstimator::get(segment.points);
@@ -184,10 +187,11 @@ namespace K {
 		for (int i = 0; i < (int)seeds.size(); ++i) {
 
 			// get the segment connected to the seed
-			const Segment segment = RegionGrowing::get(img, seeds[i]);
+			const Segment<float> segment = RegionGrowing::get(img, seeds[i]);
 
 			// estimate and check error
-			K::Ellipse::CanonicalParams cano = EllipseEstimator::getRANSAC(segment.points);
+			K::EllipseEstimator::RANSAC ransac;
+			K::Ellipse::CanonicalParams cano = ransac.get(segment.points);
 			//K::Ellipse::CanonicalParams cano = EllipseEstimator::getRemoveWorst(segment.points);
 
 			drawer.drawEllipse(cano.toGeometric());

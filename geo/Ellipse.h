@@ -43,6 +43,11 @@ namespace K {
 				;
 			}
 
+			/** is this a valid ellipse? */
+			bool valid() const {
+				return (A+B+C+D+E) != 0;	// see empty ctor
+			}
+
 			/** ctor with geometric details */
 			template <typename Scalar> CanonicalParams(const K::Point2<Scalar> center, const float a, const float b, const float rad) {
 				const float cosR = std::cos(rad);
