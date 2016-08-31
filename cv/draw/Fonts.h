@@ -340,6 +340,15 @@ namespace K {
 			return fnt;
 		}
 
+		/** swap black/white */
+		Font inverted() const {
+			Font copy = *this;
+			copy.img.forEachModify([] (const int x, const int y, const float val) {
+				(void) x; (void) y; return 1.0f - val;
+			});
+			return copy;
+		}
+
 		Glyph getGlyph(const char c) const {
 			const int gw = img.getWidth() / cols;
 			const int gh = img.getHeight() / rows;

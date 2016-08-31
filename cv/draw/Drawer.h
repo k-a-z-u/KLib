@@ -36,6 +36,11 @@ namespace K {
 		}
 
 
+		/** set the font to use */
+		void setFont(const Font& font) {
+			this->fnt = font;
+		}
+
 		void drawString(const std::string& str, const Point2i& pos) {
 
 			Point2i p = pos;

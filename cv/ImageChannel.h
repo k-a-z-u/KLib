@@ -36,7 +36,10 @@ namespace K {
 			std::fill(data.begin(), data.end(), 1);
 		}
 
-
+		/**
+		 * initialize the image like libeigen does with matrices:
+		 * ImageChannel img; img << 1,2,3,4,5,6,7;
+		 */
 		int setIdx;
 		ImageChannel& operator << (const float val) {
 			data[0] = val;
@@ -85,6 +88,16 @@ namespace K {
 		/** clamped access (repeat edge values) to the underlying image data */
 		float getClamped (const int x, const int y) const {
 			return get( clamp(x,0,width-1), clamp(y,0,height-1) );
+		}
+
+		/** clamp x value to [0:width-1] */
+		int clampX(const int x) const {
+			return clamp(x,0,width-1);
+		}
+
+		/** clamp y value to [0:height-1] */
+		int clampY(const int y) const {
+			return clamp(y,0,height-1);
 		}
 
 	private:

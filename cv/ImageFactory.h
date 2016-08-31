@@ -65,10 +65,10 @@ namespace K {
 		static ImageChannel readPNG(const std::string& file) {
 
 			png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-			if (!png) {throw "Could not allocate read struct\n";}
+			if (!png) {throw Exception("Could not allocate read struct");}
 
 			png_infop info_ptr = png_create_info_struct(png);
-			if (!info_ptr) {throw "error 2";}
+			if (!info_ptr) {throw Exception("could not create png info struct");}
 
 			// open the file
 			FILE* fp = fopen(file.c_str(), "rb");
@@ -87,7 +87,7 @@ namespace K {
 			png_get_IHDR(png, info_ptr, &width, &height, &bitdepth, &colortype, &interlacetype, nullptr, nullptr);
 
 			// sanity checks
-			if (bitdepth != 8) {throw "currently only 8-bit pngs are supported";}
+			//if (bitdepth != 8) {throw "currently only 8-bit pngs are supported";}
 
 			// allocate memory for each line of the image
 			uint8_t* buffer = (uint8_t*) malloc(height*bytesPerRow);
@@ -103,8 +103,10 @@ namespace K {
 			ImageChannel img(width, height);
 			for (uint32_t y = 0; y < height; ++y) {
 				for (uint32_t x = 0; x < width; ++x) {
-					const float g = toGrey(&rows[y][x*channels], channels);
-					img.set(x,y,g);
+					switch(bitdepth) {
+					case 8:		{uint8_t* row = (uint8_t*)rows[y];		const float g = toGrey8(&row[x*channels], channels);	img.set(x,y,g);	break;}
+					case 16:	{uint16_t* row = (uint16_t*)rows[y];	const float g = toGrey16BE(&row[x*channels], channels);	img.set(x,y,g); break;}
+					}
 				}
 			}
 
@@ -121,10 +123,10 @@ namespace K {
 		static ImageChannel readPNG(const uint8_t bytes[]) {
 
 			png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-			if (!png) {throw "Could not allocate read struct\n";}
+			if (!png) {throw Exception("Could not allocate read struct");}
 
 			png_infop info_ptr = png_create_info_struct(png);
-			if (!info_ptr) {throw "error 2";}
+			if (!info_ptr) {throw Exception("could not create png info struct");}
 
 
 			auto io = [] (png_structp png, png_bytep data, png_size_t length) -> void {
@@ -147,7 +149,7 @@ namespace K {
 			png_get_IHDR(png, info_ptr, &width, &height, &bitdepth, &colortype, &interlacetype, nullptr, nullptr);
 
 			// sanity checks
-			if (bitdepth != 8) {throw "currently only 8-bit pngs are supported";}
+			//if (bitdepth != 8) {throw Exception("currently only 8-bit pngs are supported");}
 
 			// allocate memory for each line of the image
 			uint8_t* buffer = (uint8_t*) malloc(height*bytesPerRow);
@@ -163,8 +165,10 @@ namespace K {
 			ImageChannel img(width, height);
 			for (uint32_t y = 0; y < height; ++y) {
 				for (uint32_t x = 0; x < width; ++x) {
-					const float g = toGrey(&rows[y][x*channels], channels);
-					img.set(x,y,g);
+					switch(bitdepth) {
+					case 8:		{uint8_t* row = (uint8_t*)rows[y];		const float g = toGrey8(&row[x*channels], channels);	img.set(x,y,g);	break;}
+					case 16:	{uint16_t* row = (uint16_t*)rows[y];	const float g = toGrey16BE(&row[x*channels], channels);	img.set(x,y,g); break;}
+					}
 				}
 			}
 
@@ -277,18 +281,36 @@ namespace K {
 	private:
 
 		/** convert x components to a [0.0:1.0] grey value */
-		static inline float toGrey(const uint8_t* raw, const int components) {
+		static inline float toGrey8(const uint8_t* raw, const int components) {
+
 			switch (components) {
-				case 4:		return float(raw[0]+raw[1]+raw[2])/765.0f;		// RGBA.	skip alpha
-				case 3:		return float(raw[0]+raw[1]+raw[2])/765.0f;		// RGB.		average
-				case 1:		return float(raw[0])/765.0f;
+				case 4:		return float(raw[0]+raw[1]+raw[2])/(float)(255*3);		// RGBA.	skip alpha
+				case 3:		return float(raw[0]+raw[1]+raw[2])/(float)(255*3);		// RGB.		average
+				case 1:		return float(raw[0])/(float)(255);
 				default:	throw Exception("unsupported number of components: " + std::to_string(components));
 			}
+
+		}
+
+		/** convert x (big endian) components to a [0.0:1.0] grey value */
+		static inline float toGrey16BE(const uint16_t* raw, const int components) {
+
+			switch (components) {
+				case 4:		return float(swapEnd(raw[0])+swapEnd(raw[1])+swapEnd(raw[2]))/(float)(65535*3);		// RGBA.	skip alpha
+				case 3:		return float(swapEnd(raw[0])+swapEnd(raw[1])+swapEnd(raw[2]))/(float)(65535*3);		// RGB.		average
+				case 1:		return float(swapEnd(raw[0]))/(float)(65535);
+				default:	throw Exception("unsupported number of components: " + std::to_string(components));
+			}
+
+		}
+
+		static inline uint16_t swapEnd(const uint16_t inp) {
+			return (inp >> 8 & 0xFF) << 0 | (inp >> 0 & 0xFF) << 8;
 		}
 
 	};
 
-	}
+}
 
 #endif // IMAGEFACTORY_H
 

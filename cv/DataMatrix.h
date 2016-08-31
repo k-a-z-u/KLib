@@ -168,6 +168,14 @@ namespace K {
 			return *this;
 		}
 
+		/** multiply the given value */
+		DataMatrix<T>& operator *= (const T val) {
+			for (int i = 0; i < (int) data.size(); ++i) {
+				data[i] *= val;
+			}
+			return *this;
+		}
+
 	};
 
 }
