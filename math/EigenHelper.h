@@ -1,6 +1,8 @@
 #ifndef EIGENHELPER_H
 #define EIGENHELPER_H
 
+#include "../geo/Point3.h"
+
 namespace K {
 
 	/**
@@ -25,6 +27,10 @@ namespace K {
 			const int minIdx = getMinIndex(eval);
 			return evec.col(minIdx);
 		}
+
+
+
+
 
 	};
 

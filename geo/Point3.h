@@ -1,8 +1,10 @@
-#ifndef POINT3_H
-#define POINT3_H
+#ifndef K_GEP_POINT3_H
+#define K_GEP_POINT3_H
 
 #include <cmath>
 #include <cstdint>
+
+#include <eigen3/Eigen/Dense>
 
 namespace K {
 
@@ -89,7 +91,27 @@ namespace K {
 			z /= len;
 		}
 
+
+		Point3 normalized() const {
+			const T len = getLength();
+			return (Point3(x/len, y/len, z/len));
+		}
+
+		/** get (abs(x), abs(y), abs(z)) */
+		Point3 getAbs() const {
+			return Point3(std::abs(x), std::abs(y), std::abs(z));
+		}
+
 		std::string asString() const {return "(" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(y) + ")";}
+
+
+		/** multiply by libEigen matrix */
+		template <typename Scalar> Point3<Scalar> friend operator * (const Eigen::Matrix<Scalar, 3, 3>& mat, const Point3<Scalar>& pt) {
+			Eigen::Matrix<Scalar, 3, 1> vec;
+			vec << pt.x, pt.y, pt.z;
+			vec = mat * vec;
+			return Point3<Scalar>(vec(0), vec(1), vec(2));
+		}
 
 
 	};
@@ -101,4 +123,4 @@ namespace K {
 
 
 
-#endif // POINT3_H
+#endif // K_GEP_POINT3_H

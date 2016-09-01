@@ -47,7 +47,7 @@ namespace K {
 			return Point2(_x, _y);
 		}
 
-		/** get (abs(x), abs(y) */
+		/** get (abs(x), abs(y)) */
 		Point2 getAbs() const {
 			return Point2(std::abs(x), std::abs(y));
 		}

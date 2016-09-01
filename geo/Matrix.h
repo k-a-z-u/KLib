@@ -59,7 +59,30 @@ namespace K {
 			return m;
 		}
 
+		/** get a matrix that rotates the vector "from" into the vector "to" */
+		static Eigen::Matrix3f getRotationMatrix(const Eigen::Vector3f& from, const Eigen::Vector3f& to) {
+
+			// http://math.stackexchange.com/questions/293116/rotating-one-3d-vector-to-another
+
+			if (from ==  to) { return Eigen::Matrix3f::Identity(); }
+			if (from == -to) { return Eigen::Matrix3f::Identity(); }
+
+			const Eigen::Vector3f x = from.cross(to) / from.cross(to).norm();
+
+			const float angle = std::acos( from.dot(to) / from.norm() / to.norm() );
+
+			Eigen::Matrix3f A; A <<
+				0,		-x(2),	x(1),
+				x(2),	0,		-x(0),
+				-x(1),	x(0),	0;
+
+			return Eigen::Matrix3f::Identity() + (std::sin(angle) * A) + ((1-std::cos(angle)) * (A*A));
+
+		}
+
 	};
+
+
 
 
 
