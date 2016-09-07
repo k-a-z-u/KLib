@@ -154,8 +154,8 @@ namespace K {
 		/** flush to process */
 		void flush() {
 			const std::string data = ss.str();
-			int start = 0;
-			int todo = data.length();
+			ssize_t start = 0;
+			ssize_t todo = data.length();
 			while(todo > 0) {
 				const ssize_t ret = write( pipeToProcess[WRITE], data.c_str()+start, data.length() );
 				if (ret == -1) { throw new ProcessException("error while writing to process"); }

@@ -88,13 +88,13 @@ namespace K {
 
 	inline Point3f operator * (const Mat4f& m, const Point3f p) {
 		const Vec4f v1(p.x, p.y, p.z, 1);
-		const Vec4f v2 = m * v1;
+		const auto v2 = m * v1;
 		return Point3f(v2(0), v2(1), v2(2));
 	}
 
 	inline Point3f operator * (const Mat3f& m, const Point3f p) {
 		const Vec3f v1(p.x, p.y, p.z);
-		const Vec3f v2 = m * v1;
+		const auto v2 = m * v1;
 		return Point3f(v2(0), v2(1), v2(2));
 	}
 

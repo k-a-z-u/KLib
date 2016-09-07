@@ -35,6 +35,17 @@ namespace K {
 
 			}
 
+			/** get the distance between the plane and the given point */
+			Scalar getDistance(const Point3<Scalar>& p) const {
+
+				// http://mathworld.wolfram.com/Point-PlaneDistance.html
+				const Scalar d =	( (normal.x * p.x) + (normal.y * p.y) + (normal.z * p.z) - distance ) /
+									normal.getLength();
+
+				return std::abs(d);
+
+			}
+
 		};
 
 		struct NormalParams {

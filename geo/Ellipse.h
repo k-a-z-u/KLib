@@ -115,9 +115,9 @@ namespace K {
 			// sanity checks (unit-length, correct F factor, ..)
 			void checkMe() const {
 				const float len = A*A + B*B + C*C + D*D + E*E + F*F;
-				if (len < 0.99 || len > 1.01 || F <= 0.0) {
-					int i = 0;
-				}
+//				if (len < 0.99 || len > 1.01 || F <= 0.0) {
+//					int i = 0;
+//				}
 				_assertNear(len, 1.0, 0.01, "vector is not normalized!");
 				_assertTrue(F > 0, "F must be positive!");
 			}
@@ -188,7 +188,7 @@ namespace K {
 				xrad += rad;
 
 				K::Point2f p1 = getPointFor(xrad);
-				K::Point2f p2 = getPointFor(xrad+M_PI);
+				K::Point2f p2 = getPointFor(xrad+(float)M_PI);
 
 				const float d1 = p1.getDistance(Point2f(x,y));
 				const float d2 = p2.getDistance(Point2f(x,y));

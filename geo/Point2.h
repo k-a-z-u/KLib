@@ -24,7 +24,7 @@ namespace K {
 
 		/** get distance between two points */
 		template <typename T2> T getDistance(const Point2<T2>& p) const {
-			return sqrt( (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) );
+			return std::sqrt( (x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) );
 		}
 
 		/** get the length when pretending the point to be a vector from (0,0) */

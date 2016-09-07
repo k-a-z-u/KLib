@@ -34,8 +34,8 @@ namespace K {
 				sum1 += set1[i];
 				sum2 += set2[i];
 			}
-			Point3<T> avg1 = sum1 / cnt;
-			Point3<T> avg2 = sum2 / cnt;
+			Point3<T> avg1 = sum1 / (float)cnt;
+			Point3<T> avg2 = sum2 / (float)cnt;
 
 			// move each set to its mean
 			std::vector<Point3<T>> centered1; centered1.resize(set1.size());
