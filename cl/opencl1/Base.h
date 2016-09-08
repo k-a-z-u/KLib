@@ -35,7 +35,7 @@ namespace K {
 		};
 
 		/** convert the given DataMode to a memory flag indicating what the KERNEL does with the data  */
-		cl_mem_flags getKernelAccess(const DataMode mode) {
+		static inline cl_mem_flags getKernelAccess(const DataMode mode) {
 			switch (mode) {
 				case DataMode::READ_ONLY:	return CL_MEM_READ_ONLY;
 				case DataMode::WRITE_ONLY:	return CL_MEM_WRITE_ONLY;
@@ -45,7 +45,7 @@ namespace K {
 		}
 
 		/** convert the given DataMode to a memory flag indicating what the HOST does with the data  */
-		cl_mem_flags getHostAccess(const DataMode mode) {
+		static inline cl_mem_flags getHostAccess(const DataMode mode) {
 			switch (mode) {
 				case DataMode::READ_ONLY:	return CL_MEM_HOST_READ_ONLY;
 				case DataMode::WRITE_ONLY:	return CL_MEM_HOST_WRITE_ONLY;

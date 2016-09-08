@@ -1,5 +1,5 @@
-#ifndef BUFFERFACTORYIMPL_H
-#define BUFFERFACTORYIMPL_H
+#ifndef K_CL_BUFFERFACTORYIMPL_H
+#define K_CL_BUFFERFACTORYIMPL_H
 
 #include "Context.h"
 #include "BufferFactory.h"
@@ -9,21 +9,21 @@
 namespace K {
 	namespace CL {
 
-		BufferFactory::BufferFactory(Context* ctx) : ctx(ctx) {
+		inline BufferFactory::BufferFactory(Context* ctx) : ctx(ctx) {
 			;
 		}
 
-		BufferFactory::~BufferFactory() {
+		inline BufferFactory::~BufferFactory() {
 			for (Buffer* buf : buffers) {delete buf;}
 		}
 
-		void BufferFactory::dispose(Buffer* buf) {
+		inline void BufferFactory::dispose(Buffer* buf) {
 			buffers.erase(std::find(buffers.begin(), buffers.end(), buf));
 			delete buf;
 		}
 
 		/** create a buffer, the kernel is allowed to read only */
-		Buffer* BufferFactory::createReadOnly(const void* data, const size_t size) {
+		inline Buffer* BufferFactory::createReadOnly(const void* data, const size_t size) {
 
 			// memory access modes (kernel / host)
 			cl_mem_flags memFlags = 0;
@@ -44,7 +44,7 @@ namespace K {
 		}
 
 		/** create a buffer, the kernel is allowed to read only */
-		Buffer* BufferFactory::createWriteOnly(const size_t size) {
+		inline Buffer* BufferFactory::createWriteOnly(const size_t size) {
 
 			// memory access modes (kernel / host)
 			cl_mem_flags memFlags = 0;
@@ -81,4 +81,4 @@ namespace K {
 	}
 }
 
-#endif // BUFFERFACTORYIMPL_H
+#endif // K_CL_BUFFERFACTORYIMPL_H

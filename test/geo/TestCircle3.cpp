@@ -7,6 +7,56 @@
 #include <random>
 #include <fstream>
 
+
+
+
+#include "../../misc/gnuplot/Gnuplot.h"
+#include "../../misc/gnuplot/GnuplotSplot.h"
+#include "../../misc/gnuplot/GnuplotSplotElementLines.h"
+#include "../../misc/gnuplot/GnuplotSplotElementPoints.h"
+
+namespace K {
+
+	void plot(Circle3f params, const std::vector<Point3f>& pts1, const std::vector<Point3f>& pts2) {
+
+		static K::Gnuplot gp;
+
+		K::GnuplotSplot plot;
+		K::GnuplotSplotElementLines lines;		plot.add(&lines);	lines.setColorHex("#888888");
+		K::GnuplotSplotElementPoints points1;	plot.add(&points1);	points1.setPointType(7); points1.setPointSize(0.75);
+		K::GnuplotSplotElementPoints points2;	plot.add(&points2); points2.setPointType(7); points2.setPointSize(0.25); points2.setColorHex("#0000ff");
+
+		for (const Point3f& p : pts1) {
+			points1.add(K::GnuplotPoint3(p.x, p.y, p.z));
+		}
+		for (const Point3f& p : pts2) {
+			points2.add(K::GnuplotPoint3(p.x, p.y, p.z));
+		}
+		for (float r = 0; r < 2.0*(float)M_PI; r += 0.1f) {
+			const Point3f p = params.getPointFor(r);
+			lines.add(K::GnuplotPoint3(p.x, p.y, p.z));
+		}
+
+		const Point3f p1 = params.center;
+		const Point3f p2 = params.center + params.normal;
+		gp << "set view equal xyz\n";
+		gp << "set xrange[-6:+6]\n";
+		gp << "set yrange[-6:+6]\n";
+		gp << "set zrange[-6:+6]\n";
+		gp << "set arrow 1 from " << p1.x << "," << p1.y << "," << p1.z << " to " << p2.x << "," << p2.y << "," << p2.z << "\n";
+
+		gp.draw(plot);
+		gp.flush();
+
+		usleep(1000*2000);
+
+
+	}
+
+}
+
+
+
 namespace K {
 
 	// circle with normal = z-axis
@@ -148,6 +198,81 @@ namespace K {
 
 	}
 
+	TEST(Circle3, ransac) {
+
+		std::vector<Circle3f> circs = {
+
+			Circle3f(Point3f(0,0,0), Point3f(0,0,1), 4),
+			Circle3f(Point3f(1,0,0), Point3f(0,0,1), 4),
+			Circle3f(Point3f(0,1,0), Point3f(0,0,1), 4),
+			Circle3f(Point3f(0,0,1), Point3f(0,0,1), 4),
+			Circle3f(Point3f(1,1,1), Point3f(0,0,1), 4),
+
+			Circle3f(Point3f(0,0,0), Point3f(0,1,0), 4),
+			Circle3f(Point3f(0,0,0), Point3f(0.4,0.3,1), 4),
+			Circle3f(Point3f(1,0.5,0.75), Point3f(0.3,0.2,0.7), 4)
+
+		};
+
+		// try each of the configured circles above
+		for (Circle3f circ : circs) {
+
+			std::minstd_rand gen;
+			std::uniform_real_distribution<float> distRad(0, M_PI*2);
+			std::uniform_real_distribution<float> distNoise(-0.25, +0.25);
+			std::uniform_real_distribution<float> distOutlier(-1.0, +2.5);
+			std::uniform_real_distribution<float> distIsOutlier(0, 1);
+
+			std::vector<Point3f> pts;
+
+			for (int i = 0; i < 250; ++i) {
+
+				const float rad = distRad(gen);
+				Point3f pos = circ.getPointFor(rad);
+
+				// 33% outliers
+				if (distIsOutlier(gen) < 0.33) {
+					const Point3f noise(distOutlier(gen), distOutlier(gen), distOutlier(gen));
+					pos += noise;
+				} else {
+					const Point3f noise(distNoise(gen), distNoise(gen), distNoise(gen));
+					pos += noise;
+				}
+
+				pts.push_back(pos);
+
+			}
+
+			CircleEstimator3<float>::RANSAC ransac;
+			ransac.setMaxDistance(0.30);
+			ransac.setNumRuns(48);
+			ransac.setMinMatchRate(0.50);
+
+			const Circle3f est = ransac.get(pts);
+
+
+			// debug plot
+			std::vector<Point3f> pts1;
+			std::vector<Point3f> pts2;
+			for (const Point3f p : pts) {
+				if (est.getDistanceFromOutline(p) > ransac.getMaxDistance()) {pts2.push_back(p);} else {pts1.push_back(p);}
+			}
+			plot(est, pts1, pts2);
+
+
+			ASSERT_NEAR(circ.center.x, est.center.x, 0.15);
+			ASSERT_NEAR(circ.center.y, est.center.y, 0.15);
+			ASSERT_NEAR(circ.center.z, est.center.z, 0.15);
+
+			ASSERT_NEAR(circ.normal.x, est.normal.x, 0.10);
+			ASSERT_NEAR(circ.normal.y, est.normal.y, 0.10);
+			ASSERT_NEAR(circ.normal.z, est.normal.z, 0.10);
+
+			ASSERT_NEAR(circ.radius, est.radius, 0.15);
+
+		}
+
+	}
 
 
 }

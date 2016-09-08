@@ -8,21 +8,21 @@
 namespace K {
 	namespace CL {
 
-		ImageFactory::ImageFactory(Context* ctx) : ctx(ctx) {
+		inline ImageFactory::ImageFactory(Context* ctx) : ctx(ctx) {
 			;
 		}
 
-		ImageFactory::~ImageFactory() {
+		inline ImageFactory::~ImageFactory() {
 			for (Image* img : images) {delete img;}
 		}
 
-		void ImageFactory::dispose(Image* img) {
+		inline void ImageFactory::dispose(Image* img) {
 			images.erase(std::find(images.begin(), images.end(), img));
 			delete img;
 		}
 
 		/** create a new image, readable by the kernel, writeable by the host */
-		Image* ImageFactory::createReadOnly(const ImageDesc desc, const ImageFormat fmt, const uint8_t* data, const size_t len) {
+		inline Image* ImageFactory::createReadOnly(const ImageDesc desc, const ImageFormat fmt, const uint8_t* data, const size_t len) {
 
 			// memory access modes (kernel / host)
 			cl_mem_flags memFlags = 0;
@@ -48,7 +48,7 @@ namespace K {
 		}
 
 		/** create a new image, writeable by the kernel, readable by the host */
-		Image* ImageFactory::createWriteOnly(const ImageDesc desc, const ImageFormat fmt, uint8_t* data, const size_t len) {
+		inline Image* ImageFactory::createWriteOnly(const ImageDesc desc, const ImageFormat fmt, uint8_t* data, const size_t len) {
 
 			// memory access modes (kernel / host)
 			cl_mem_flags memFlags = 0;

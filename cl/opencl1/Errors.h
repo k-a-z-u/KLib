@@ -10,7 +10,7 @@ namespace K {
 
 		public:
 
-			static std::string get(const int code) {
+			static inline std::string get(const int code) {
 
 				switch(code) {
 

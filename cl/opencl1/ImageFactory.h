@@ -48,15 +48,15 @@ namespace K {
 
 		private:
 
-			/** convert enum to image-format-struct */
+			/** convert our ImageFormat enum to an openCL image-format-struct */
 			static inline cl_image_format getImageFormat(const ImageFormat fmt) {
 				switch(fmt) {
 
-				case ImageFormat::RGBA_UINT8_255:	return getImageFormat(CL_RGBA, CL_UNSIGNED_INT8);
+				case ImageFormat::RGBA_UINT8_255:	return getImageFormat(CL_RGBA, CL_UNSIGNED_INT8);		// input: [0:255] output: SAME! access via read_imagei/read_imageui
 
-				case ImageFormat::RGBA_UINT8_1:		return getImageFormat(CL_RGBA, CL_UNORM_INT8);
+				case ImageFormat::RGBA_UINT8_1:		return getImageFormat(CL_RGBA, CL_UNORM_INT8);			// input: [0:255] output: [0.0:1.0]. acccess via read_imagef
 				case ImageFormat::RGBA_UINT16_1:	return getImageFormat(CL_RGBA, CL_UNORM_INT16);
-				case ImageFormat::RGBA_FLOAT:		return getImageFormat(CL_RGBA, CL_FLOAT);
+				case ImageFormat::RGBA_FLOAT:		return getImageFormat(CL_RGBA, CL_FLOAT);				// input: [*.*] (all allowed!) output: SAME!. access via read_imagef
 
 				case ImageFormat::GRAY_UINT8:		return getImageFormat(CL_INTENSITY, CL_UNORM_INT8);
 				case ImageFormat::GRAY_UINT16:		return getImageFormat(CL_INTENSITY, CL_UNORM_INT16);
