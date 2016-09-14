@@ -100,6 +100,15 @@ namespace K {
 			return clamp(y,0,height-1);
 		}
 
+
+		friend K::ImageChannel operator - (const float val, const K::ImageChannel& img) {
+			K::ImageChannel copy = img;
+			copy.forEachModify(
+				[val] (const int x, const int y, const float v) {(void)x; (void)y; return val-v;}
+			);
+			return copy;
+		}
+
 	private:
 
 		/** clamp the given value to [min:max] */

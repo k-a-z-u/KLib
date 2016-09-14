@@ -73,24 +73,29 @@ namespace K {
 		};
 
 
-	public:
+		class Simple {
 
-		template <typename List> static Circle3<float> getParams(const List& points) {
+		public:
 
-			// number of points to use
-			const int num = (int) points.size();
+			template <typename List> static Circle3<float> get(const List& points) {
 
-			// sanity check
-			_assertTrue(num >= 3, "needs at least 3 points of the circle to estimate");
+				// number of points to use
+				const int num = (int) points.size();
 
-			// estimate the plane the given points denote (this is the plane the circle belongs to)
-			Plane3<float>::CoordinateParams plane = PlaneEstimator3<Scalar>::getParams(points);
-			//Plane3<float>::NormalParams plane = PlaneEstimator3<Scalar>::getNormalParams(points);
+				// sanity check
+				_assertTrue(num >= 3, "needs at least 3 points of the circle to estimate");
 
-			// estimate
-			return getParams(plane, points);
+				// estimate the plane the given points denote (this is the plane the circle belongs to)
+				Plane3<float>::CoordinateParams plane = PlaneEstimator3<Scalar>::getParams(points);
+				//Plane3<float>::NormalParams plane = PlaneEstimator3<Scalar>::getNormalParams(points);
 
-		}
+				// estimate
+				return getParams(plane, points);
+
+			}
+
+		};
+
 
 
 	private:

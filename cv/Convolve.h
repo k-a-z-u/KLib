@@ -50,7 +50,9 @@ namespace K {
 					}
 
 					// set the normalized, convolved value
-					dst.set(x, y, val/sum);
+					const float res = val/sum;
+					_assertNotNAN(res, "detected NaN");
+					dst.set(x, y, res);
 
 				}
 			}
