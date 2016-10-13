@@ -8,7 +8,7 @@
 namespace K {
 
 	/** binary image (yes/no) */
-	class Bitmap : private DataMatrix<bool> {
+	class Bitmap : public DataMatrix<bool> {
 
 	public:
 

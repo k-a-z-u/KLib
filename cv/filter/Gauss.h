@@ -25,6 +25,12 @@ namespace K {
 			kV = KernelFactory::gauss1D(sigma); kV.tilt();
 		}
 
+		/** ctor */
+		Gauss(const float sigmaH, const float sigmaV) {
+			kH = KernelFactory::gauss1D(sigmaH);
+			kV = KernelFactory::gauss1D(sigmaV); kV.tilt();
+		}
+
 	public:
 
 		/** filter using 2x1D gauss */

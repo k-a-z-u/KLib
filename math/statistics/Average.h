@@ -19,6 +19,11 @@ namespace K {
 			;
 		}
 
+		/** get the number of elements */
+		int size() const {
+			return cnt;
+		}
+
 		/** add a new value */
 		void add(const Scalar val) {
 			sum += val;

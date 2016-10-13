@@ -100,9 +100,19 @@ namespace K {
 			y /= len;
 		}
 
+		/** normalizing works only for floats/doubles */
+		Point2<float> normalized() {
+			const float len = getLength();
+			return Point2<float>(x/len, y/len);
+		}
+
 		/** cast. e.g. from int to float or vice versa */
 		template <typename T2> operator Point2<T2> () const {
 			return Point2<T2>(x, y);
+		}
+
+		friend float dot(const Point2 p1, const Point2 p2) {
+			return (p1.x * p2.x) + (p1.y * p2.y);
 		}
 
 	};
@@ -111,8 +121,9 @@ namespace K {
 	typedef Point2<int> Point2i;
 
 
-
 }
+
+
 
 namespace std {
 	template<typename T> struct hash<K::Point2<T>> {

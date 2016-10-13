@@ -17,6 +17,13 @@ namespace K {
 		/** get a 1D gauss kernel */
 		static Kernel gauss1D(const float sigma, int size = 0) {
 
+			// empty kernel?
+			if (sigma == 0) {
+				Kernel k(1,1);
+				k.set(0,0,1);
+				return k;
+			}
+
 			// default size? -> auto-detect
 			if (size == 0) {size = getGaussSize(sigma);}
 
