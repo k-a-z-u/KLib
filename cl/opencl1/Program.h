@@ -29,6 +29,9 @@ namespace K {
 			/** build options */
 			std::string options;
 
+			/** status indicator */
+			bool build = false;
+
 		private:
 
 			friend class ProgramFactory;
@@ -55,7 +58,10 @@ namespace K {
 		public:
 
 			/** the KernelFactory */
-			KernelFactory& kernels() {return kernFac;}
+			KernelFactory& kernels() {
+				if (!build) {throw Exception("call program->setSource() first!");}
+				return kernFac;
+			}
 
 			/** get the program's internal handle */
 			cl_program getHandle() const {
@@ -120,6 +126,9 @@ namespace K {
 				dumpBuildStats(program, devices);
 				check(res);
 
+				// status OK
+				build = true;
+
 			}
 
 			/**
@@ -141,7 +150,7 @@ namespace K {
 				if (read != size) {throw "error";}
 
 				const std::string code(buf, size);
-				delete buf;
+				delete[] buf;
 
 				// determine the file's include directory
 				const std::string inc = getFolderForFile(file);

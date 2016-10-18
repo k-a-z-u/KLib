@@ -11,6 +11,7 @@
 #include <set>
 #include <cstdint>
 #include <sstream>
+#include <cmath>
 
 namespace K {
 
@@ -40,7 +41,7 @@ namespace K {
 		T getStdDev() const {
 			double E1 = sumSquared / (double) cnt;
 			double E2 = getAvg();
-			return sqrt(E1 - (E2*E2));
+			return std::sqrt(E1 - (E2*E2));
 		}
 
 		/** get average value */

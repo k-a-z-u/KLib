@@ -26,6 +26,8 @@ namespace K {
 		 * image description
 		 */
 		struct ImageDesc : public cl_image_desc {
+
+			/** 2D image */
 			ImageDesc(const int width, const int height) {
 				image_type = CL_MEM_OBJECT_IMAGE2D;
 				image_width = width;
@@ -38,6 +40,21 @@ namespace K {
 				num_samples = 0;
 				buffer = nullptr;
 			}
+
+			/** 3D Image */
+			ImageDesc(const int width, const int height, const int depth) {
+				image_type = CL_MEM_OBJECT_IMAGE3D;
+				image_width = width;
+				image_height = height;
+				image_depth = depth;	// multiple 2D images
+				image_array_size = 0;
+				image_row_pitch = 0;	// no stride
+				image_slice_pitch = 0;	// just simple 2D
+				num_mip_levels = 0;
+				num_samples = 0;
+				buffer = nullptr;
+			}
+
 		};
 
 	}

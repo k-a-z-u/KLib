@@ -50,6 +50,11 @@ namespace K {
 			data.resize(numElems);
 		}
 
+		/** get the data-size in bytes */
+		size_t getSizeBytes() const {
+			return data.size() * sizeof(T);
+		}
+
 //		/** no-copy */
 //		DataMatrix(const DataMatrix& o) = delete;
 

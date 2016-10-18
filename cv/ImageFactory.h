@@ -13,6 +13,7 @@
 #endif
 
 #include <string>
+#include <string.h>
 
 namespace K {
 

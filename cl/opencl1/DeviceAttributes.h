@@ -33,12 +33,16 @@ namespace K {
 
 		/** describes one device attribute */
 		struct DeviceAttr {
+
 			std::string name;
 			cl_device_info param;
+
 			DeviceAttr(const std::string& name, const cl_device_info param) : name(name), param(param) {;}
-			~DeviceAttr() {;}
+			virtual ~DeviceAttr() {;}
+
 			virtual std::string toString() const = 0;
 			virtual void fetch(cl_device_id id) = 0;
+
 		};
 
 

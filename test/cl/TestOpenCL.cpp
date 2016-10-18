@@ -69,7 +69,69 @@ TEST(OpenCL, kernelInclude2) {
 
 }
 
-TEST(OpenCL, image) {
+TEST(OpenCL, image3D) {
+
+	System sys;
+
+	Context* ctx = sys.contexts().create();
+	ctx->addDevice(sys.getPlatform(0)->getDevice(0));
+	ctx->build();
+
+	// create a kernel
+	const std::string code = "\
+		__kernel void run(__read_only image3d_t img1, __read_only image3d_t img2, __write_only image3d_t img3) {\
+			int4 pos = (int4)(get_global_id(0), get_global_id(1), get_global_id(2), 1);\
+			float4 v1 = read_imagef(img1, pos);\
+			float4 v2 = read_imagef(img2, pos);\
+			float4 v3 = v1+v2;\
+			write_imagef(img3, pos, v3);\
+		}";
+
+	Program* prog = ctx->programs().createFromSource(code);
+	Kernel* kernel = prog->kernels().create("run");
+
+	uint8_t d1[] =	{1, 2,
+					 3, 4,
+
+					 5, 6,
+					 7, 8};
+
+	uint8_t d2[] =	{3, 5,
+					 9, 1,
+
+					 8, 4,
+					 2, 6};
+
+	uint8_t d3[2*2*2];
+
+	Image* img1 = ctx->images().createReadOnly(ImageDesc(2,2,2), ImageFormat::GRAY_UINT8, d1, 2*2*2);
+	Image* img2 = ctx->images().createReadOnly(ImageDesc(2,2,2), ImageFormat::GRAY_UINT8, d2, 2*2*2);
+	Image* img3 = ctx->images().createWriteOnly(ImageDesc(2,2,2), ImageFormat::GRAY_UINT8, d3, 2*2*2);
+
+	// bind
+	kernel->setArg(0, img1);
+	kernel->setArg(1, img2);
+	kernel->setArg(2, img3);
+
+	// upload
+	img1->upload(ctx->getCommandQueue(0));
+	img2->upload(ctx->getCommandQueue(0));
+
+	// run
+	kernel->run(ctx->getCommandQueue(0), 3, Range(2,2,2), Range(1,1,1));
+
+	// download
+	Event evtFetch = img3->download(ctx->getCommandQueue(0));
+	evtFetch.waitForCompletion();
+
+	// test the result
+	//img3->getData().dumpINT(4);
+	uint8_t cmp[] = {4, 7, 12, 5, 13, 10, 9, 14};
+	ASSERT_ARRAY_EQ(cmp, (uint8_t*)img3->getData().getData(), 2*2*2);
+
+}
+
+TEST(OpenCL, image2D) {
 
 	System sys;
 
