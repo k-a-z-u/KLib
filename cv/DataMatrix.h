@@ -159,27 +159,42 @@ namespace K {
 
 		/** add the given matrix */
 		DataMatrix<T>& operator += (const DataMatrix<T>& o) {
-			for (int i = 0; i < (int) data.size(); ++i) {
-				data[i] += o.data[i];
-			}
+			for (int i = 0; i < (int) data.size(); ++i) { data[i] += o.data[i]; }
+			return *this;
+		}
+
+		/** subtract the given matrix */
+		DataMatrix<T>& operator -= (const DataMatrix<T>& o) {
+			for (int i = 0; i < (int) data.size(); ++i) { data[i] -= o.data[i]; }
 			return *this;
 		}
 
 		/** multiply the given matrix */
 		DataMatrix<T>& operator *= (const DataMatrix<T>& o) {
-			for (int i = 0; i < (int) data.size(); ++i) {
-				data[i] *= o.data[i];
-			}
+			for (int i = 0; i < (int) data.size(); ++i) { data[i] *= o.data[i]; }
 			return *this;
 		}
 
 		/** multiply the given value */
 		DataMatrix<T>& operator *= (const T val) {
-			for (int i = 0; i < (int) data.size(); ++i) {
-				data[i] *= val;
-			}
+			for (int i = 0; i < (int) data.size(); ++i) { data[i] *= val; }
 			return *this;
 		}
+
+
+		template <typename DM> DM operator - (const DM& o) {
+			DM copy = *((DM*)this);
+			copy -= o;
+			return copy;
+		}
+
+		template <typename DM> DM operator * (const float val) {
+			DM copy = *((DM*)this);
+			copy *= val;
+			return copy;
+		}
+
+
 
 	};
 

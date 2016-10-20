@@ -130,7 +130,7 @@ namespace K {
 			};
 
 			// try detection
-			Circle3<float> gotCirc = CircleEstimator3<float>::getParams(pts);
+			Circle3<float> gotCirc = CircleEstimator3<float>::Simple::get(pts);
 
 			// compare detected values with original ones
 			ASSERT_NEAR(0, circ.center.getDistance(gotCirc.center), 0.1);
@@ -182,7 +182,7 @@ namespace K {
 			Point3f avg = sum / circlePoints.size();
 
 
-			Circle3<float> est = CircleEstimator3<float>::getParams(circlePoints);
+			Circle3<float> est = CircleEstimator3<float>::Simple::get(circlePoints);
 			std::cout << est.center.asString() << std::endl;
 			std::cout << avg.asString() << std::endl;
 			std::cout << std::endl;

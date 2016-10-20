@@ -103,9 +103,23 @@ namespace K {
 
 		friend K::ImageChannel operator - (const float val, const K::ImageChannel& img) {
 			K::ImageChannel copy = img;
-			copy.forEachModify(
-				[val] (const int x, const int y, const float v) {(void)x; (void)y; return val-v;}
-			);
+			for (int i = 0; i < (int) img.data.size(); ++i) { copy.data[i] = val - copy.data[i]; }
+//			copy.forEachModify(
+//				[val] (const int x, const int y, const float v) {(void)x; (void)y; return val-v;}
+//			);
+			return copy;
+		}
+
+		friend K::ImageChannel operator * (const K::ImageChannel& img, const float val) {
+			K::ImageChannel copy = img;
+			for (int i = 0; i < (int) img.data.size(); ++i) { copy.data[i] = copy.data[i] * val; }
+			return copy;
+		}
+
+		/** make all values absolute */
+		K::ImageChannel abs() const {
+			K::ImageChannel copy = *this;
+			for (int i = 0; i < (int) copy.data.size(); ++i) { copy.data[i] = std::abs(copy.data[i]); }
 			return copy;
 		}
 

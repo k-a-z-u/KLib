@@ -8,6 +8,8 @@
 #include "../../math/statistics/Minimum.h"
 #include "../../math/statistics/Maximum.h"
 
+#include "../../math/statistics/Statistics.h"
+
 #include <fstream>
 
 namespace K {
@@ -54,16 +56,19 @@ namespace K {
 		K::DataMatrix<float> yAndLineNumberToLineWidth;
 
 		/** number of patterns to use */
-		int numLevels = 8;
+		//int numLevels = 8;
 
-		const float minBrightness = 0.20f;
+		const float minBrightness = 0.15f;
 
-		const float dDarker = 0.09f;
-		const float dSame = 0.04f;
+		const float dDarker = 0.10f;
+		const float dSame = 0.03f;
 
 		const float UNKNOWN_DEPTH = 0.0f;
 
 		const int UNKNOWN_LINE_NUMBER = -1;
+
+		float camToPlaneDist1 = 0;
+		float camToPlaneDist2 = 0;
 
 
 	public:
@@ -74,7 +79,7 @@ namespace K {
 		}
 
 		/** depending on the number of patterns, the number of visible lines variies */
-		int getNumLines() const {
+		int getNumLines(const int numLevels) const {
 			return 1 << numLevels;
 		}
 
@@ -83,9 +88,13 @@ namespace K {
 		 * this dataset contains the images [with all patterns used also used in production]
 		 * from a plain surface.
 		 */
-		void calibrate(const Dataset& ds) {
+		void calibrate(const Dataset& ds, const float camToPlaneDist1 = 0, const float camToPlaneDist2 = 0) {
 
-			const int numLines = getNumLines();
+			this->camToPlaneDist1 = camToPlaneDist1;
+			this->camToPlaneDist2 = camToPlaneDist2;
+
+			const int numLevels = ds.levels.size();
+			const int numLines = getNumLines(numLevels);
 
 			// determine the line-number for every pixel in the camera image
 			xyToLineNr = getLineNumbers(ds.ref, ds.levels);
@@ -107,15 +116,26 @@ namespace K {
 			// fix gaps (missing/undetermined/erroneous values)
 			// by ensuring a constantly growing line-number over the x-range
 			for (int y = 2; y < xyToLineNr.getHeight()-2; ++y) {
-				for (int x = 2; x < xyToLineNr.getWidth()-2; ++x) {
 
+				for (int x = 2; x < xyToLineNr.getWidth()-2; ++x) {
 					const int ln0 = xyToLineNr.get(x-1, y);
 					const int ln1 = xyToLineNr.get(x,   y);
 					if (ln1 < ln0) {
 						xyToLineNr.set(x,y,ln0);
 					}
-
 				}
+
+//				// make the lines more continuous (smoothen potential steps)
+//				K::DataMatrix<int> copy = xyToLineNr;
+//				for (int x = 2; x < copy.getWidth()-2; ++x) {
+//					const int ln0a = copy.get(x-2, y);
+//					const int ln0b = copy.get(x-1, y);
+//					const int ln2a = copy.get(x+1, y);
+//					const int ln2b = copy.get(x+2, y);
+//					const int ln1 = std::round((ln0a+ln0b + ln2a+ln2b) / 4.0f);
+//					xyToLineNr.set(x,y,ln1);
+//				}
+
 			}
 
 			std::ofstream out("/tmp/ln.dat");
@@ -132,6 +152,7 @@ namespace K {
 			for (int y = 0; y < xyToLineNr.getHeight(); ++y) {
 				for (int x = 0; x < xyToLineNr.getWidth(); ++x) {
 					const int ln = xyToLineNr.get(x,y);
+					if (ln == -1) {continue;}
 					yAndLineNumberToX.set(y, ln, x);
 				}
 			}
@@ -139,22 +160,52 @@ namespace K {
 			// replace the x position of each line with the line's center
 			for (int y = 0; y < xyToLineNr.getHeight(); ++y) {
 				for (int i = 0; i < numLines-1; ++i) {
-					float x1 = yAndLineNumberToX.get(y, i);
-					float x2 = yAndLineNumberToX.get(y, i+1);
-					float xc = (x1+x2)/2;
-					yAndLineNumberToX.set(y, i, xc);
+					const float x1 = yAndLineNumberToX.get(y, i);
+					const float x2 = yAndLineNumberToX.get(y, i+1);
+					const float xc = (x1+x2)/2;
+					yAndLineNumberToX.set(y, i, xc);					
 				}
 			}
 
-			// determine the width for each line
+			Statistics<float> stats;
+			int num = 0;
+			int numZero = 0;
+
+			// determine the width for each line			
 			for (int y = 0; y < xyToLineNr.getHeight(); ++y) {
 				for (int i = 0; i < numLines-1; ++i) {
 					float x1 = yAndLineNumberToX.get(y, i);
 					float x2 = yAndLineNumberToX.get(y, i+1);
 					float w = x2-x1;
 					yAndLineNumberToLineWidth.set(y, i, w);
+					if (w > 0) {stats.add(w);}
+					if (w == 0) {++numZero;}
+					++num;
 				}
 			}
+
+			std::cout << stats.getStdDev() << std::endl;;
+
+			// the number of values not correctly covered by calibration
+			const float percentZero = numZero / (float) num;
+			if (percentZero > 0.15) {
+				std::cout << "more than 10% of all pixels are NOT covered by depth" << std::endl;
+				//throw Exception("more than 10% of all pixels are NOT covered by depth");
+			}
+
+
+			const float medLineW = stats.getMedian();
+			const float resolPercent = medLineW / (float) ds.ref.getWidth();
+			if (resolPercent > 0.01) {
+				std::cout << "very bad depth resolution [very wide lines]" << std::endl;
+				//throw Exception("very bad depth resolution [very wide lines]");
+			}
+			//if (stats.getStdDev() > 15 * medLineW) {throw Exception("very sloppy line detectioN!");}
+
+
+
+			std::cout << "zero: " << (percentZero*100) << "% med_slope: " << stats.getMedian() << " avg_slope: " << stats.getAvg() << std::endl;
+
 
 		}
 
@@ -170,6 +221,9 @@ namespace K {
 			K::ImageChannel depth(ref.getWidth(), ref.getHeight());
 			depth.ones();
 
+			const float width = depth.getWidth();
+
+
 			lineNumbers.forEach([&] (const int x, const int y, const int lineNr) {
 
 				if (lineNr == UNKNOWN_LINE_NUMBER)	{depth.set(x,y,UNKNOWN_DEPTH); return;}
@@ -182,19 +236,22 @@ namespace K {
 				if (refX == 0) {return;}
 
 				const float lineW = yAndLineNumberToLineWidth.get(_y, lineNr);
-				const float lineW2 = lineW/2;
+				const float lineW2 = lineW;
 				if (lineW == 0) {return;}
 
 				// round distance depending on the line-width as this is our uncertainty
-				const float dx = std::floor((refX - x) / lineW2) * lineW2;
-				//const float dx = (refX - x);
+				//const float dx = std::floor((refX - x) / lineW2) * lineW2;
+				const float dx = (refX - x);
+
+				const float xxx = ( (camToPlaneDist1 * (width-x)) + (camToPlaneDist2 * (x)) ) / width;
 
 				// TODO: scaling factor
 				float d = dx / divider;
-				if (d > 1.0) {d = UNKNOWN_DEPTH;}
-				if (d < 0.0) {d = UNKNOWN_DEPTH;}		// ignore impossible values
+				//if (d > 1.0) {d = UNKNOWN_DEPTH;}
+				if		(d < 0.0)	{d = UNKNOWN_DEPTH;}		// ignore impossible values
+				else				{d += xxx;}		// add camera-to-calibration-plane offset
 
-				depth.set(x,y,d);
+				depth.set(x,y, d);
 
 			});
 
@@ -208,6 +265,7 @@ namespace K {
 		/** determine the number of the line each pixel belongs to and get the result as 2D array */
 		K::DataMatrix<int> getLineNumbers(const K::ImageChannel& ref, const std::vector<K::ImageChannel>& images) const {
 
+			const int numLevels = images.size();
 			K::DataMatrix<int> lineNumbers(ref.getWidth(), ref.getHeight());
 
 			// process each pixel

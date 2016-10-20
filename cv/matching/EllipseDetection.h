@@ -215,6 +215,18 @@ namespace K {
 		 */
 		class RANSAC {
 
+		public:
+
+			struct MatchStats {
+
+				/** how many have we found? */
+				int numInliers = 0;
+
+				/** how many percent of the ellipse's outline are covererd by inliers? */
+				float outlineCoverage = 0.0f;
+
+			};
+
 		private:
 
 			int stepSize = 1;				// process only every 1th input point. HANDLE WITH CARE!
@@ -239,19 +251,17 @@ namespace K {
 			void setMaxDistance(const float dist) {this->maxDistance = dist;}
 
 
-
-
 			/** get an ellipse estimation */
-			template <typename Scalar> Ellipse::CanonicalParams get(const std::vector<Point2<Scalar>>& points) {
+			template <typename Scalar> Ellipse::CanonicalParams get(const std::vector<Point2<Scalar>>& rndPoints, const std::vector<Point2<Scalar>>& allPoints, MatchStats& bestStats) {
 
 				// number of inliers needed for a solution to be accepted
-				const int minInliers = (int)(minMatchRate * (float)points.size() / stepSize);
+				const int minInliers = (int)(minMatchRate * (float)allPoints.size() / stepSize);
 
 				int bestVal = 0;
 				Estimation bestParams;
 
 				// provides random samples
-				RandomIterator<Point2<Scalar>> it(points, numSamples);
+				RandomIterator<Point2<Scalar>> it(rndPoints, numSamples);
 
 				// process X RANSAC runs
 				for (int i = 0; i < numRuns; ++i) {
@@ -266,12 +276,13 @@ namespace K {
 					if (geo.b != geo.b) {--i; continue;}
 
 					// get match stats
-					const MatchStats stats = getStats(geo, maxDistance, points, stepSize);
+					const MatchStats stats = getStats(geo, maxDistance, allPoints, stepSize);
 
 					// have we found a better sample-set that is valid?
 					if ((stats.numInliers > bestVal) && (stats.numInliers >= minInliers) && (stats.outlineCoverage >= minCoverage)) {
 						bestVal = stats.numInliers;
 						bestParams = params;
+						bestStats = stats;
 					}
 
 				}
@@ -281,23 +292,24 @@ namespace K {
 
 			}
 
+
+			/** get an ellipse estimation */
+			template <typename Scalar> Ellipse::CanonicalParams get(const std::vector<Point2<Scalar>>& points) {
+				MatchStats best;
+				return get(points, points, best);
+			}
+
+
+
 		private:
-
-			struct MatchStats {
-
-				/** how many have we found? */
-				int numInliers = 0;
-
-				/** how many percent of the ellipse's outline are covererd by inliers? */
-				float outlineCoverage = 0.0f;
-
-			};
 
 
 			/** get the number of points that have a distance-error below the given threshold */
 			template <typename Scalar> static MatchStats getStats(const Ellipse::GeometricParams& geo, const float distance, const std::vector<Point2<Scalar>>& points, const int stepSize) {
 
-				static constexpr int segments = 50;
+				//static constexpr int segments = 60;
+				const int outlinePixelsApx = 2.0f * (float)M_PI * std::max(geo.a, geo.b);
+				const int segments = std::min(200, std::max(1, outlinePixelsApx / 4));		// number of segments [1:200]
 				MatchStats stats;
 
 				// ellipse-distance-estimator
@@ -323,15 +335,15 @@ namespace K {
 						++stats.numInliers;
 
 						// which ellipse-segment is covered by this inlier?
-						int deg = res.getOrigRad() * 180 / M_PI;
-						if (deg < 0) {deg = 360+deg;}
-						if (deg > 360) {deg %= 360;}
-						deg = deg * segments / 360;
+						int deg = res.getOrigRad() * 180 / (float)M_PI;
+						if (deg < 0)	{deg = 360+deg;}
+						if (deg > 360)	{deg %= 360;}
+						const int seg = deg * segments / 360;
 
 						// previously uncovered segment? -> add and increase coverage
-						if (!degCovered[deg]) {
-							degCovered[deg] = true;
-							stats.outlineCoverage += 1.0f/segments;
+						if (!degCovered[seg]) {
+							degCovered[seg] = true;
+							stats.outlineCoverage += 1.0f / segments;
 						}
 
 					}

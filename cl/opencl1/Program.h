@@ -4,6 +4,7 @@
 #include "Base.h"
 #include "Context.h"
 #include "KernelFactory.h"
+#include "../../Exception.h"
 
 #include <fstream>
 #include <string>

@@ -29,7 +29,12 @@ namespace K {
 
 		/** ctor */
 		RandomIterator(const std::vector<Element>& vec, const int cnt) : vec(vec), cnt(cnt) {
+
+			// sanity check
+			if ((int)vec.size() < cnt) {throw Exception("number of elements in list is smaller than the requested number to draw");}
+
 			indices.resize(cnt);
+
 		}
 
 		/** create random samples (vector-indicies) that are hereafter available for iteration */
