@@ -271,7 +271,10 @@ namespace K {
 					const Estimation params = getParams<Scalar>(it);
 
 					// get geometric representation (if possible)
-					const Ellipse::GeometricParams geo = params.toEllipse().toGeometric();
+					const Ellipse::CanonicalParams canon = params.toEllipse();
+					if (canon.F <= 0) {std::cout << "fix negative F" << std::endl; continue;}
+
+					const Ellipse::GeometricParams geo = canon.toGeometric();
 					if (geo.a != geo.a) {--i; continue;}
 					if (geo.b != geo.b) {--i; continue;}
 
