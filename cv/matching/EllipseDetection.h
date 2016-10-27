@@ -8,6 +8,8 @@
 #include "../../math/random/RandomIterator.h"
 #include "../../math/EigenHelper.h"
 
+#include "../ImageChannel.h"
+
 #include <eigen3/Eigen/Dense>
 
 #include "../../misc/gnuplot/Gnuplot.h"
@@ -209,9 +211,161 @@ namespace K {
 
 		}
 
+		/**
+		 * estimate ellipse parameters by using a RANSAC approach on
+		 * a given set of points, matching against white pixels within
+		 * an image
+		 */
+		class RANSACPixel {
+
+		public:
+
+			struct MatchStats {
+
+				/** how many percent of the ellipse's outline are covererd by inliers? */
+				float outlineCoverage = 0.0f;
+
+			};
+
+			const float IGNORE = -1;
+
+		private:
+
+			int numRuns = 64;				// number of iterations
+			int numSamples = 6+4;			// 6 suffice but using some more is a little more stable? espicially for thicker boarders!
+			float minCoverage = 0.50;		// at least 50% of the ellipse's outline must be covered by inliers
+
+			float minSize = IGNORE;
+			float maxSize = IGNORE;
+
+			float minRatio = IGNORE;
+			float maxRatio = IGNORE;
+
+		public:
+
+
+			/** set the number of runs to perform */
+			void setNumRuns(const int numRuns) {this->numRuns = numRuns;}
+
+			/** set the percentage for the ellipse's outline that must be covered by inliers for a result to be accepted */
+			void setMinCoverage(const float coverage) {this->minCoverage = coverage;}
+
+			/** configure a size constraint */
+			void setSizeConstraint(const float minSize, const float maxSize) {this->minSize = minSize, this->maxSize = maxSize;}
+
+			/** confgiure a ratio constraint */
+			void setRatioConstraint(const float minRatio, const float maxRatio) {this->minRatio = minRatio, this->maxRatio = maxRatio;}
+
+
+			/** get an ellipse estimation */
+			template <typename Scalar> Ellipse::CanonicalParams get(const std::vector<Point2<Scalar>>& rndPoints, const K::ImageChannel& img, MatchStats& _bestStats) {
+
+				MatchStats bestStats;
+				Estimation bestParams;
+
+				// provides random samples
+				RandomIterator<Point2<Scalar>> it(rndPoints, numSamples);
+
+				// process X RANSAC runs
+				for (int i = 0; i < numRuns; ++i) {
+
+					// estimate params from a random sample-set
+					it.randomize();
+					const Estimation params = getParams<Scalar>(it);
+
+					// get geometric representation (if possible)
+					const Ellipse::CanonicalParams canon = params.toEllipse();
+					if (canon.F <= 0) {std::cout << "fix negative F" << std::endl; continue;}
+
+					const Ellipse::GeometricParams geo = canon.toGeometric();
+
+					// skip some erroneous values
+					if (geo.a != geo.a) {--i; continue;}
+					if (geo.b != geo.b) {--i; continue;}
+
+					// enforce ellipse aspect ratio?
+					if (minRatio != IGNORE && geo.getRatio() < minRatio) {continue;}
+					if (maxRatio != IGNORE && geo.getRatio() > maxRatio) {continue;}
+
+					// enforce size constraint?
+					const float size = geo.a + geo.b;
+					if (minSize != IGNORE && size < minSize) {continue;}
+					if (maxSize != IGNORE && size > maxSize) {continue;}
+
+					// get match stats
+					const MatchStats stats = getStats(geo, img);
+
+					// coverage constraint met?
+					if (minCoverage != IGNORE && stats.outlineCoverage < minCoverage) {continue;}
+
+					// have we found a better sample-set that is valid?
+					//if (stats.numInliers > bestVal && stats.outlineCoverage > bestStats.outlineCoverage) {
+					if (stats.outlineCoverage > bestStats.outlineCoverage) {
+						//bestVal = stats.numInliers;
+						bestParams = params;
+						bestStats = stats;
+					}
+
+				}
+
+				// done
+				_bestStats = bestStats;
+				return bestParams.toEllipse();
+
+			}
+
+		private:
+
+			/** get the number of white pixels within the image that are part of the ellipse */
+			static MatchStats getStats(const Ellipse::GeometricParams& geo, const K::ImageChannel& img) {
+
+				MatchStats stats;
+
+				// ~360 steps around the ellipse
+				const float max = 2 * (float) M_PI;
+				const int steps = 360;
+
+				//for (float rad = 0; rad < max; rad += stepSize) {
+				for (int step = 0; step < steps; ++step) {
+
+					// current position on the ellipse (in radians)
+					const float rad = max * step / steps;
+
+					// get the corresponding pixel within the image
+					const Point2f pt = geo.getPointFor(rad);
+
+					// is the pixel part of the image? if not, skip it
+					if (!img.contains(pt.x, pt.y)) {continue;}
+
+					// get the pixel's value
+					const float val = img.get(pt.x, pt.y);
+
+//					if (val > 0.5f) {
+//						stats.numInliers++;
+//						stats.outlineCoverage++;
+//					}
+
+					//stats.outlineCoverage += val;
+					if (val > 0.5f) {
+						++stats.outlineCoverage;
+					}
+
+				}
+
+				// convert outline-coverage into [0.0:1.0]
+				stats.outlineCoverage /= (float) steps;
+
+				// done
+				return stats;
+
+			}
+
+		};
+
 
 		/**
-		 * estimate ellipse parameters by using a RANSAC approach
+		 * estimate ellipse parameters by using a RANSAC approach on
+		 * a given set of points
 		 */
 		class RANSAC {
 

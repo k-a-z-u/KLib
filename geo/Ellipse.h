@@ -176,6 +176,11 @@ namespace K {
 				return (float)M_PI * (a+b) * ( 1.0f + (3.0f * h) / (10.0f + std::sqrt(4.0f - 3.0f * h)) );
 			}
 
+			/** get the ellipse's ratio */
+			const float getRatio() const {
+				return std::max(a,b) / std::min(a,b);
+			}
+
 			K::Point2f getNearest(const float x, const float y) const {
 
 //				// determine the angle for (x,y) from the center (cx,cy)

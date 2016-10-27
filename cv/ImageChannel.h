@@ -123,6 +123,15 @@ namespace K {
 			return copy;
 		}
 
+		/** check whether the picture contains the given pixel */
+		bool contains(const int x, const int y) const {
+			if (x < 0)				{return false;}
+			if (y < 0)				{return false;}
+			if (x >= getWidth())	{return false;}
+			if (y >= getHeight())	{return false;}
+			return true;
+		}
+
 	private:
 
 		/** clamp the given value to [min:max] */
