@@ -22,7 +22,7 @@ namespace K {
 			Context* context;
 
 			/** the internal handle for the program */
-			cl_program program;
+			cl_program program = 0;
 
 			/** the kernel factory */
 			KernelFactory kernFac;
@@ -47,7 +47,7 @@ namespace K {
 			/** dtor */
 			~Program() {
 				verboseMeID(program, "dtor");
-				clReleaseProgram(program); program = 0;
+				clear();
 			}
 
 			/** no-copy */
@@ -99,6 +99,8 @@ namespace K {
 			 */
 			void setSource(const std::string& code, const std::string& options = "") {
 
+				if (program != 0) {throw Exception("call clear() before calling setSource() again!");}
+
 				verboseMe("settings source-code");
 
 				const char* codeArr[1] = {code.data()};
@@ -138,6 +140,8 @@ namespace K {
 			 */
 			void setSourceFromFile(const std::string& file) {
 
+				if (program != 0) {throw Exception("call clear() before calling setSource() again!");}
+
 				verboseMe("loading source file");
 
 				std::ifstream fs (file, std::ios::ate);		// open at the end of the file
@@ -162,6 +166,14 @@ namespace K {
 				// compile
 				setSource(code, opts);
 
+			}
+
+			/** delete any previously loaded source-code */
+			void clear() {
+				if (program) {
+					clReleaseProgram(program);
+					program = 0;
+				}
 			}
 
 		private:

@@ -37,14 +37,15 @@ namespace K {
 			/** dtor */
 			~ImageFactory();
 
-			/** create a read-only buffer */
+
+			/** create a read-only image. all created images will be free-ed on factory destruction */
 			Image* createReadOnly(const ImageDesc desc, const ImageFormat fmt, const uint8_t* data, const size_t len);
 
-			/** create a write-only buffer */
+			/** create a write-only image. all created images will be free-ed on factory destruction */
 			Image* createWriteOnly(const ImageDesc desc, const ImageFormat fmt, uint8_t* data, const size_t len);
 
-			/** manually delete the given image */
-			void dispose(Image* img);
+			/** manually delete the given image. do NOT use the pointer hereafter */
+			void destroy(Image* img);
 
 		private:
 

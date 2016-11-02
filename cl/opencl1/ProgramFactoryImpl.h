@@ -5,6 +5,8 @@
 #include "Program.h"
 #include "ProgramFactory.h"
 
+#include <algorithm>
+
 namespace K {
 	namespace CL {
 
@@ -34,6 +36,11 @@ namespace K {
 			programs.push_back(prog);
 			prog->setSource(source);
 			return prog;
+		}
+
+		inline void ProgramFactory::destroy(Program* prg) {
+			programs.erase(std::find(programs.begin(), programs.end(), prg));
+			delete prg;
 		}
 
 	}

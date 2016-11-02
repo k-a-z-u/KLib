@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Context.h"
+#include <algorithm>
 
 namespace K {
 	namespace CL {
@@ -26,6 +27,11 @@ namespace K {
 				Context* ctx = new Context();
 				contexts.push_back(ctx);
 				return ctx;
+			}
+
+			inline void destroy(Context* ctx) {
+				contexts.erase(std::find(contexts.begin(), contexts.end(), ctx));
+				delete ctx;
 			}
 
 		};

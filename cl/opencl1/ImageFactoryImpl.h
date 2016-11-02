@@ -5,6 +5,8 @@
 #include "ImageParams.h"
 #include "ImageFactory.h"
 
+#include <algorithm>
+
 namespace K {
 	namespace CL {
 
@@ -16,7 +18,7 @@ namespace K {
 			for (Image* img : images) {delete img;}
 		}
 
-		inline void ImageFactory::dispose(Image* img) {
+		inline void ImageFactory::destroy(Image* img) {
 			images.erase(std::find(images.begin(), images.end(), img));
 			delete img;
 		}
@@ -72,6 +74,8 @@ namespace K {
 			return img;
 
 		}
+
+
 
 	}
 }

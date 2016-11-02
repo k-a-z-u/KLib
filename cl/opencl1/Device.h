@@ -107,12 +107,16 @@ namespace K {
 				attrs[DeviceAttribute::MAX_WORK_ITEM_SIZE_PER_DIM] =	new DeviceAttrLongArr("max WorkItem size per dimension", CL_DEVICE_MAX_WORK_ITEM_SIZES, 3);
 				attrs[DeviceAttribute::COMPILER_AVAILABLE] =			new DeviceAttrBool("compiler available", CL_DEVICE_COMPILER_AVAILABLE);
 				attrs[DeviceAttribute::HAS_ECC] =						new DeviceAttrBool("has ECC", CL_DEVICE_ERROR_CORRECTION_SUPPORT);
+				attrs[DeviceAttribute::MAX_MEM_ALLOC_SIZE] =			new DeviceAttrLong("max mem alloc size", CL_DEVICE_MAX_MEM_ALLOC_SIZE);
 				attrs[DeviceAttribute::GLOBAL_MEM_CACHE_SIZE] =			new DeviceAttrLong("global mem cache size", CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
 				attrs[DeviceAttribute::GLOBAL_MEM_SIZE] =				new DeviceAttrLong("global mem size", CL_DEVICE_GLOBAL_MEM_SIZE);
 				attrs[DeviceAttribute::LOCAL_MEM_SIZE] =				new DeviceAttrLong("local mem size", CL_DEVICE_LOCAL_MEM_SIZE);
 				attrs[DeviceAttribute::HAS_IMAGE_SUPPORT] =				new DeviceAttrBool("image support", CL_DEVICE_IMAGE_SUPPORT);
 				attrs[DeviceAttribute::IMAGE2D_MAX_WIDTH] =				new DeviceAttrSizeT("max 2D image width", CL_DEVICE_IMAGE2D_MAX_WIDTH);
 				attrs[DeviceAttribute::IMAGE2D_MAX_HEIGHT] =			new DeviceAttrSizeT("max 2D image height", CL_DEVICE_IMAGE2D_MAX_HEIGHT);
+				attrs[DeviceAttribute::IMAGE3D_MAX_WIDTH] =				new DeviceAttrSizeT("max 3D image width", CL_DEVICE_IMAGE3D_MAX_WIDTH);
+				attrs[DeviceAttribute::IMAGE3D_MAX_HEIGHT] =			new DeviceAttrSizeT("max 3D image height", CL_DEVICE_IMAGE3D_MAX_HEIGHT);
+				attrs[DeviceAttribute::IMAGE3D_MAX_DEPTH] =				new DeviceAttrSizeT("max 3D image depth", CL_DEVICE_IMAGE3D_MAX_DEPTH);
 				attrs[DeviceAttribute::MAX_COMPUTE_UNITS] =				new DeviceAttrInt("max compue units", CL_DEVICE_MAX_COMPUTE_UNITS);
 				attrs[DeviceAttribute::MAX_SAMPLERS_PER_KERNEL] =		new DeviceAttrInt("max samplers/kernel", CL_DEVICE_MAX_SAMPLERS);
 				attrs[DeviceAttribute::DEVICE_MAX_CLOCK_FREQ] =			new DeviceAttrInt("max clock frequency", CL_DEVICE_MAX_CLOCK_FREQUENCY);

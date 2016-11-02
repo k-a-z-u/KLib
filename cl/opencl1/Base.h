@@ -6,6 +6,7 @@
 #include <CL/cl.h>
 #include <iostream>
 
+#include "../../Exception.h"
 #include "Errors.h"
 #include "Verbose.h"
 

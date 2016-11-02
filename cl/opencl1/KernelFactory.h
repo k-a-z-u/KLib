@@ -35,8 +35,12 @@ namespace K {
 			/** dtor */
 			~KernelFactory();
 
-			/** create a kernel for the given method name */
+
+			/** create a kernel for the given method name. all created programs will be free-ed on factory destruction */
 			Kernel* create(const std::string& methodName);
+
+			/** manually destroy the given kernel. do NOT use the pointer hereafter */
+			void destroy(Kernel* prg);
 
 		};
 

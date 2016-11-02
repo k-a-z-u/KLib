@@ -17,7 +17,7 @@ namespace K {
 			for (Buffer* buf : buffers) {delete buf;}
 		}
 
-		inline void BufferFactory::dispose(Buffer* buf) {
+		inline void BufferFactory::destroy(Buffer* buf) {
 			buffers.erase(std::find(buffers.begin(), buffers.end(), buf));
 			delete buf;
 		}

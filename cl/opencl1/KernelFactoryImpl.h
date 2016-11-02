@@ -4,6 +4,8 @@
 #include "Program.h"
 #include "Kernel.h"
 
+#include <algorithm>
+
 namespace K {
 	namespace CL {
 
@@ -19,6 +21,11 @@ namespace K {
 			Kernel* ker = new Kernel(prg, methodName);
 			kernels.push_back(ker);
 			return ker;
+		}
+
+		inline void KernelFactory::destroy(Kernel* kernel) {
+			kernels.erase(std::find(kernels.begin(), kernels.end(), kernel));
+			delete kernel;
 		}
 
 	}

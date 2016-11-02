@@ -36,15 +36,17 @@ namespace K {
 			~ProgramFactory();
 
 
-			/** create a new, empty program */
+			/** create a new, empty program. all created programs will be free-ed on factory destruction */
 			Program* create();
 
-			/** create a new program by loading the given file */
+			/** create a new program by loading the given file. all created programs will be free-ed on factory destruction */
 			Program* createFromFile(const std::string& file);
 
-			/** create a new program by loading the given source-code */
+			/** create a new program by loading the given source-code. all created programs will be free-ed on factory destruction */
 			Program* createFromSource(const std::string& source);
 
+			/** manually destroy the given program. do NOT use the pointer hereafter */
+			void destroy(Program* prg);
 
 		};
 

@@ -35,15 +35,15 @@ namespace K {
 			/** dtor */
 			~BufferFactory();
 
-			/** manually delete the given buffer */
-			void dispose(Buffer* buf);
 
-			/** create a read-only buffer */
+			/** create a read-only buffer. all created buffers will be free-ed on factory destruction */
 			Buffer* createReadOnly(const void* data, const size_t size);
 
-			/** create a write-only buffer */
+			/** create a write-only buffer. all created buffers will be free-ed on factory destruction */
 			Buffer* createWriteOnly(const size_t size);
 
+			/** manually delete the given buffer. do NOT use the pointer hereafter */
+			void destroy(Buffer* buf);
 
 		};
 
