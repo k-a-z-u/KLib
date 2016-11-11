@@ -103,7 +103,11 @@ namespace K {
 				(void) v2;
 			}
 
-
+			void fixF() {
+				if (F < 0) {
+					A = -A; B = -B; C = -C; D = -D; E = -E; F = -F;
+				}
+			}
 
 
 
@@ -222,6 +226,22 @@ namespace K {
 
 			/** convert to vector parameters */
 			VectorParams toVector() const;
+
+			/** get a difference score between the given ellipse and this ellipse */
+			float getDifference(const GeometricParams& other) const {
+				const float dCenter = center.getDistance(other.center);
+				const float da = std::abs( std::max(a, b) - std::max(other.a, other.b) );
+				const float db = std::abs( std::min(a, b) - std::min(other.a, other.b) );
+				const float dAxis = std::sqrt(da*da + db*db);
+				const float dRad = std::abs(rad - other.rad);
+				return dCenter + dAxis + dRad;
+			}
+
+			void mix(const GeometricParams& geo, const float mix) {
+				this->center =	this->center * (1.0f - mix) + geo.center * mix;
+				this->a =		this->a * (1.0f - mix) + geo.a * mix;
+				this->b =		this->b * (1.0f - mix) + geo.b * mix;
+			}
 
 		private:
 

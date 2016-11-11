@@ -35,6 +35,7 @@
 #define _assertNotEmpty(str, errorString)
 #define _assertNot0(val, errorString)
 #define _assertBetween(val, min, max, errorString)
+#define _assertNear(val, exp, delta, errorString)
 
 #endif
 

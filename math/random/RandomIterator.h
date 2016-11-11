@@ -30,8 +30,14 @@ namespace K {
 		/** ctor */
 		RandomIterator(const std::vector<Element>& vec, const int cnt) : vec(vec), cnt(cnt) {
 
+			//const uint64_t ts = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			static int seed = 0; ++seed;
+			gen.seed(seed);
+
 			// sanity check
-			if ((int)vec.size() < cnt) {throw Exception("number of elements in list is smaller than the requested number to draw");}
+			if ((int)vec.size() < cnt)	{throw Exception("number of elements in list is smaller than the requested number to draw");}
+			if (cnt == 0)				{throw Exception("number of elements in list must be at least 1");}
+			if (vec.empty())			{throw Exception("empty input vector given");}
 
 			indices.resize(cnt);
 
