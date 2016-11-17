@@ -18,7 +18,32 @@ namespace K {
 
 	class EllipseDetection {
 
+	private:
+
+		K::EllipseEstimator::RANSACPixel ransac;
+		bool combineSimilar = false;
+
 	public:
+
+		EllipseDetection() {
+
+			// defaults
+			ransac.setMinCoverage(0.70f);
+			ransac.setRatioConstraint(1.0f, 1.5f);
+			ransac.setSizeConstraint(30, 150);						// ransac.setSizeConstraint(15.0f, 180.0f);
+			ransac.setThreshold(0.28f);								// minimal pixel brightness for accepting
+			ransac.setNumSamples(12);								// number of samples for SVD
+			ransac.setNumRuns(15);									// number of RANSAC runs
+
+		}
+
+		K::EllipseEstimator::RANSACPixel& getRANSAC() {
+			return ransac;
+		}
+
+		void setCombineSimilar(const bool combine) {
+			this->combineSimilar = combine;
+		}
 
 		/** perform ellipse-detection on a given black/white image with 1pixel wide,white edges */
 		std::vector<K::Ellipse::GeometricParams> getFromEdgeImage(const K::ImageChannel& imgEdges) {
@@ -27,15 +52,6 @@ namespace K {
 			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplit(allSegments);
 
 			const K::ImageChannel imgEdgesBlur = getBlurred(imgEdges);
-
-			// ransac setup
-			K::EllipseEstimator::RANSACPixel ransac;
-			ransac.setMinCoverage(0.70f);
-			ransac.setRatioConstraint(1.0f, 1.5f);
-			ransac.setSizeConstraint(30, 150);						// ransac.setSizeConstraint(15.0f, 180.0f);
-			ransac.setThreshold(0.28f);								// minimal pixel brightness for accepting
-			ransac.setNumSamples(12);								// number of samples for SVD
-			ransac.setNumRuns(15);									// number of RANSAC runs
 
 			std::vector<K::Ellipse::GeometricParams> ellipses;
 
@@ -60,8 +76,12 @@ namespace K {
 
 //			return ellipses;
 
-			std::vector<K::Ellipse::GeometricParams> ellipsesDistinct = filterDuplicates(ellipses);
-			return ellipsesDistinct;
+			if (combineSimilar) {
+				std::vector<K::Ellipse::GeometricParams> ellipsesDistinct = filterDuplicates(ellipses);
+				return ellipsesDistinct;
+			} else {
+				return ellipses;
+			}
 
 		}
 
@@ -75,7 +95,7 @@ namespace K {
 			K::ImageChannel imgEdgesCleaned = K::Clean::avgThreshold(imgEdges, 1, 0.25f);
 
 			// slightly blur the image (spread edges)
-			K::Gauss gauss(1.5f, 1.5f);
+			K::Gauss gauss(2.0f, 2.0f);
 			K::ImageChannel imgEdgesBlur = imgEdgesCleaned;
 			//imgEdgesBlur = K::Dilate::apply(imgEdgesBlur, 1, K::Dilate::Shape::CIRCLE, 1.0f, 0.01f);
 			imgEdgesBlur = gauss.filter(imgEdgesBlur);
@@ -90,9 +110,9 @@ namespace K {
 
 		std::vector<std::vector<K::Point2i>> getSegmentsSplit(const std::vector<std::vector<K::Point2i>>& segments) {
 
-			const float segmentMin = 80.0f;									// min number of points per segment (smallest segment before splitting starts)
+			const float segmentMin = 65.0f;									// min number of points per segment (smallest segment before splitting starts)
 			const float segmentMax = 300.0f;								// max number of points per segment (largest segment)
-			const int stepSize = 2;
+			const float stepSize = 0.1f;
 
 			std::vector<std::vector<K::Point2i>> splitSegments;
 
@@ -102,11 +122,11 @@ namespace K {
 				const int maxSegs = std::ceil(seg.size() / segmentMin);		// largest number of segment divisions to check
 				const int minSegs = std::ceil(seg.size() / segmentMax);		// smallest number of segment divisions to check
 
-				for (int segs = minSegs; segs <= maxSegs; segs+=stepSize) {
+				for (float segs = minSegs; segs <= maxSegs; segs+=stepSize) {
 
 					const float segSize = seg.size() / segs;
 
-					for (int i = 0; i < segs; ++i) {
+					for (float i = 0; i < segs; ++i) {
 						const int start = i*segSize;
 						const int end = start + segSize;
 						const std::vector<K::Point2i> pts(seg.begin()+start, seg.begin()+end);

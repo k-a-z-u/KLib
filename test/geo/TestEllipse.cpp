@@ -139,7 +139,7 @@ namespace K {
 			Segment<float> segment = RegionGrowing::get(img, seeds[i]);
 
 			// estimate
-			K::Ellipse::CanonicalParams cano = EllipseEstimator::get(segment.points);
+			K::Ellipse::CanonicalParams cano = EllipseEstimator::Estimation::get(segment.points);
 
 			// compare with expected values
 			Ellipse::GeometricParams geo = cano.toGeometric();

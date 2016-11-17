@@ -115,10 +115,16 @@ namespace K {
 			return (p1.x * p2.x) + (p1.y * p2.y);
 		}
 
+		friend Point2 sqrt(const Point2 p) {
+			return Point2(std::sqrt(p.x), std::sqrt(p.y));
+		}
+
 	};
 
 	typedef Point2<float> Point2f;
 	typedef Point2<int> Point2i;
+
+
 
 
 }

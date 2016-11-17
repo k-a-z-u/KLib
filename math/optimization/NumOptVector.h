@@ -12,6 +12,7 @@
 #include <cstring>
 #include <iostream>
 
+#include <cmath>
 #include <array>
 
 
@@ -54,7 +55,7 @@ namespace K {
 			for (unsigned int i = 0; i < size; ++i) {
 				sum += data[i] * data[i];
 			}
-			return sqrt(sum);
+			return std::sqrt(sum);
 		}
 
 
