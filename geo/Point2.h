@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <string>
 
 namespace K {
 

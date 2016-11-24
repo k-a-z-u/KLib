@@ -250,6 +250,11 @@ namespace K {
 				this->b =		this->b * (1.0f - mix) + geo.b * mix;
 			}
 
+			/** scale the ellipse while keeping center and rotation */
+			GeometricParams operator *= (const float scale) {
+				return GeometricParams(center, a*scale, b*scale, rad);
+			}
+
 		private:
 
 			void check() const {
