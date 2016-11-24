@@ -26,12 +26,13 @@ namespace K {
 		// http://math.stackexchange.com/questions/1824910/how-to-get-the-coordinates-of-the-center-of-the-ellipse-after-approximation
 		struct CanonicalParams {
 
-			float A;
-			float B;
-			float C;
-			float D;
-			float E;
-			float F;
+			// those are quity tricky under some conditions -> double makes sense
+			double A;
+			double B;
+			double C;
+			double D;
+			double E;
+			double F;
 
 			/** empty ctor */
 			CanonicalParams() : A(0), B(0), C(0), D(0), E(0), F(1) {
@@ -39,7 +40,7 @@ namespace K {
 			}
 
 			/** ctor */
-			CanonicalParams(const float A, const float B, const float C, const float D, const float E, const float F) : A(A), B(B), C(C), D(D), E(E), F(F) {
+			CanonicalParams(const double A, const double B, const double C, const double D, const double E, const double F) : A(A), B(B), C(C), D(D), E(E), F(F) {
 				;
 			}
 
@@ -64,23 +65,29 @@ namespace K {
 
 			/** get the ellipse's center */
 			K::Point2f getCenter() const {
-				const float cx = (2*C*D - B*E) / (B*B - 4*A*C);
-				const float cy = (2*A*E - B*D) / (B*B - 4*A*C);
-				return K::Point2f(cx, cy);
+				const double cx = (2.0*C*D - B*E) / (B*B - 4.0*A*C);
+				const double cy = (2.0*A*E - B*D) / (B*B - 4.0*A*C);
+				return K::Point2f((float)cx, (float)cy);
 			}
 
 			/** get the ellipse's both axis lengths */
 			K::Point2f getRadi() const {
-				const double Fx = F + ( D*(B*E - C*D) - A*E*E ) / (4*A*C - B*B);
-				const float a = (float) std::sqrt( (-2*Fx) / (A+C + std::sqrt(B*B + (A-C)*(A-C)) ) );
-				const float b = (float) std::sqrt( (-2*Fx) / std::abs(A+C - std::sqrt(B*B + (A-C)*(A-C)) ) );
-				return K::Point2f(b,a);
+				//const double Fx = F + ( D*(B*E - C*D) - A*E*E ) / (4*A*C - B*B);
+				//const float a = (float) std::sqrt( (-2*Fx) / (A+C + std::sqrt(B*B + (A-C)*(A-C)) ) );
+				//const float b = (float) std::sqrt( (-2*Fx) / std::abs(A+C - std::sqrt(B*B + (A-C)*(A-C)) ) );
+
+				const double a = - std::sqrt(2.0 * (A*E*E + C*D*D - B*D*E + (B*B - 4.0*A*C) * F) * ( A + C + std::sqrt((A-C)*(A-C)+B*B) ) ) / (B*B - 4.0*A*C);
+				const double b = - std::sqrt(2.0 * (A*E*E + C*D*D - B*D*E + (B*B - 4.0*A*C) * F) * ( A + C - std::sqrt((A-C)*(A-C)+B*B) ) ) / (B*B - 4.0*A*C);
+
+				// after the calculation, float is enough
+				return K::Point2f((float)a, (float)b);
+
 			}
 
 			/** get the ellipse's rotation angle */
 			float getAngle() const {
-				const float rad = std::atan( (C - A - std::sqrt( (A-C)*(A-C) + B*B )) / B );
-				return rad;
+				const double rad = std::atan( (C - A - std::sqrt( (A-C)*(A-C) + B*B )) / B );
+				return (float) rad;
 			}
 
 			/** get the error for (x,y) not belonging to the ellipse */
@@ -90,17 +97,17 @@ namespace K {
 				// // https://en.wikipedia.org/wiki/Ellipse#General_ellipse
 				if ((B*B - 4*A*C) >= 0) {return NAN;}
 
-				return A*x*x + B*x*y + C*y*y + D*x + E*y + F;
+				return (float) (A*x*x + B*x*y + C*y*y + D*x + E*y + F);
 				//return A*x*x + B*x*y + C*y*y + fo*(D*x + E*y) + fo*fo*F;
 
 			}
 
 			/** normalize the ellipse-parameters */
 			void normalize() {
-				const float v = std::sqrt(A*A + B*B + C*C + D*D + E*E + F*F);
+				const double v = std::sqrt(A*A + B*B + C*C + D*D + E*E + F*F);
 				A/=v; B/=v; C/=v, D/=v, E/=v, F/=v;
-				const float v2 = A*A + B*B + C*C + D*D + E*E + F*F;
-				(void) v2;
+//				const double v2 = A*A + B*B + C*C + D*D + E*E + F*F;
+//				(void) v2;
 			}
 
 			void fixF() {
@@ -118,7 +125,7 @@ namespace K {
 
 			// sanity checks (unit-length, correct F factor, ..)
 			void checkMe() const {
-				const float len = A*A + B*B + C*C + D*D + E*E + F*F;
+				const double len = A*A + B*B + C*C + D*D + E*E + F*F;
 //				if (len < 0.99 || len > 1.01 || F <= 0.0) {
 //					int i = 0;
 //				}
@@ -181,7 +188,7 @@ namespace K {
 			}
 
 			/** get the ellipse's ratio */
-			const float getRatio() const {
+			float getRatio() const {
 				return std::max(a,b) / std::min(a,b);
 			}
 

@@ -94,9 +94,11 @@ namespace K {
 					const int minSize = std::min((size_t)50, vec.size());
 					const int maxSize = std::min((size_t)200, vec.size());
 
+					// draw a random segment size
 					std::uniform_int_distribution<int> dSize(minSize, maxSize);
 					const int size = dSize(gen);
 
+					// draw a random segment start for a segment of the given size
 					const int minStart = 0;
 					const int maxStart = vec.size() - size;
 					std::uniform_int_distribution<int> dStart(minStart, maxStart);
@@ -104,14 +106,20 @@ namespace K {
 
 					indices.clear();
 					for (int i = 0; i < cnt; ++i) {
+
+						// random within segment
+						//int idx = start + (rand() % size);
+
+						// linear within segment
 						int idx = start + (size) * i / (cnt-1);
 						if (idx < 0) {
 							throw "err";
 						}
-						indices.push_back(idx);
-					}
 
-					int i = 0; (void) i;
+						// append
+						indices.push_back(idx);
+
+					}
 
 				}
 
@@ -183,21 +191,22 @@ namespace K {
 				Estimation bestParams;
 
 				// provides random samples
-				//RandomIterator<Point2<Scalar>> it(rndPoints, numSamples);
-				MySegIter<Point2<Scalar>> it(rndPoints, numSamples);
+				RandomIterator<Point2<Scalar>> it(rndPoints, numSamples);
+//				MySegIter<Point2<Scalar>> it(rndPoints, numSamples);
+//				std::cout << "TODO: REMOVE num runs" << std::endl;
+//				size_t numRuns = rndPoints.size() / 5;		// 20%
 
 				//MyIter<Point2<Scalar>> it(rndPoints, numSamples);
 				//std::cout << "SWITCH ITER!" << std::endl;
 
-				std::cout << "TODO: REMOVE" << std::endl;
-				size_t numRuns = rndPoints.size() / 20;
+
 
 				// process X RANSAC runs
 				for (size_t i = 0; i < numRuns; ++i) {
 
 					// estimate params from a random sample-set
 					it.randomize();
-					const Estimation params = Estimation::getParams<Scalar>(it);
+					const Estimation params = Estimation::getParams<float>(it);
 
 					// get geometric representation (if possible)
 					Ellipse::CanonicalParams canon = params.toEllipse();

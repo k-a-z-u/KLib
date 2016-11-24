@@ -16,7 +16,7 @@ namespace K {
 		struct Estimation {
 
 			// raw ellipse parameters A,B,C,D,E,F
-			Eigen::Matrix<float, 6, 1> params;
+			Eigen::Matrix<double, 6, 1> params;
 
 //			// scaling (used for numerical stability)
 //			float s;
@@ -27,25 +27,31 @@ namespace K {
 
 			//Estimation(const Eigen::Matrix<float, 6, 1>& params, const float s) : params(params), s(s) {;}
 
-			static Estimation fromSVD(const Eigen::Matrix<float, 6, 1>& vec) {
+//			static Estimation fromSVD(const Eigen::Matrix<float, 6, 1>& vec) {
+//				Estimation est;
+//				est.params = vec;
+//				return est;
+//			}
+
+			static Estimation fromSVD(const Eigen::Matrix<double, 6, 1>& vec) {
 				Estimation est;
-				est.params = vec;
+				est.params = vec;// << vec(0), vec(1), vec(2), vec(3), vec(4), vec(5);
 				return est;
 			}
 
-			static Estimation fromEV(const Eigen::Matrix<float, 6, 1>& vec, const float s) {
-				Estimation est;
-				//est.params << vec(0), 2*vec(1), vec(2), 2*s*vec(3), 2*s*vec(4), s*s*vec(5);		// book
-				est.params << vec(0), vec(1), vec(2), s*vec(3), s*vec(4), s*s*vec(5);				// non-book
-				est.params /= est.params.norm();
-				if (est.params(5) < 0) {est.params = -est.params;}
-				return est;
-			}
+//			static Estimation fromEV(const Eigen::Matrix<double, 6, 1>& vec, const float s) {
+//				Estimation est;
+//				//est.params << vec(0), 2*vec(1), vec(2), 2*s*vec(3), 2*s*vec(4), s*s*vec(5);		// book
+//				est.params << vec(0), vec(1), vec(2), s*vec(3), s*vec(4), s*s*vec(5);				// non-book
+//				est.params /= est.params.norm();
+//				if (est.params(5) < 0) {est.params = -est.params;}
+//				return est;
+//			}
 
 			/** @see getParams(); */
 			Ellipse::CanonicalParams toEllipse() const {
 
-				Eigen::Matrix<float, 6, 1> vec = params;
+				Eigen::Matrix<double, 6, 1> vec = params;
 
 //				// [re-adjust the scaling we added initially
 //				vec << vec(0), 2*vec(1), vec(2), 2*s*vec(3), 2*s*vec(4), s*s*vec(5);									// Eq 2.2
@@ -102,7 +108,7 @@ namespace K {
 				const size_t num = points.size();
 
 				// matrix with one row (equation) per point
-				Eigen::Matrix<float, Eigen::Dynamic, 6> mat;
+				Eigen::Matrix<double, Eigen::Dynamic, 6> mat;
 
 				// we need points.size() rows
 				mat.conservativeResize(num, Eigen::NoChange);
@@ -110,8 +116,8 @@ namespace K {
 				// append one row (one equation) per point
 				int row = 0;
 				for (const Point2<Scalar>& p : points) {
-					const float x = (float) p.x;
-					const float y = (float) p.y;
+					const double x = (double) p.x;
+					const double y = (double) p.y;
 					mat.row(row) << x*x,	x*y,	y*y,	x,		y,		1;			// Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0
 					++row;
 				}
@@ -119,18 +125,26 @@ namespace K {
 				// calculate SVD with FullV (U is NOT needed but compilation fails when using thinU)
 				const Eigen::JacobiSVD<decltype(mat)> svd(mat, Eigen::ComputeFullU | Eigen::ComputeFullV);
 				const Eigen::JacobiSVD<decltype(mat)>::MatrixVType V = svd.matrixV();
-				const Eigen::JacobiSVD<decltype(mat)>::SingularValuesType D = svd.singularValues();
+				//const Eigen::JacobiSVD<decltype(mat)>::SingularValuesType D = svd.singularValues();
 
 				// the 6 canonical parameters [A-F] are given by the vector in V corresponding to the smallest singular value
 				// the smallest singular value belongs to the last index in U: thus "5"
-				const Eigen::Matrix<float,6,1> vec = V.col(5);
+				const Eigen::Matrix<double,6,1> vec = V.col(5);
 
 				return Estimation::fromSVD(vec);
 
 
 			}
 
-			template <typename Element> static Estimation getParamsEV(const std::vector<Element>& points) {
+
+			/**
+			 * normalizes the given input points [zero mean, std-dev = 1]
+			 * calculates generalized eigenvalues given 2 matrices [additional constraint]
+			 * un-normalizes the eigenvector corresponding to the most-negative eigenvalue
+			 */
+			template <typename Scalar, typename List> static Estimation getParamsNormalized(const List& points) {
+
+				using Element = K::Point2<Scalar>;
 
 				Point2f sum;
 				Point2f sum2;
@@ -184,8 +198,8 @@ namespace K {
 
 				// http://stackoverflow.com/questions/12672408/generalized-eigenvectors-in-matlab
 				Eigen::GeneralizedEigenSolver<Eigen::Matrix<double, 6, 6>> eigs(S, C, true);
-				std::cout << eigs.eigenvalues() << std::endl;
-				std::cout << eigs.eigenvectors() << std::endl;
+				//std::cout << eigs.eigenvalues() << std::endl;
+				//std::cout << eigs.eigenvectors() << std::endl;
 
 				int match = -1;
 				for (int i = 0; i < 6; ++i) {
@@ -195,6 +209,9 @@ namespace K {
 						break;
 					}
 				}
+
+				// probably invalid ellipse data...
+				if (match == -1) {return Estimation();}
 
 				//std::cout << "match: " << match << std::endl;
 
@@ -217,7 +234,7 @@ namespace K {
 				const float mx = avg.x;
 				const float my = avg.y;
 
-				Eigen::Matrix<float,6,1> vec;
+				Eigen::Matrix<double,6,1> vec;
 
 				// WRONG?!
 //				vec <<	A(0)*sy*sy,
@@ -253,6 +270,137 @@ namespace K {
 
 
 			}
+
+			/** determine ellipse parameters using renormalization [input-weighting together with generalized eigenvalues] */
+			template <typename Scalar, typename List> static Estimation getParamsRenormalized(const List& points) {
+
+				using Element = K::Point2<Scalar>;
+
+//				Point2f sum;
+//				Point2f sum2;
+//				for (const Element p : points) {
+//					sum += p;
+//					sum2 += p*p;
+//				}
+
+//				// calculate average and std-dev for normalization
+//				const K::Point2f avg = sum / (float) points.size();
+//				const K::Point2f avg2 = sum2 / (float) points.size();
+//				//const K::Point2f stddev = K::Point2f(2.5, 4.5);//sqrt(avg2 - avg*avg);		// TODO just for testing
+//				const K::Point2f stddev = sqrt(avg2 - avg*avg);
+
+//				// straight line? -> done
+//				if (stddev.x == 0 || stddev.y == 0) {return Estimation();}
+
+				// number of points to use
+				const size_t num = points.size();
+
+
+
+				double W[num];
+
+				// weighting matrix for every input point
+				for (size_t i = 0; i < num; ++i) {
+					W[i] = 1;//Eigen::Matrix<double, 6,6>::Zero();
+				}
+
+				Eigen::Matrix<double, 6, 6> v0e[num];
+				Eigen::Matrix<double, 6, 1> result;
+
+
+				const int maxRuns = 16;
+
+				// perform several iterative steps
+				for (int run = 0; run < maxRuns; ++run) {
+
+					Eigen::Matrix<double, 6, 6> M = Eigen::Matrix<double, 6,6>::Zero();
+					Eigen::Matrix<double, 6, 6> N = Eigen::Matrix<double, 6,6>::Zero();
+
+					int i = 0;
+					for (const Element p : points) {
+
+						// current point
+						const float x = (float) p.x;
+						const float y = (float) p.y;
+						const float f = 1;
+
+						Eigen::Matrix<double, 6, 1> ea;
+						ea << x*x, x*y, y*y, f*x, f*y, 1;
+
+						v0e[i] <<
+								x*x,	x*y,		0,		f*x,	0,		0,
+								x*y,	x*x+y*y,	x*y,	f*y,	f*x,	0,
+								0,		x*y,		y*y,	0,		f*y,	0,
+								f*x,	f*y,		0,		f*f,	0,		0,
+								0,		f*x,		f*y,	0,		f*f,	0,
+								0,		0,			0,		0,		0,		0;
+
+						M += W[i] * ea * ea.transpose();
+						N += W[i] * v0e[i];
+						++i;
+
+					}
+
+					M /= (double)num;
+					N /= (double)num;
+
+					// most probably not an ellipse
+					if (M(0) != M(0)) {return Estimation();}
+
+					//N = Eigen::Matrix<double, 6, 6>::Identity();
+
+					//std::cout << "M is" << std::endl << M << std::endl << std::endl;
+					//std::cout << "N is" << std::endl << N << std::endl << std::endl;
+
+
+
+					// http://stackoverflow.com/questions/12672408/generalized-eigenvectors-in-matlab
+					Eigen::GeneralizedEigenSolver<Eigen::Matrix<double, 6, 6>> eigs(M, N, true);
+					//std::cout << "eigenvalues" << std::endl << eigs.eigenvalues() << std::endl << std::endl;
+					//std::cout << "eigenvector" << std::endl << eigs.eigenvectors() << std::endl << std::endl;
+
+					// find the smallest absolute eigenvalue [~ 0.0]
+					double matchVal = 999999;
+					int match = -1;
+					for (int i = 0; i < 6; ++i) {
+						const double ev = std::abs( eigs.eigenvalues()(i).real() );
+						if (ev < matchVal) {
+							match = i;
+							matchVal = ev;
+						}
+					}
+
+					// most probably not an ellipse
+					if (i == -1) {return Estimation();}
+
+					// get the corresponding eigenvector
+					result <<
+							eigs.eigenvectors().col(match).row(0).real(),
+							eigs.eigenvectors().col(match).row(1).real(),
+							eigs.eigenvectors().col(match).row(2).real(),
+							eigs.eigenvectors().col(match).row(3).real(),
+							eigs.eigenvectors().col(match).row(4).real(),
+							eigs.eigenvectors().col(match).row(5).real();
+
+					// normalize the result vector [length 1.0]
+					result = result / result.norm();
+
+
+					//std::cout << "using eigenvalue " << match << " with value " << matchVal << std::endl << std::endl;
+					//std::cout << "result is" << std::endl << result << std::endl << std::endl;
+
+					// update the weight for each input-point to be used in the next run
+					for (size_t i = 0; i < num; ++i) {
+						W[i] = 1.0 / (result.dot( v0e[i] * result ));
+					}
+
+				}
+
+				return Estimation::fromSVD(result);
+
+
+			}
+
 
 
 

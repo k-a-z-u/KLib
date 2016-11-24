@@ -10,6 +10,8 @@
 
 namespace K {
 
+#ifdef WITH_PNG
+
 	TEST(LensCalibration, calibrate) {
 
 		std::vector<LensDistortionCalibration::Path> paths;
@@ -86,9 +88,11 @@ namespace K {
 
 	}
 
+#endif
+
+#ifdef WITH_PNG
+
 	TEST(LensCalibration, calibrate2) {
-
-
 
 		std::vector<LensDistortionCalibration::Path> paths;
 
@@ -128,9 +132,10 @@ namespace K {
 
 	}
 
+#endif
+
 }
 
 #endif
-
 
 #endif // TESTLENSCALIBRATION_CPP

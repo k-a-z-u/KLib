@@ -22,6 +22,7 @@ namespace K {
 
 		K::EllipseEstimator::RANSACPixel ransac;
 		bool combineSimilar = false;
+		float blurSigma = 1.75f;
 
 	public:
 
@@ -49,7 +50,11 @@ namespace K {
 		std::vector<K::Ellipse::GeometricParams> getFromEdgeImage(const K::ImageChannel& imgEdges) {
 
 			const std::vector<std::vector<K::Point2i>> allSegments = getSegments(imgEdges);
-			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplit(allSegments);
+
+			// TODO
+			//const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitFix(allSegments, 300);
+			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitVar(allSegments, 75, 450);
+
 
 			const K::ImageChannel imgEdgesBlur = getBlurred(imgEdges);
 
@@ -92,43 +97,85 @@ namespace K {
 		K::ImageChannel getBlurred(const K::ImageChannel& imgEdges) {
 
 			// remove short edges [isolated pixels]
-			K::ImageChannel imgEdgesCleaned = K::Clean::avgThreshold(imgEdges, 1, 0.25f);
+			K::ImageChannel imgEdgesCleaned = K::Clean::avgThreshold(imgEdges, 1, 0.33f);
+
+			K::ImageChannel imgEdgesBlur = imgEdgesCleaned;
+			//imgEdgesBlur = K::Dilate::apply(imgEdgesBlur, 2, K::Dilate::Shape::CIRCLE, 1.0f, 0.01f);
 
 			// slightly blur the image (spread edges)
-			K::Gauss gauss(2.0f, 2.0f);
-			K::ImageChannel imgEdgesBlur = imgEdgesCleaned;
-			//imgEdgesBlur = K::Dilate::apply(imgEdgesBlur, 1, K::Dilate::Shape::CIRCLE, 1.0f, 0.01f);
-			imgEdgesBlur = gauss.filter(imgEdgesBlur);
-			imgEdgesBlur = K::Normalize::run(imgEdgesBlur);
+			if (blurSigma != 0) {
+				K::Gauss gauss(blurSigma, blurSigma);
+				imgEdgesBlur = gauss.filter(imgEdgesBlur);
+				imgEdgesBlur = K::Normalize::run(imgEdgesBlur);
+			}
 
-			//K::ImageFactory::writePNG("/tmp/bla.png", imgEdgesBlur);
+			K::ImageFactory::writePNG("/tmp/bla.png", imgEdgesBlur);
 
 			return imgEdgesBlur;
 
 		}
 
+		std::vector<std::vector<K::Point2i>> getSegmentsSplitFix(const std::vector<std::vector<K::Point2i>>& segments, const size_t maxSize) {
 
-		std::vector<std::vector<K::Point2i>> getSegmentsSplit(const std::vector<std::vector<K::Point2i>>& segments) {
+			std::vector<std::vector<K::Point2i>> splitSegments;
 
-			const float segmentMin = 65.0f;									// min number of points per segment (smallest segment before splitting starts)
-			const float segmentMax = 300.0f;								// max number of points per segment (largest segment)
-			const float stepSize = 0.1f;
+			// process every input segment
+			for (const std::vector<K::Point2i>& seg : segments) {
 
+				// keep small segments "as-is"
+				if (seg.size() <= maxSize) {
+
+					splitSegments.push_back(seg);
+
+				} else {
+
+					const int numSegments = (int) std::ceil((float)seg.size() / (float)maxSize);
+					const float sizePerSegment = seg.size() / numSegments;
+
+					// 50% overlapping segments
+					for (float segNr = 0; segNr <= numSegments - 0.4; segNr += 0.5) {
+						const int start = segNr * sizePerSegment;
+						const int end = std::min((size_t)(start + sizePerSegment), seg.size()-1);
+						const std::vector<K::Point2i> pts(seg.begin()+start, seg.begin()+end);
+						splitSegments.push_back(pts);
+					}
+
+				}
+
+			}
+
+			return splitSegments;
+
+		}
+
+		/**
+		 * split all large segments into several [overlapping] smaller-sized segments
+		 */
+		std::vector<std::vector<K::Point2i>> getSegmentsSplitVar(const std::vector<std::vector<K::Point2i>>& segments, const float minSize, const float maxSize) {
+
+			// output
 			std::vector<std::vector<K::Point2i>> splitSegments;
 
 			// split large segments several times
 			for (const std::vector<K::Point2i>& seg : segments) {
 
-				const int maxSegs = std::ceil(seg.size() / segmentMin);		// largest number of segment divisions to check
-				const int minSegs = std::ceil(seg.size() / segmentMax);		// smallest number of segment divisions to check
+				// skip this segment?
+				if (seg.size() < minSize) {continue;}
+
+				const float stepSize = 0.4f;
+				const int maxSegs = std::ceil(seg.size() / minSize);		// largest number of segment divisions to check
+				const int minSegs = std::ceil(seg.size() / maxSize);		// smallest number of segment divisions to check
 
 				for (float segs = minSegs; segs <= maxSegs; segs+=stepSize) {
 
 					const float segSize = seg.size() / segs;
 
-					for (float i = 0; i < segs; ++i) {
-						const int start = i*segSize;
-						const int end = start + segSize;
+					// 50% overlapping segments
+					for (float i = 0; i < segs; i += 0.50f) {
+						const int start = (int)(i*segSize);
+						const int end = std::min((int)(start + segSize), (int)(seg.size()-1));
+						const int num = end-start;
+						if (num < 20) {continue;}
 						const std::vector<K::Point2i> pts(seg.begin()+start, seg.begin()+end);
 						splitSegments.push_back(pts);
 					}

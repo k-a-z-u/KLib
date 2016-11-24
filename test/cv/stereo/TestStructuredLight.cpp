@@ -1,6 +1,7 @@
 
 
 #ifdef WITH_TESTS
+#ifdef WITH_JPEG
 
 #include "../../Test.h"
 #include "../../../cv/stereo/StructuredLight.h"
@@ -78,4 +79,4 @@ TEST(Stereo, StructuredLight) {
 
 #endif
 
-
+#endif

@@ -58,7 +58,7 @@ namespace K {
 
 					//est = Estimation::getParams<float>(points);
 					std::cout << "TESTING" << std::endl;
-					est = Estimation::getParamsEV(points);
+					est = Estimation::getParamsNormalized(points);
 
 				} else {
 
@@ -69,7 +69,7 @@ namespace K {
 					}
 					//est = Estimation::getParams<float>(samplePoints);
 					std::cout << "TESTING" << std::endl;
-					est = Estimation::getParamsEV(samplePoints);
+					est = Estimation::getParamsNormalized(samplePoints);
 
 				}
 

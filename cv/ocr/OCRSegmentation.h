@@ -75,8 +75,9 @@ namespace K {
 				}
 			}
 
+#ifdef WITH_PNG
 			ImageFactory::writePNG("/tmp/segs.png", img2);
-
+#endif
 			// try to combine segments (o -> ö)
 
 

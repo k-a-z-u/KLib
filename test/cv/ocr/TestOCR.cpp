@@ -6,6 +6,8 @@
 
 using namespace K;
 
+#ifdef WITH_JPG
+
 TEST(OCR, segmentation) {
 
 	ImageChannel img = ImageFactory::readJPEG(getDataFile("text_scan.jpg"));
@@ -13,5 +15,7 @@ TEST(OCR, segmentation) {
 	OCRSegmentation::getLetters(img);
 
 }
+
+#endif
 
 #endif

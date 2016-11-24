@@ -334,7 +334,9 @@ namespace K {
 
 		static Font getDefault() {
 			Font fnt;
+#ifdef WITH_PNG
 			fnt.img = K::ImageFactory::readPNG(FONT1_PNG);
+#endif
 			fnt.cols = 16;
 			fnt.rows = 16;
 			return fnt;

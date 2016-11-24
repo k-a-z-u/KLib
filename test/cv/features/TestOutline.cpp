@@ -23,6 +23,7 @@ namespace K {
 	}
 
 
+	#ifdef WITH_PNG
 
 	TEST(Outline, detectImage) {
 
@@ -53,6 +54,7 @@ namespace K {
 
 	}
 
+	#endif
 
 
 }
