@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 
+#include <sstream>
 #include "../Tokenizer.h"
 
 namespace K {
@@ -61,14 +62,24 @@ namespace K {
 
 	public:
 
-		/** ctor with the file to load */
-		ObjFileReader(const std::string& file, const bool swapYZ = false) : swapYZ(swapYZ) {
+		/** ctor. use readXYZ() */
+		ObjFileReader(const bool swapYZ = false) : swapYZ(swapYZ) {
+			;
+		}
 
+		/** read .obj from the given file */
+		void readFile(const std::string& file) {
 			std::ifstream is(file);
 			std::string line;
 			while(getline(is, line)) {parseLine(line);}
 			is.close();
+		}
 
+		/** read obj from the given data string (.obj file contents) */
+		void readData(const std::string& data) {
+			std::stringstream is(data);
+			std::string line;
+			while(getline(is, line)) {parseLine(line);}
 		}
 
 		/** get the parsed data */

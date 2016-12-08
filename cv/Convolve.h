@@ -16,7 +16,7 @@ namespace K {
 		 * convolve the given image with the provided kernel.
 		 * returns a newly created image.
 		 */
-		static ImageChannel run(const ImageChannel& src, const Kernel& k) {
+		static ImageChannel run(const ImageChannel& src, const Kernel& k, const bool normalize = true) {
 
 			ImageChannel dst(src.getWidth(), src.getHeight());
 
@@ -44,13 +44,13 @@ namespace K {
 							const float kv = k.get(x1, y1);		// kernel's value
 							const float sv = src.get(ix, iy);	// source image's value
 							val += kv*sv;
-							sum += kv;
+							sum += std::abs(kv);
 
 						}
 					}
 
 					// set the normalized, convolved value
-					const float res = val/sum;
+					const float res = (normalize && sum != 0) ? (val/sum) : (val);
 					_assertNotNAN(res, "detected NaN");
 					dst.set(x, y, res);
 

@@ -5,30 +5,32 @@
 #include "../../../cv/ImageFactory.h"
 #include "../../../cv/filter/Threshold.h"
 
-namespace K {
-
-	TEST(Outline, detect) {
-
-		ImageChannel src(5,5);
-		src <<	0, 0, 0, 0 ,0,
-				0, 1, 1, 1, 0,
-				0, 1, 0, 1, 0,
-				0, 1, 1, 1, 0,
-				0, 0, 0, 0, 0;
+using namespace K;
+using namespace K::CV;
 
 
-		Outline l = OutlineDetection::follow(src, Point2i(1,1), 0.25f);
-		ASSERT_EQ(8, l.points.size());
+TEST(Outline, detect) {
 
-	}
+	ImageChannel src(5,5);
+	src <<	0, 0, 0, 0 ,0,
+			0, 1, 1, 1, 0,
+			0, 1, 0, 1, 0,
+			0, 1, 1, 1, 0,
+			0, 0, 0, 0, 0;
 
 
-	#ifdef WITH_PNG
+	Outline l = OutlineDetection::follow(src, Point2i(1,1), 0.25f);
+	ASSERT_EQ(8, l.points.size());
+
+}
+
+
+#ifdef WITH_PNG
 
 	TEST(Outline, detectImage) {
 
 		ImageChannel src = ImageFactory::readPNG(getDataFile("sudoku_transformed.png"));
-		Threshold::inplace(src, 0.7);
+		Threshold::inplace(src, 0.7f);
 
 		ImageChannel dst(src.getWidth(), src.getHeight());
 		Outline l = OutlineDetection::follow(src, Point2i(57,11), 0.25f);
@@ -45,7 +47,7 @@ namespace K {
 	TEST(Outline, edges) {
 
 		ImageChannel src = ImageFactory::readPNG(getDataFile("sudoku_transformed.png"));
-		Threshold::inplace(src, 0.7);
+		Threshold::inplace(src, 0.7f);
 
 		ImageChannel dst(src.getWidth(), src.getHeight());
 		Outline l = OutlineDetection::follow(src, Point2i(57,11), 0.25f);
@@ -54,10 +56,7 @@ namespace K {
 
 	}
 
-	#endif
-
-
-}
+#endif
 
 #endif
 

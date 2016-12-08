@@ -67,6 +67,10 @@ ELSE()
 	MESSAGE(STATUS "OpenCL support: DISABLED")
 ENDIF()
 
+# for libeigen 3.3.x
+INCLUDE_DIRECTORIES(
+	/apps/lib/
+)
 
 FILE(GLOB HEADERS
 	./*.h
@@ -99,6 +103,7 @@ ELSE()
 		-Wextra
 		-Wconversion
 		-Werror=return-type
+		-fstack-protector-strong
 		-g
 		-O0
 	)

@@ -104,9 +104,6 @@ namespace K {
 		friend K::ImageChannel operator - (const float val, const K::ImageChannel& img) {
 			K::ImageChannel copy = img;
 			for (int i = 0; i < (int) img.data.size(); ++i) { copy.data[i] = val - copy.data[i]; }
-//			copy.forEachModify(
-//				[val] (const int x, const int y, const float v) {(void)x; (void)y; return val-v;}
-//			);
 			return copy;
 		}
 

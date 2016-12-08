@@ -8,7 +8,8 @@ using namespace K;
 TEST(ObjReader, read) {
 
 	// try to load the object
-	ObjFileReader reader(getDataFile("cylinder.obj"));
+	ObjFileReader reader;
+	reader.readFile(getDataFile("cylinder.obj"));
 
 	// check number of faces
 	ASSERT_EQ(32, reader.getData().faces.size());

@@ -5,6 +5,7 @@
 #include "../../../cv/filter/Threshold.h"
 
 using namespace K;
+using namespace K::CV;
 
 TEST(FilterThreshold, normal) {
 

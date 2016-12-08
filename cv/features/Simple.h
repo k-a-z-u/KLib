@@ -40,8 +40,8 @@ namespace K {
 
 		static DataMatrix<FeatureVec> getFeatures(const ImageChannel& img, const int win = 9) {
 
-			Gauss g1(1.5f);
-			Gauss g2(win/2);
+			CV::Gauss g1(1.5f);
+			CV::Gauss g2(win/2);
 
 			ImageChannel imgBlur1 = g1.filter(img);
 			ImageChannel imgBlur2 = g2.filter(img);
