@@ -60,7 +60,7 @@ namespace K {
 
 		/** transform the image */
 		void undo(const ImageChannel& src, ImageChannel& dst) {
-			Transform::affine(invMat, src, dst);
+			CV::Transform::affine(invMat, src, dst);
 		}
 
 

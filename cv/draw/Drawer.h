@@ -43,11 +43,15 @@ namespace K {
 
 		void drawString(const std::string& str, const Point2i& pos) {
 
+			auto mix = [] (const float orig, const float letter) {
+				return orig * letter;
+			};
+
 			Point2i p = pos;
 			for (char c : str) {
 				const Glyph g = fnt.getGlyph(c);
-				drawImage(g, p);
-				p.x += g.getWidth();
+				drawImage(g, p, mix);
+				p.x += g.getWidth() * fnt.getStride();
 			}
 
 		}
@@ -77,7 +81,7 @@ namespace K {
 		 * draw the given image at the provided position
 		 * the mixer determines the value to write after receiving the current and the new pixel value
 		 */
-		template <typename Mix> void drawImage(const K::ImageChannel& img, const Point2i& dst, Mix mix) {
+		template <typename Elem, typename Mix> void drawImage(const Elem& img, const Point2i& dst, Mix mix) {
 
 			for (int y = 0; y < img.getHeight(); ++y) {
 				for (int x = 0; x < img.getWidth(); ++x) {
@@ -95,7 +99,7 @@ namespace K {
 
 		/** draw the given dot */
 		void drawDot(const float x, const float y) {
-			Interpolation::Bilinear::set(img, x, y, fg);
+			CV::Interpolation::Bilinear::set(img, x, y, fg);
 		}
 
 		/** draw an ellipse */
@@ -106,7 +110,7 @@ namespace K {
 				const Point2f p = params.getPointFor(rad);
 				if (isOutside((int)p.x, (int)p.y, 1)) {continue;}
 				//img.set((int)p.x, (int)p.y, fg);
-				Interpolation::Bilinear::set(img, p.x, p.y, fg);
+				CV::Interpolation::Bilinear::set(img, p.x, p.y, fg);
 			}
 		}
 

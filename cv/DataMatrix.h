@@ -50,6 +50,12 @@ namespace K {
 			data.resize(numElems);
 		}
 
+		/** get the number of elements */
+		size_t getSizeElements() const {
+			return data.size();
+		}
+
+
 		/** get the data-size in bytes */
 		size_t getSizeBytes() const {
 			return data.size() * sizeof(T);
@@ -159,19 +165,30 @@ namespace K {
 
 		/** add the given matrix */
 		DataMatrix<T>& operator += (const DataMatrix<T>& o) {
+			ensureEqualSize(*this, o);
 			for (int i = 0; i < (int) data.size(); ++i) { data[i] += o.data[i]; }
 			return *this;
 		}
 
 		/** subtract the given matrix */
 		DataMatrix<T>& operator -= (const DataMatrix<T>& o) {
+			ensureEqualSize(*this, o);
 			for (int i = 0; i < (int) data.size(); ++i) { data[i] -= o.data[i]; }
 			return *this;
 		}
 
 		/** multiply the given matrix */
 		DataMatrix<T>& operator *= (const DataMatrix<T>& o) {
+			ensureEqualSize(*this, o);
 			for (int i = 0; i < (int) data.size(); ++i) { data[i] *= o.data[i]; }
+			return *this;
+		}
+
+
+
+		/** add the given value */
+		DataMatrix<T>& operator += (const T val) {
+			for (int i = 0; i < (int) data.size(); ++i) { data[i] += val; }
 			return *this;
 		}
 
@@ -181,8 +198,23 @@ namespace K {
 			return *this;
 		}
 
+		/** divide by the given value */
+		DataMatrix<T>& operator /= (const T val) {
+			for (int i = 0; i < (int) data.size(); ++i) { data[i] /= val; }
+			return *this;
+		}
+
+
+
+		template <typename DM> DM operator + (const DM& o) {
+			ensureEqualSize(*this, o);
+			DM copy = *((DM*)this);
+			copy += o;
+			return copy;
+		}
 
 		template <typename DM> DM operator - (const DM& o) {
+			ensureEqualSize(*this, o);
 			DM copy = *((DM*)this);
 			copy -= o;
 			return copy;
@@ -192,6 +224,14 @@ namespace K {
 			DM copy = *((DM*)this);
 			copy *= val;
 			return copy;
+		}
+
+	private:
+
+		inline void ensureEqualSize(const DataMatrix& m1, const DataMatrix& m2) const {
+			if (m1.getSizeElements() != m2.getSizeElements()) {
+				throw Exception("size mismatch!");
+			}
 		}
 
 

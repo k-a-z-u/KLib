@@ -88,7 +88,7 @@ namespace K {
 			imgY.forEachModify(lambda);
 
 			// apply guassian to the derived images (blend possible edges together)
-			Gauss g2(sigma);
+			CV::Gauss g2(sigma);
 			imgX = g2.filter(imgX);
 			imgY = g2.filter(imgY);
 			imgXY = g2.filter(imgXY);
@@ -115,10 +115,10 @@ namespace K {
 				imgC.set(x,y,1);
 			});
 
-			Normalize::inplace(imgX);
-			Normalize::inplace(imgY);
-			Normalize::inplace(imgXY);
-			Normalize::inplace(imgR);
+			CV::Normalize::inplace(imgX);
+			CV::Normalize::inplace(imgY);
+			CV::Normalize::inplace(imgXY);
+			CV::Normalize::inplace(imgR);
 
 #ifdef WITH_PNG
 			ImageFactory::writePNG("/tmp/i.png", img);

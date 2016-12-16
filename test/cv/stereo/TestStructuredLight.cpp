@@ -14,6 +14,7 @@
 
 #include <sstream>
 using namespace K;
+using namespace K::CV;
 
 TEST(Stereo, StructuredLight) {
 
@@ -21,38 +22,38 @@ TEST(Stereo, StructuredLight) {
 	const std::string pathCal = "/apps/workspaces/kiste_data/simulation/box2/stripes/calib/";
 
 	const StructuredLight::Dataset dsCal(
-		K::ImageFactory::readJPEG(pathCal + "0.jpg"),
+		ImageFactory::readJPEG(pathCal + "0.jpg"),
 		{
-			K::ImageFactory::readJPEG(pathCal + "1.jpg"),
-			K::ImageFactory::readJPEG(pathCal + "2.jpg"),
-			K::ImageFactory::readJPEG(pathCal + "4.jpg"),
-			K::ImageFactory::readJPEG(pathCal + "8.jpg"),
-			K::ImageFactory::readJPEG(pathCal + "16.jpg"),
-			K::ImageFactory::readJPEG(pathCal + "32.jpg"),
-			K::ImageFactory::readJPEG(pathCal + "64.jpg"),
-			K::ImageFactory::readJPEG(pathCal + "128.jpg"),
-			K::ImageFactory::readJPEG(pathCal + "256.jpg"),
+			ImageFactory::readJPEG(pathCal + "1.jpg"),
+			ImageFactory::readJPEG(pathCal + "2.jpg"),
+			ImageFactory::readJPEG(pathCal + "4.jpg"),
+			ImageFactory::readJPEG(pathCal + "8.jpg"),
+			ImageFactory::readJPEG(pathCal + "16.jpg"),
+			ImageFactory::readJPEG(pathCal + "32.jpg"),
+			ImageFactory::readJPEG(pathCal + "64.jpg"),
+			ImageFactory::readJPEG(pathCal + "128.jpg"),
+			ImageFactory::readJPEG(pathCal + "256.jpg"),
 		}
 	);
 	const StructuredLight::Dataset ds(
-		K::ImageFactory::readJPEG(path + "0.jpg"),
+		ImageFactory::readJPEG(path + "0.jpg"),
 		{
-			K::ImageFactory::readJPEG(path + "1.jpg"),
-			K::ImageFactory::readJPEG(path + "2.jpg"),
-			K::ImageFactory::readJPEG(path + "4.jpg"),
-			K::ImageFactory::readJPEG(path + "8.jpg"),
-			K::ImageFactory::readJPEG(path + "16.jpg"),
-			K::ImageFactory::readJPEG(path + "32.jpg"),
-			K::ImageFactory::readJPEG(path + "64.jpg"),
-			K::ImageFactory::readJPEG(path + "128.jpg"),
-			K::ImageFactory::readJPEG(path + "256.jpg"),
+			ImageFactory::readJPEG(path + "1.jpg"),
+			ImageFactory::readJPEG(path + "2.jpg"),
+			ImageFactory::readJPEG(path + "4.jpg"),
+			ImageFactory::readJPEG(path + "8.jpg"),
+			ImageFactory::readJPEG(path + "16.jpg"),
+			ImageFactory::readJPEG(path + "32.jpg"),
+			ImageFactory::readJPEG(path + "64.jpg"),
+			ImageFactory::readJPEG(path + "128.jpg"),
+			ImageFactory::readJPEG(path + "256.jpg"),
 		}
 	);
 
 	StructuredLight sl;
 	sl.calibrate(dsCal);
-	K::ImageChannel depth = sl.getDepth(ds, 40.0);
-	depth = K::MedianFilter::apply(depth, 3, 1);
+	ImageChannel depth = sl.getDepth(ds, 40.0);
+	depth = MedianFilter::apply(depth, 3, 1);
 
 	depth.forEachModify([&] (const int x, const int y, const float v) {
 		K::Average<float> avg;
@@ -67,11 +68,11 @@ TEST(Stereo, StructuredLight) {
 		return (avg.size() > 0) ? (avg.get()) : (0);
 	});
 
-	K::Normalize::inplace(depth);
+	Normalize::inplace(depth);
 
 
 
-	K::ImageFactory::writeJPEG("/tmp/nyan.jpg", depth);
+	ImageFactory::writeJPEG("/tmp/nyan.jpg", depth);
 
 
 }

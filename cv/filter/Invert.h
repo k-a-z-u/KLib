@@ -5,27 +5,30 @@
 
 namespace K {
 
-	/**
-	 * invert an image.
-	 */
-	class Invert {
+	namespace CV {
 
-	public:
+		/**
+		 * invert an image.
+		 */
+		class Invert {
 
-		/** invert the image */
-		static void inplace(ImageChannel& img) {
-			auto update = [&] (const int x, const int y, const float val) {(void) x; (void) y; return -val;};
-			img.forEachModify(update);
-		}
+		public:
 
-		static ImageChannel run(const ImageChannel& img) {
-			ImageChannel out = img;
-			inplace(out);
-			return out;
-		}
+			/** invert the image */
+			static void inplace(ImageChannel& img) {
+				auto update = [&] (const int x, const int y, const float val) {(void) x; (void) y; return -val;};
+				img.forEachModify(update);
+			}
 
-	};
+			static ImageChannel run(const ImageChannel& img) {
+				ImageChannel out = img;
+				inplace(out);
+				return out;
+			}
 
+		};
+
+	}
 
 }
 

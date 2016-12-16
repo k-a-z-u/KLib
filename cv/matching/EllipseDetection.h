@@ -97,16 +97,16 @@ namespace K {
 		K::ImageChannel getBlurred(const K::ImageChannel& imgEdges) {
 
 			// remove short edges [isolated pixels]
-			K::ImageChannel imgEdgesCleaned = K::Clean::avgThreshold(imgEdges, 1, 0.33f);
+			K::ImageChannel imgEdgesCleaned = K::CV::Clean::avgThreshold(imgEdges, 1, 0.33f);
 
 			K::ImageChannel imgEdgesBlur = imgEdgesCleaned;
 			//imgEdgesBlur = K::Dilate::apply(imgEdgesBlur, 2, K::Dilate::Shape::CIRCLE, 1.0f, 0.01f);
 
 			// slightly blur the image (spread edges)
 			if (blurSigma != 0) {
-				K::Gauss gauss(blurSigma, blurSigma);
+				K::CV::Gauss gauss(blurSigma, blurSigma);
 				imgEdgesBlur = gauss.filter(imgEdgesBlur);
-				imgEdgesBlur = K::Normalize::run(imgEdgesBlur);
+				imgEdgesBlur = K::CV::Normalize::run(imgEdgesBlur);
 			}
 
 			K::ImageFactory::writePNG("/tmp/bla.png", imgEdgesBlur);

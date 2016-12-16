@@ -220,7 +220,7 @@ public:
 	}
 
 	/** quick&dirty write-to-file function */
-	void write(uint8_t* data, uint32_t len) {
+	void write(const uint8_t* data, const uint32_t len) {
 		FILE* handle = fopen(getAbsolutePath().c_str(), "wb");
 		if (!handle) {throw FileException("could not open file '" + getAbsolutePath() + "' for writing");}
 		fwrite(data, len, 1, handle);

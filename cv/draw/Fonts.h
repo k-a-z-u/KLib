@@ -329,6 +329,7 @@ namespace K {
 		K::ImageChannel img;
 		int cols;
 		int rows;
+		float stride = 1.0f;
 
 	public:
 
@@ -349,6 +350,14 @@ namespace K {
 				(void) x; (void) y; return 1.0f - val;
 			});
 			return copy;
+		}
+
+		void setStride(const float s) {
+			this->stride = s;
+		}
+
+		float getStride() const {
+			return this->stride;
 		}
 
 		Glyph getGlyph(const char c) const {

@@ -7,41 +7,45 @@
 
 namespace K {
 
-	/**
-	 * 2D gauss filter using 2x1D gauss
-	 */
-	class Gauss {
+	namespace CV {
 
-	private:
+		/**
+		 * 2D gauss filter using 2x1D gauss
+		 */
+		class Gauss {
 
-		Kernel kV;
-		Kernel kH;
+		private:
 
-	public:
+			Kernel kV;
+			Kernel kH;
 
-		/** ctor */
-		Gauss(const float sigma) {
-			kH = KernelFactory::gauss1D(sigma);
-			kV = KernelFactory::gauss1D(sigma); kV.tilt();
-		}
+		public:
 
-		/** ctor */
-		Gauss(const float sigmaH, const float sigmaV) {
-			kH = KernelFactory::gauss1D(sigmaH);
-			kV = KernelFactory::gauss1D(sigmaV); kV.tilt();
-		}
+			/** ctor */
+			Gauss(const float sigma) {
+				kH = KernelFactory::gauss1D(sigma);
+				kV = KernelFactory::gauss1D(sigma); kV.tilt();
+			}
 
-	public:
+			/** ctor */
+			Gauss(const float sigmaH, const float sigmaV) {
+				kH = KernelFactory::gauss1D(sigmaH);
+				kV = KernelFactory::gauss1D(sigmaV); kV.tilt();
+			}
 
-		/** filter using 2x1D gauss */
-		ImageChannel filter(const ImageChannel& src) const {
+		public:
 
-			// 2 x 1D convolution
-			return Convolve::run(Convolve::run(src, kH), kV);
+			/** filter using 2x1D gauss */
+			ImageChannel filter(const ImageChannel& src) const {
 
-		}
+				// 2 x 1D convolution
+				return Convolve::run(Convolve::run(src, kH), kV);
 
-	};
+			}
+
+		};
+
+	}
 
 }
 

@@ -361,7 +361,7 @@ namespace K {
 			ImageChannel imgDepth(desc.imgLeft.getWidth(), desc.imgLeft.getHeight());
 			imgDepth.ones();
 
-			Gauss g(1.0);
+			CV::Gauss g(1.0);
 			desc.imgLeft = g.filter(desc.imgLeft);
 			desc.imgRight = g.filter(desc.imgRight);
 
@@ -524,7 +524,7 @@ namespace K {
 			gp.draw(splot);
 			gp.flush();
 
-			Normalize::inplace(imgDepth);
+			CV::Normalize::inplace(imgDepth);
 			ImageFactory::writePNG("/tmp/depth.png", imgDepth);
 
 
@@ -599,7 +599,7 @@ namespace K {
 		}
 
 		ImageChannel test(desc.imgRight.getWidth(), desc.imgRight.getHeight());
-		Transform::affine(desc.fm.getRectificationRight(), desc.imgRight, test);
+		CV::Transform::affine(desc.fm.getRectificationRight(), desc.imgRight, test);
 
 		ImageFactory::writeJPEG("/tmp/1.jpg", test);
 
