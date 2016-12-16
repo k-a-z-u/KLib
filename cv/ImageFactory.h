@@ -60,6 +60,9 @@ namespace K {
 			png_write_png(png, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 			fclose(fp);
 
+			// cleanup
+			png_destroy_write_struct (&png, &info_ptr);
+
 		}
 
 		/** read a PNG from the given file */

@@ -5,6 +5,7 @@
 #include "Device.h"
 #include "Platform.h"
 #include "Queue.h"
+#include "ImageFormats.h"
 
 #include "BufferFactory.h"
 #include "ImageFactory.h"
@@ -109,6 +110,26 @@ namespace K {
 				attachedDevices.push_back(dev);
 
 			}
+
+			/** get a list of all supported image formats for the given device */
+			SupportedImageFormats getSupportedImageFormats(const MemObject memObj, const MemFlags memFlags) {
+
+				cl_uint numFound = 0;
+				cl_uint constexpr MAX = 1024;
+				cl_image_format formats[MAX];
+				clGetSupportedImageFormats(getHandle(), (cl_mem_flags) memFlags, (cl_mem_object_type) memObj , MAX, formats, &numFound);
+
+				SupportedImageFormats out;
+				for (cl_uint i = 0; i < numFound; ++i) {
+					const SupportedImageFormat fmt( (ChannelOrder) formats[i].image_channel_order, (ChannelType) formats[i].image_channel_data_type );
+					std::cout << fmt.asString() << std::endl;
+					out.push_back(fmt);
+				}
+
+				return out;
+
+			}
+
 
 			/** set-up the context */
 			void build() {

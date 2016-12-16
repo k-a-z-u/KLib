@@ -9,6 +9,7 @@
 #include "../../Exception.h"
 #include "Errors.h"
 #include "Verbose.h"
+#include "Constants.h"
 
 namespace K {
 	namespace CL {

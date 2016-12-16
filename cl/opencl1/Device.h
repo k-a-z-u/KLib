@@ -86,6 +86,7 @@ namespace K {
 				}
 			}
 
+
 		private:
 
 			/** feth some details for this device */
