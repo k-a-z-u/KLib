@@ -41,7 +41,12 @@ namespace K {
 			this->fnt = font;
 		}
 
-		void drawString(const std::string& str, const Point2i& pos) {
+		/** get the current font */
+		Font& getFont() {
+			return this->fnt;
+		}
+
+		void drawString(const std::string& str, const Point2i& pos, const bool alphaBlend = false) {
 
 			auto mix = [] (const float orig, const float letter) {
 				return orig * letter;
@@ -50,7 +55,7 @@ namespace K {
 			Point2i p = pos;
 			for (char c : str) {
 				const Glyph g = fnt.getGlyph(c);
-				drawImage(g, p, mix);
+				if (alphaBlend) {drawImage(g, p, mix);} else {drawImage(g, p);}
 				p.x += g.getWidth() * fnt.getStride();
 			}
 

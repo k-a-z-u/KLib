@@ -4,13 +4,12 @@
 #include <vector>
 
 #include "Point2.h"
-
-#include <eigen3/Eigen/Dense>
 #include "../Assertions.h"
 
-#include "../misc/gnuplot/Gnuplot.h"
-#include "../misc/gnuplot/GnuplotPlot.h"
-#include "../misc/gnuplot/GnuplotPlotElementLines.h"
+//#include <eigen3/Eigen/Dense>
+//#include "../misc/gnuplot/Gnuplot.h"
+//#include "../misc/gnuplot/GnuplotPlot.h"
+//#include "../misc/gnuplot/GnuplotPlotElementLines.h"
 
 namespace K {
 
@@ -164,7 +163,7 @@ namespace K {
 			}
 
 			/** get a point on this ellipse for the position identified by rad [0:2PI] */
-			K::Point2f getPointFor(const float rad) const {
+			Point2f getPointFor(const float rad) const {
 
 				// http://stackoverflow.com/questions/2153768/draw-ellipse-and-ellipsoid-in-matlab
 
@@ -192,7 +191,12 @@ namespace K {
 				return std::max(a,b) / std::min(a,b);
 			}
 
-			K::Point2f getNearest(const float x, const float y) const {
+			/** get a new enlarged (>1) or shrunk (<1) version of the ellipse while keeping the center as-is */
+			GeometricParams scaled(const float scaler) const {
+				return GeometricParams(center, a*scaler, b*scaler, rad);
+			}
+
+			Point2f getNearest(const float x, const float y) const {
 
 //				// determine the angle for (x,y) from the center (cx,cy)
 //				const float rad = std::atan2(y-center.y, x-center.x);
@@ -203,8 +207,8 @@ namespace K {
 				float xrad = (v1.x*v2.x) + (v1.y*v2.y);
 				xrad += rad;
 
-				K::Point2f p1 = getPointFor(xrad);
-				K::Point2f p2 = getPointFor(xrad+(float)M_PI);
+				Point2f p1 = getPointFor(xrad);
+				Point2f p2 = getPointFor(xrad+(float)M_PI);
 
 				const float d1 = p1.getDistance(Point2f(x,y));
 				const float d2 = p2.getDistance(Point2f(x,y));
@@ -295,7 +299,7 @@ namespace K {
 		};
 
 
-
+/*
 		struct DistanceEstimatorBruteForce {
 
 			std::vector<Point2f> points;
@@ -326,7 +330,7 @@ namespace K {
 			}
 
 		};
-
+*/
 
 
 

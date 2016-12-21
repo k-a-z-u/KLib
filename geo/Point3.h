@@ -1,5 +1,5 @@
-#ifndef K_GEP_POINT3_H
-#define K_GEP_POINT3_H
+#ifndef K_GEO_POINT3_H
+#define K_GEO_POINT3_H
 
 #include <cmath>
 #include <cstdint>
@@ -102,7 +102,7 @@ namespace K {
 			return Point3(std::abs(x), std::abs(y), std::abs(z));
 		}
 
-		std::string asString() const {return "(" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(y) + ")";}
+		std::string asString() const {return "(" + std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + ")";}
 
 
 		/** multiply by libEigen matrix */
@@ -123,4 +123,4 @@ namespace K {
 
 
 
-#endif // K_GEP_POINT3_H
+#endif // K_GEO_POINT3_H

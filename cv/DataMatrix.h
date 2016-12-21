@@ -206,21 +206,21 @@ namespace K {
 
 
 
-		template <typename DM> DM operator + (const DM& o) {
+		template <typename DM> DM operator + (const DM& o) const {
 			ensureEqualSize(*this, o);
 			DM copy = *((DM*)this);
 			copy += o;
 			return copy;
 		}
 
-		template <typename DM> DM operator - (const DM& o) {
+		template <typename DM> DM operator - (const DM& o) const {
 			ensureEqualSize(*this, o);
 			DM copy = *((DM*)this);
 			copy -= o;
 			return copy;
 		}
 
-		template <typename DM> DM operator * (const float val) {
+		template <typename DM> DM operator * (const float val) const {
 			DM copy = *((DM*)this);
 			copy *= val;
 			return copy;

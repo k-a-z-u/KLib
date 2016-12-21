@@ -113,6 +113,12 @@ namespace K {
 			return copy;
 		}
 
+		friend K::ImageChannel operator / (const K::ImageChannel& img, const float val) {
+			K::ImageChannel copy = img;
+			for (int i = 0; i < (int) img.data.size(); ++i) { copy.data[i] = copy.data[i] / val; }
+			return copy;
+		}
+
 		/** make all values absolute */
 		K::ImageChannel abs() const {
 			K::ImageChannel copy = *this;

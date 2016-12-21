@@ -24,11 +24,11 @@ namespace K {
 
 			}
 
-			/** inplace convert the image to black/white */
+			/** convert the image to black/white */
 			static ImageChannel get(ImageChannel& img, const float threshold = 0.5f) {
 
 				ImageChannel out(img.getWidth(), img.getHeight());
-				auto trans = [&] (const int x, const int y, const float v) { img.set( x, y, (v > threshold) ? (1.0) : (0.0) ) ;};
+				auto trans = [&] (const int x, const int y, const float v) { out.set( x, y, (v > threshold) ? (1.0) : (0.0) ) ;};
 				img.forEach(trans);
 				return out;
 

@@ -55,11 +55,14 @@ namespace K {
 			RGBx = CL_RGBx,
 			DEPTH = CL_DEPTH,
 			DEPTH_STENCIL = CL_DEPTH_STENCIL,
+
+#ifdef CL_VERSION_2_0
 			sRGB = CL_sRGB,
 			sRGBx = CL_sRGBx,
 			sRGBA = CL_sRGBA,
 			sBGRA = CL_sBGRA,
 			ABGR = CL_ABGR,
+#endif
 		};
 
 		/** convert ChannelOrder to string */
@@ -80,11 +83,13 @@ namespace K {
 				case RGBx: return "CL_RGBx";
 				case DEPTH: return "CL_DEPTH";
 				case DEPTH_STENCIL: return "CL_DEPTH_STENCIL";
+#ifdef CL_VERSION_2_0
 				case sRGB: return "CL_sRGB";
 				case sRGBx: return "CL_sRGBx";
 				case sRGBA: return "CL_sRGBA";
 				case sBGRA: return "CL_sBGRA";
 				case ABGR: return "CL_ABGR";
+#endif
 				default: throw "missing ChannelOrder format";
 			}
 		}
@@ -110,7 +115,9 @@ namespace K {
 			HALF_FLOAT = CL_HALF_FLOAT,
 			FLOAT = CL_FLOAT,
 			UNORM_INT24 = CL_UNORM_INT24,
+#ifdef CL_VERSION_2_0
 			UNORM_INT_101010_2 = CL_UNORM_INT_101010_2,
+#endif
 
 		};
 
@@ -132,7 +139,9 @@ namespace K {
 				case HALF_FLOAT: return "CL_HALF_FLOAT";
 				case FLOAT: return "CL_FLOAT";
 				case UNORM_INT24: return "CL_UNORM_INT24";
+#ifdef CL_VERSION_2_0
 				case UNORM_INT_101010_2: return "CL_UNORM_INT_101010_2";
+#endif
 				default: throw "missing ChannelType format";
 			}
 		}

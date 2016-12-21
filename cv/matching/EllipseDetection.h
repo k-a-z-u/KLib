@@ -42,8 +42,14 @@ namespace K {
 			return ransac;
 		}
 
+		/** whether to combine similar ellipses into one */
 		void setCombineSimilar(const bool combine) {
 			this->combineSimilar = combine;
+		}
+
+		/** set the sigma to use for gaussian blur before performing ellipse estimation based on blurred pixels */
+		void setBlurSigma(const float sigma) {
+			this->blurSigma = sigma;
 		}
 
 		/** perform ellipse-detection on a given black/white image with 1pixel wide,white edges */
