@@ -11,6 +11,7 @@
 #include "../filter/Dilate.h"
 
 #include "../ImageFactory.h"
+#include "../OpenCV.h"
 
 #include <omp.h>
 
@@ -58,8 +59,8 @@ namespace K {
 			const std::vector<std::vector<K::Point2i>> allSegments = getSegments(imgEdges);
 
 			// TODO
-			//const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitFix(allSegments, 300);
-			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitVar(allSegments, 75, 450);
+			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitFix(allSegments, 120); //debug(splitSegments, imgEdges);
+			//const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitVar(allSegments, 75, 450);
 
 
 			const K::ImageChannel imgEdgesBlur = getBlurred(imgEdges);
@@ -70,6 +71,7 @@ namespace K {
 			for (size_t i = 0; i < splitSegments.size(); ++i) {
 
 				// current segment
+
 				const std::vector<K::Point2i>& set = splitSegments[i];
 
 				// perform detection for the current segment
@@ -99,6 +101,19 @@ namespace K {
 
 	private:
 
+		void debug(const std::vector<std::vector<K::Point2i>>& segments, const K::ImageChannel edges) {
+
+			for (const std::vector<K::Point2i>& seg : segments) {
+				K::ImageChannel tmp = edges * 0.5;
+				for (K::Point2i pt : seg) {
+					tmp.set(pt.x, pt.y, 1.0);
+				}
+				cv::imshow("xxx", K::CV::k_to_cv(tmp));
+				cv::waitKey(10);
+			}
+
+		}
+
 
 		K::ImageChannel getBlurred(const K::ImageChannel& imgEdges) {
 
@@ -115,7 +130,7 @@ namespace K {
 				imgEdgesBlur = K::CV::Normalize::run(imgEdgesBlur);
 			}
 
-			K::ImageFactory::writePNG("/tmp/bla.png", imgEdgesBlur);
+//			K::ImageFactory::writePNG("/tmp/bla.png", imgEdgesBlur);
 
 			return imgEdgesBlur;
 
