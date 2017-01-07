@@ -3,6 +3,7 @@
 
 #include "Logger.h"
 #include <mutex>
+#include <iostream>
 
 namespace K {
 

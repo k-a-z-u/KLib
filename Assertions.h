@@ -17,6 +17,7 @@
 #define _throwAssertion(errorString)		throw K::Exception( "in:\t" + _getMethod() + "\nerror:\t" + errorString )
 
 #define _assertEqual(val1, val2, errorString)			if (val1 != val2) {_throwAssertion(errorString);}
+#define _assertNotEqual(val1, val2, errorString)		if (val1 == val2) {_throwAssertion(errorString);}
 #define _assertTrue(val, errorString)					if (!(val)) {_throwAssertion(errorString);}
 #define _assertFalse(val, errorString)					if (val) {_throwAssertion(errorString);}
 #define _assertNotNull(val, errorString)				if (!(val)) {_throwAssertion(errorString);}
@@ -28,6 +29,7 @@
 #else
 
 #define _assertEqual(val1, val2, errorString)
+#define _assertNotEqual(val1, val2, errorString)
 #define _assertTrue(val, errorString)
 #define _assertFalse(val, errorString)
 #define _assertNotNull(val, errorString)

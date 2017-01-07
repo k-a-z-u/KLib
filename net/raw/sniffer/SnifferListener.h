@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "../../../misc/Timestamp.h"
+
 namespace K {
 
 	/**
@@ -16,7 +18,7 @@ namespace K {
 		virtual ~SnifferListener() {;}
 
 		/** received a new data packet */
-		virtual void onPacket(const uint8_t* data, const uint32_t len, const struct timeval ts) = 0;
+		virtual void onPacket(const uint8_t* data, const uint32_t len, const Timestamp ts) = 0;
 
 	};
 

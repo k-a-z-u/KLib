@@ -4,24 +4,19 @@
 #include <pcap.h>
 #include <string>
 #include <iostream>
-#include <exception>
+#include <thread>
+#include <vector>
+#include <algorithm>
+
+#include "../../../Exception.h"
+#include "../../../Assertions.h"
 
 #include "SnifferListener.h"
 
-#include "../../../Exception.h"
-
-#define RING_BUFFER_SIZE	(32*1024*1024)
+#define RING_BUFFER_SIZE	(2*1024*1024)
 #define CAPTURE_BUFFER_SIZE (64*1024)
 #define USE_PROMISCIOUS_MODE	0
 #define DBG_SNIFFER
-
-//class Exception : public std::exception {
-//private:
-//	std::string str;
-//public:
-//	Exception(const std::string str) : str(str) {;}
-//	const char* what() const throw() {return str.c_str();}
-//};
 
 namespace K {
 
@@ -38,8 +33,14 @@ namespace K {
 		/** libPCAP device handle */
 		pcap_t* handle;
 
-		/** the listener to inform */
-		SnifferListener* listener;
+		/** used for stopping the background thread */
+		bool running = false;
+
+		/** background thread */
+		std::thread thread;
+
+		/** list of all attached listeners */
+		std::vector<SnifferListener*> listeners;
 
 	public:
 
@@ -47,25 +48,31 @@ namespace K {
 		Sniffer() {
 		}
 
-		/** set the listener to inform */
-		void setListener(SnifferListener* l) {
-			listener = l;
+		/** attach a new listener to the sniffer */
+		void addListener(SnifferListener* l) {
+			listeners.push_back(l);
+		}
+
+		/** detach the given listener from the sniffer */
+		void removeListener(SnifferListener* l) {
+			auto elem = std::find(listeners.begin(), listeners.end(), l);
+			listeners.erase(elem);
 		}
 
 		/** open a device (e.g. eth0) for sniffing */
-		void openDev(const std::string& dev) {
+		void openDev(const std::string& dev, const int timeout_ms = 500) {
 
 			this->dev = dev;
 
 			// open
 			handle = pcap_create(dev.c_str(), errbuf);
-			if (handle == nullptr) {throw "error while creating device";}
+			if (handle == nullptr) {throw Exception("error while creating device");}
 
 			// configure some options
 			//pcap_set_snaplen(handle, CAPTURE_BUFFER_SIZE);
 			pcap_set_buffer_size(handle, RING_BUFFER_SIZE);
 			pcap_set_promisc(handle, USE_PROMISCIOUS_MODE);
-			pcap_set_timeout(handle, 500);
+			pcap_set_timeout(handle, timeout_ms);
 
 			// open
 			int ret = pcap_activate(handle);
@@ -83,19 +90,37 @@ namespace K {
 
 		}
 
-		void run() {
+		/** start the sniffer */
+		void start() {
 
-			const u_char* pktData = 0;
-			pcap_pkthdr* header = 0;
+			_assertFalse(running, "must not call start() twice");
 
-			while(true) {
-				int res = pcap_next_ex(handle, &header, &pktData);
-				if (res > 0) { listener->onPacket(pktData, header->len, header->ts); }
-			}
+			// start the background thread
+			running = true;
+			thread = std::thread(&Sniffer::loop, this);
 
 		}
 
+		/** wait for the sniffer to terminate after stop was called */
+		void join() {
+
+			// wait for the thread to finish
+			thread.join();
+
+		}
+
+		/** stop the sniffer */
+		void stop() {
+
+			_assertTrue(running, "must not call stop() without start()");
+			running = false;
+
+		}
+
+		/** set additional filter-rules */
 		void setFilter(const std::string& rule) {
+
+			_assertFalse(running, "set filter rules before calling start()");
 
 			// sanity check
 			if (handle == nullptr) {throw Exception("open() the Sniffer before adding filters!");}
@@ -113,6 +138,27 @@ namespace K {
 
 			// cleanup
 			pcap_freecode(&pgm);
+
+		}
+
+	private:
+
+		void loop() {
+
+			const u_char* pktData = 0;
+			pcap_pkthdr* header = 0;
+
+			while(running) {
+				int res = pcap_next_ex(handle, &header, &pktData);
+				if (res > 0) {
+					for (SnifferListener* l : listeners) {
+						const uint64_t ms = (header->ts.tv_sec * 1000) + (header->ts.tv_usec / 1000);
+						const Timestamp ts = Timestamp::fromMS(ms);
+						//std::cout << "###" << ts.ms() << std::endl;
+						l->onPacket(pktData, header->len, ts);
+					}
+				}
+			}
 
 		}
 
