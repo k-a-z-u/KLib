@@ -63,7 +63,7 @@ namespace K {
 			DeviceAttrString(const std::string& name, const cl_device_info param) : DeviceAttr(name, param) {;}
 			std::string toString() const {return val;}
 			void fetch(cl_device_id id) {
-				const char buf[4096] = {};
+				char buf[4096] = {};
 				check( clGetDeviceInfo(id, param, 4096, (void*) buf, nullptr));
 				val = buf;
 			}

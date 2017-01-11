@@ -28,6 +28,10 @@ namespace K {
 			delete kernel;
 		}
 
+		inline Kernel* KernelFactory::get(const int idx) {
+			return kernels[idx];
+		}
+
 	}
 }
 

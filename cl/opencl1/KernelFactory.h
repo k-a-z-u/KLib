@@ -42,6 +42,9 @@ namespace K {
 			/** manually destroy the given kernel. do NOT use the pointer hereafter */
 			void destroy(Kernel* prg);
 
+			/** get the idx-th kernel */
+			Kernel* get(const int idx);
+
 		};
 
 	}

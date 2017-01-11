@@ -14,6 +14,8 @@
 
 #include "../../../misc/GraphViz/GraphViz.h"
 
+#include <random>
+
 using namespace K;
 
 struct KDPoint3 {
