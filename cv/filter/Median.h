@@ -10,7 +10,7 @@ namespace K {
 	namespace CV {
 
 		/** median image filter */
-		class MedianFilter {
+		class Median {
 
 		public:
 
@@ -47,7 +47,7 @@ namespace K {
 				const int y2 = img.clampY(y+ry);
 
 				// add neighborhood
-				Median<float> med;
+				K::Median<float> med;
 				for (int yy = y1; yy <= y2; ++yy) {
 					for (int xx = x1; xx <= x2; ++xx) {
 						const float val = img.get(xx,yy);

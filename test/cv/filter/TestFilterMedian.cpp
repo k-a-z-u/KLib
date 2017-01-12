@@ -15,13 +15,13 @@ TEST(FilterMedian, single) {
 			4,5,6,
 			7,8,9;
 
-	ASSERT_EQ(5, MedianFilter::get(img, 1,1));
+	ASSERT_EQ(5, K::CV::Median::get(img, 1,1));
 
-	ASSERT_EQ(6.5, MedianFilter::get(img, 1,2));
-	ASSERT_EQ(3.5, MedianFilter::get(img, 1,0));
+	ASSERT_EQ(6.5, K::CV::Median::get(img, 1,2));
+	ASSERT_EQ(3.5, K::CV::Median::get(img, 1,0));
 
-	ASSERT_EQ(4.5, MedianFilter::get(img, 0,1));
-	ASSERT_EQ(5.5, MedianFilter::get(img, 2,1));
+	ASSERT_EQ(4.5, K::CV::Median::get(img, 0,1));
+	ASSERT_EQ(5.5, K::CV::Median::get(img, 2,1));
 
 }
 
@@ -33,7 +33,7 @@ TEST(FilterMedian, whole) {
 			4,5,6,
 			7,8,9;
 
-	ImageChannel img2 = MedianFilter::apply(img);
+	ImageChannel img2 = K::CV::Median::apply(img);
 
 	ASSERT_EQ(5, img2.get(1,1));
 

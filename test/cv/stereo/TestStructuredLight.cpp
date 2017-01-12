@@ -53,7 +53,7 @@ TEST(Stereo, StructuredLight) {
 	StructuredLight sl;
 	sl.calibrate(dsCal);
 	ImageChannel depth = sl.getDepth(ds, 40.0);
-	depth = MedianFilter::apply(depth, 3, 1);
+	depth = K::CV::Median::apply(depth, 3, 1);
 
 	depth.forEachModify([&] (const int x, const int y, const float v) {
 		K::Average<float> avg;

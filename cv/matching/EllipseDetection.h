@@ -59,7 +59,7 @@ namespace K {
 			const std::vector<std::vector<K::Point2i>> allSegments = getSegments(imgEdges);
 
 			// TODO
-			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitFix(allSegments, 120); //debug(splitSegments, imgEdges);
+			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitFix(allSegments, 200); //debug(splitSegments, imgEdges);
 			//const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitVar(allSegments, 75, 450);
 
 
