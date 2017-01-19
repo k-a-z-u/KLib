@@ -5,6 +5,7 @@
 #include "../../Test.h"
 
 #include "../../../math/distribution/Normal.h"
+#include "../../../math/distribution/NormalN.h"
 
 
 namespace K {
@@ -88,6 +89,50 @@ namespace K {
 
 		ASSERT_NEAR(0.0, nd.getProbability(3-5), 0.00001);
 		ASSERT_NEAR(0.0, NormalDistributionCDF::getProbability(3, 1, 3-5), 0.00001);
+
+	}
+
+	TEST(Distribution, normalN1) {
+
+		Eigen::Vector2d val; val << 0,0;
+		Eigen::Vector2d mu; mu << 0,0;
+		Eigen::Matrix2d sigma; sigma << 1, 0, 0, 1;
+
+		// 2D distribution is the same probability as 1D*1D
+		NormalDistributionN dist(mu, sigma);
+		const double d1 = dist.getProbability(val);
+		const double d0 = std::pow(NormalDistribution::getProbability(0, 1, 0), 2);
+		ASSERT_NEAR(d0, d1, 0.0001);
+
+	}
+
+	TEST(Distribution, normalN2) {
+
+		Eigen::Vector2d val; val << 2,4;
+		Eigen::Vector2d mu; mu << 2,4;
+		Eigen::Matrix2d sigma; sigma << 1, 0, 0, 1;
+
+		// 2D distribution is the same probability as 1D*1D
+		NormalDistributionN dist(mu, sigma);
+		const double d1 = dist.getProbability(val);
+		const double d0 = std::pow(NormalDistribution::getProbability(0, 1, 0), 2);
+		ASSERT_NEAR(d0, d1, 0.0001);
+
+	}
+
+	TEST(Distribution, normalN3) {
+
+		Eigen::Vector2d val; val << 0,0;
+		Eigen::Vector2d mu; mu << 0,0;
+		Eigen::Matrix2d sigma; sigma << 2, 0, 0, 2;
+
+		// 2D distribution is the same probability as 1D*1D
+		NormalDistributionN dist(mu, sigma);
+		const double d1 = dist.getProbability(val);
+		const double d0 = std::pow(NormalDistribution::getProbability(0, 2, 0), 2);
+		ASSERT_NEAR(d0, d1, 0.0001);
+
+		int i = 0; (void) i;
 
 	}
 

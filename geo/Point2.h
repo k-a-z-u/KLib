@@ -68,9 +68,9 @@ namespace K {
 		Point2& operator /= (const Point2& right) {this->x /= right.x; this->y /= right.y; return *this;}
 
 
-		Point2& operator *= (const T right) {this->x *= right; this->y *= right; return *this;}
+		template <typename Scalar>  Point2& operator *= (const Scalar right) {this->x *= right; this->y *= right; return *this;}
 
-		Point2& operator /= (const T right) {this->x /= right; this->y /= right; return *this;}
+		template <typename Scalar>  Point2& operator /= (const Scalar right) {this->x /= right; this->y /= right; return *this;}
 
 
 		Point2 operator - () const {return Point2(-this->x, -this->y);}
@@ -85,9 +85,9 @@ namespace K {
 		Point2 operator / (const Point2& right) const {return Point2(this->x/right.x, this->y/right.y);}
 
 
-		Point2 operator * (const T right) const {return Point2((this->x*right), (this->y*right));}
+		template <typename Scalar> Point2 operator * (const Scalar right) const {return Point2((this->x*right), (this->y*right));}
 
-		Point2 operator / (const T right) const {return Point2((this->x/right), (this->y/right));}
+		template <typename Scalar> Point2 operator / (const Scalar right) const {return Point2((this->x/right), (this->y/right));}
 
 
 		bool operator == (const Point2& other) const {return (x == other.x) && (y == other.y);}
