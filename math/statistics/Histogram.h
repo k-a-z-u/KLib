@@ -19,10 +19,16 @@ namespace K {
 
 	public:
 
+		/** empty ctor */
+		Histogram() : min(0), max(0), range(0), binSize(0), numBins(0) {
+			;
+		}
+
 		/** ctor */
 		Histogram(const T min, const T max, const int numBins) : min(min), max(max), range(max-min), binSize(range/numBins), numBins(numBins) {
 			bins.resize(numBins);
 		}
+
 
 		float getMin() const {return min;}
 
@@ -127,6 +133,11 @@ namespace K {
 		/** get the data from the contained bins */
 		const T* getData() const {
 			return bins.data();
+		}
+
+		/** get the underlying data vector */
+		const std::vector<float>& getVector() const {
+			return bins;
 		}
 
 		/** send to stream */
