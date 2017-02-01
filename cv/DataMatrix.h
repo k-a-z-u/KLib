@@ -112,6 +112,13 @@ namespace K {
 		}
 
 		/** get the value at (x,y) */
+		inline const T& getConstRef(const int x, const int y) const {
+			_assertBetween(x, 0, getWidth()-1, "x out of bounds: " + std::to_string(x));
+			_assertBetween(y, 0, getHeight()-1, "y out of bounds: " + std::to_string(y));
+			return data[x + y*width];
+		}
+
+		/** get the value at (x,y) */
 		inline T& get(const int x, const int y) {
 			_assertBetween(x, 0, getWidth()-1, "x out of bounds: " + std::to_string(x));
 			_assertBetween(y, 0, getHeight()-1, "y out of bounds: " + std::to_string(y));

@@ -4,6 +4,9 @@
 #include "../../../cv/features/HOG2.h"
 #include "../../../cv/ImageFactory.h"
 #include "../../../cv/draw/Drawer.h"
+#include "../../../cv/filter/Resize.h"
+#include "../../../cv/filter/Normalize.h"
+
 
 
 using namespace K;
@@ -70,44 +73,94 @@ TEST(HOG2, facts1) {
 
 TEST(HOG2, detect) {
 
+	K::ImageChannel imgPattern = ImageFactory::readPNG(getDataFile("bolt.png"));
+	K::ImageChannel imgSearch = ImageFactory::readJPEG(getDataFile("bolt_full.jpg"));
+
+	imgSearch = K::CV::Resize::apply<K::CV::Interpolation::Bilinear>(imgSearch, 0.45);		// same size
+
+	const int bs = 8;
+	const int numBins = 9;
+	const int sw = 64;
+	const int sh = 128;
+	K::HOG2 hogPattern(imgPattern, 8, numBins);
+	K::HOG2 hogSearch(imgSearch, 8, numBins);
+
+	const HOG2::Vector featPattern = hogPattern.getFeature(sw/2,sh/2,  sw,sh);
+
+	K::ImageChannel out(imgSearch.getWidth(), imgSearch.getHeight());
+
+	const int stride = 1;
+	for (int x = sw/2; x <= imgSearch.getWidth()-sw/2; x += stride) {
+		for (int y = sh/2; y <= imgSearch.getHeight()-sh/2; y += stride) {
+
+			const HOG2::Vector featSearch = hogSearch.getFeature(x,y,  sw,sh);
+
+			const float diff = featSearch.distance(featPattern);
+			out.set(x,y,diff);
+
+		}
+	}
+
+	K::CV::Normalize::inplace(out);
+	K::ImageFactory::writePNG("/tmp/hogDiff.png", out);
+
+}
+
+TEST(HOG2, build) {
+
 	// http://scikit-image.org/docs/dev/_images/plot_hog_1.png
 
 	//K::ImageChannel img = ImageFactory::readJPEG(getDataFile("cameraman.jpg"));
 	//K::ImageChannel img = ImageFactory::readJPEG(getDataFile("astronaut.jpg"));
-	K::ImageChannel img = ImageFactory::readPNG(getDataFile("blur.png"));
+	//K::ImageChannel img = ImageFactory::readPNG(getDataFile("blur.png"));
+	K::ImageChannel img = ImageFactory::readPNG(getDataFile("bolt.png"));
 
+	const int bs = 8;
 	const int numBins = 9;
 
-	K::HOG2 hog(img, 4, numBins);
+	K::HOG2 hog(img, 8, numBins);
 
-	K::ImageChannel out(img.getWidth()*2, img.getHeight()*2);
+	// make bigger for debug-view
+	const int s = 5;
+
+	//K::ImageChannel out(img.getWidth()*s, img.getHeight()*s);
+
+	K::ImageChannel out = K::CV::Resize::apply<K::CV::Interpolation::None>(img, s);
+
 	K::Drawer d(out);
 	d.setForeground(1);
 
-	const int bs = 8;
-	for (int x = bs/2; x < img.getWidth()-bs; x += bs) {
-		for (int y = bs/2; y < img.getHeight()-bs; y += bs) {
 
-			const std::vector<float> hist = hog.getHistogram(x,y);
+	const HOG2::Vector feat = hog.getFeature(32,64,  64,128);
+	ASSERT_EQ(3780, feat.size());
+
+	for (int x = bs/2; x <= img.getWidth()-bs/2; x += bs) {
+		for (int y = bs/2; y <= img.getHeight()-bs/2; y += bs) {
+
+			HOG2::Vector hist = hog.getBlock(x,y);
+
 			if (hist.empty()) {
 				continue;
 			}
 
+			hist.normalize();
+
+			const int len = 8;
 			for (int i = 0; i < hist.size(); ++i) {
-				const float rad = i * M_PI / numBins;// + M_PI_2;
+				const float rad = i * M_PI / numBins + M_PI_2;
 				const float mag = hist[i];
-				const float x1 = x + std::cos(rad) * 6 * mag;
-				const float y1 = y + std::sin(rad) * 6 * mag;
-				d.drawLine(x*2,y*2, x1*2,y1*2);
-				const float x2 = x + std::cos(rad+M_PI) * 6 * mag;
-				const float y2 = y + std::sin(rad+M_PI) * 6 * mag;
-				d.drawLine(x*2,y*2, x2*2,y2*2);
+				const float x1 = x + std::cos(rad) * len * mag;
+				const float y1 = y + std::sin(rad) * len * mag;
+				d.drawLine(x*s,y*s, x1*s,y1*s);
+				const float x2 = x + std::cos(rad+M_PI) * len * mag;
+				const float y2 = y + std::sin(rad+M_PI) * len * mag;
+				d.drawLine(x*s,y*s, x2*s,y2*s);
 			}
 
 		}
 	}
 
-	K::ImageFactory::writePNG("/tmp/hog1.png", out);
+	K::ImageFactory::writePNG("/tmp/hog2.png", out);
 	int i = 0; (void) i;
 
 

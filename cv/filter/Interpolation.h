@@ -21,7 +21,7 @@ namespace K {
 			struct None {
 
 				static Scalar get(const ImageChannel& img, const float x, const float y) {
-					return img.get((int)std::round(x), (int)std::round(y));
+					return img.getClamped((int)std::round(x), (int)std::round(y));
 				}
 
 				static void set(ImageChannel& img, const float x, const float y, const float val) {
