@@ -11,14 +11,77 @@
 
 using namespace K;
 
-TEST(HOG2, facts1) {
+TEST(HOG2, benchmark) {
+
+	K::ImageChannel img(512, 512);
+
+	K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(16,16));
+
+}
+
+TEST(H__OG2, resultSize) {
+
+//	struct Setting {
+//		int bins;
+//		K::Size2i cellSize;
+//		K::Size2i blockSize;
+//		K::Size2i blockStride;
+//	};
+	K::ImageChannel img(64, 128);
+
+
+	{
+		K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(16,16));
+		ASSERT_EQ(3780, hog.getFeature(K::Point2i(32,64), K::Size2i(64,128), K::Size2i(8,8)).size());
+	}
+
+	{
+		K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(8,8));
+		ASSERT_EQ(1152, hog.getFeature(K::Point2i(32,64), K::Size2i(64,128), K::Size2i(8,8)).size());
+	}
+
+	{
+		K::HOG2 hog(img, K::Size2i(8,8), 8, K::Size2i(8,8));
+		ASSERT_EQ(1024, hog.getFeature(K::Point2i(32,64), K::Size2i(64,128), K::Size2i(8,8)).size());
+	}
+
+	{
+		K::HOG2 hog(img, K::Size2i(8,8), 8, K::Size2i(8,8));
+		ASSERT_EQ(15*31*8, hog.getFeature(K::Point2i(32,64), K::Size2i(64,128), K::Size2i(4,4)).size());
+	}
+
+	{
+		K::HOG2 hog(img, K::Size2i(8,8), 8, K::Size2i(8,8));
+		ASSERT_EQ((64-7)*(128-7)*8, hog.getFeature(K::Point2i(32,64), K::Size2i(64,128), K::Size2i(1,1)).size());
+	}
+
+
+
+	// 24x24 block
+	{
+		K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(24,24));
+		ASSERT_EQ((3*3*9)*(1+(64-24)/8)*(1+(128-24)/8), hog.getFeature(K::Point2i(32,64), K::Size2i(64,128), K::Size2i(8,8)).size());
+	}
+
+	// 24x24 block
+	{
+		K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(24,24));
+		ASSERT_EQ((3*3*9)*(1+(64-24)/4)*(1+(128-24)/4), hog.getFeature(K::Point2i(32,64), K::Size2i(64,128), K::Size2i(4,4)).size());
+	}
+
+}
+
+TEST(H__OG2, facts1) {
 
 	K::ImageChannel img;
 
+	const K::Size2i cellSize(8,8);
+	const K::Size2i blockSize(16,16);
 	const int numBins = 9;
-	K::HOG2 hog(img, 4, numBins);
 
-	ASSERT_EQ(20, hog.degPerBin());
+	K::HOG2 hog(img, cellSize, numBins, blockSize);
+
+	//ASSERT_EQ(20, hog.degPerBin());
 
 	ASSERT_EQ(0, hog.degToBin(0));
 	ASSERT_EQ(1, hog.degToBin(20));
@@ -26,7 +89,7 @@ TEST(HOG2, facts1) {
 	ASSERT_EQ(3, hog.degToBin(60));
 	ASSERT_EQ(3.5, hog.degToBin(70));
 
-	ASSERT_EQ(20, hog.degPerBin());
+	//ASSERT_EQ(20, hog.degPerBin());
 
 	{
 		K::HOG2::Contributions c = hog.getContribution(0.0, 1.0);
@@ -71,6 +134,7 @@ TEST(HOG2, facts1) {
 
 }
 
+/*
 TEST(HOG2, detect) {
 
 	K::ImageChannel imgPattern = ImageFactory::readPNG(getDataFile("bolt.png"));
@@ -165,5 +229,6 @@ TEST(HOG2, build) {
 
 
 }
+*/
 
 #endif

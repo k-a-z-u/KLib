@@ -10,6 +10,12 @@
 
 #include "../../math/statistics/Histogram.h"
 
+#include "../Kernel.h"
+#include "../KernelFactory.h"
+
+#include "../../geo/Size2.h"
+#include "../../geo/Point2.h"
+
 #include <omp.h>
 
 namespace K {
@@ -40,6 +46,11 @@ namespace K {
 
 	public:
 
+		enum Pattern {
+			RECTANGULAR,
+			CIRCULAR,
+		};
+
 		struct Contribution {
 			int bin;
 			float weight;
@@ -54,53 +65,79 @@ namespace K {
 		};
 
 		struct Vector : public std::vector<float> {
-			void normalize() {
-				float sum = 0;
-				for (float  f : *this) {sum += f;}
-				for (float& f : *this) {f /= sum;}
+
+			Vector() {
+				;
 			}
 
-			float distance(const Vector& o) const {
-				float sum = 0;
-				for (size_t i = 0; i < size(); ++i) {
-					const float d = (*this)[i] - o[i];
-					sum += d*d;
-				}
-				return std::sqrt(sum + 0.2);		// some sources add a constant to the sum?!
+			Vector(const size_t size) {
+				this->reserve(size);
+			}
+
+			/** ensure the vector has a length of 1 */
+			void normalize() {
+				float length = 0;
+				for (float  f : *this) {length += f*f;}
+				length += 0.2f; // this constant serves two purposes: prevent length = 0, and prevent near-0 vectors from getting too long
+				length = std::sqrt(length);
+				for (float& f : *this) {f /= length;}
 			}
 
 		};
 
 	private:
 
-		/** the width/height for each block */
-		const int blockSize;
+		/** the size for each cell [cell is the smallest element] */
+		const Size2i cellSize;
 
-		/** the width/heigh for each window */
-		const int windowSize;
-
-		/** the number of bins to use for the histogram */
+		/** the number of bins to use within each cell */
 		const int bins;
 
+		/** number of degrees per bin */
+		const float degPerBin;
 
-		/** the stride [window shift in px] that will be used during detection phase */
+		/** currently we pre-calculate everything at pixel-level [highest accuracy] */
 		const int stride = 1;
 
 
-		/** histogram for each block */
-		DataMatrix<Vector> blocks;
+		/** the size for each block [containing several cells]. must be a multiple of the cellSize */
+		const Size2i blockSize;
 
-		/** histogram for each window [multiple blocks] */
-		DataMatrix<Vector> windows;
+
+		/** number of float-values per cell */
+		const int valuesPerCell;
+
+		/** number of float-values per block */
+		const int valuesPerBlock;
+
+
+		/** downweight each block's edge pixels [more importance to the center] */
+		K::Kernel gauss;
+
+		/** histogram for each cell */
+		DataMatrix<Vector> cells;
+
+		/** histogram for each block [multiple cells] */
+		DataMatrix<Vector> blocks;
 
 
 	public:
 
 		/** ctor */
-		HOG2(const ImageChannel& img, const int blockSize = 8, const int bins = 9) :
-			blockSize(blockSize), windowSize(blockSize*2), bins(bins) {
+		HOG2(const ImageChannel& img, const Size2i cellSize = Size2i(8,8), const int bins = 9, const Size2i blockSize = Size2i(16,16)) :
+			cellSize(cellSize), bins(bins), degPerBin(180.0f / (float)bins), blockSize(blockSize),
+			valuesPerCell(bins),
+			valuesPerBlock(valuesPerCell*(blockSize.w/cellSize.w)*(blockSize.h/cellSize.h)) {
 
-			// TODO: window-size must be multiple of block size
+			if (blockSize.w != blockSize.h) {throw Exception("currently, only square blocks are supported");}
+
+			// perform some sanity checks
+			if (blockSize.w % cellSize.w != 0) {throw Exception("blockSize must be a multiple of cellSize");}
+			if (blockSize.h % cellSize.h != 0) {throw Exception("blockSize must be a multiple of cellSize");}
+
+			// TODO
+			gauss = K::KernelFactory::gauss2D(0.5, cellSize.w);
+
 			// TODO: searching stride? (currently 1px, but requires many [unnecessary] calculations)
 
 			precalc(img);
@@ -108,56 +145,71 @@ namespace K {
 		}
 
 		/** get the histogram for the block around (x,y) */
-		const Vector& getBlock(const int x, const int y) const {
+		const Vector& getCell(const int x, const int y) const {
 			if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
 			if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
-			if ((x < blockSize / 2) || (y < blockSize / 2)) {throw Exception("block position out of bounds");}
-			return blocks.getConstRef(x/stride, y/stride);
+			if ((x < cellSize.w / 2) || (y < cellSize.h / 2)) {throw Exception("block position out of bounds");}
+			return cells.getConstRef(x/stride, y/stride);
 		}
 
 		/** get the historgram for the window around (x,y) */
-		const Vector& getWindow(const int x, const int y) const {
+		const Vector& getBlock(const int x, const int y) const {
 			if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
 			if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
-			if ((x < windowSize / 2) || (y < windowSize / 2)) {throw Exception("window position out of bounds");}
-			return windows.getConstRef(x/stride, y/stride);
+			if ((x < blockSize.w / 2) || (y < blockSize.h / 2)) {throw Exception("window position out of bounds");}
+			return blocks.getConstRef(x/stride, y/stride);
 		}
 
 		/** get a feature-vector for the given location (x,y) = center and size(w,h) */
-		Vector getFeature(const int x, const int y, const int w, const int h) const {
+		Vector getFeature(const Point2i pos, const Size2i winSize, const Size2i blockStride = Size2i(8,8)) const {
+
+			const int x = pos.x;
+			const int y = pos.y;
+
+			const int w = winSize.w;
+			const int h = winSize.h;
 
 			// sanity checks
-			if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
-			if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
+			if (x % stride != 0)	{throw Exception("x-coordinate must be a multiple of the stride-size");}
+			if (y % stride != 0)	{throw Exception("y-coordinate must be a multiple of the stride-size");}
 
-			if (w % blockSize != 0) {throw Exception("w must be a multiple of the block-size");}
-			if (h % blockSize != 0) {throw Exception("h must be a multiple of the block-size");}
+			if (w % cellSize.w != 0)	{throw Exception("window-width must be a multiple of the cell-width");}
+			if (h % cellSize.h != 0)	{throw Exception("window-height must be a multiple of the cell-height");}
 
-			if (windowSize != 2*blockSize) {throw Exception("not yet supported!");}
+			if ((winSize.w - blockSize.w) % blockStride.w != 0) {throw Exception("err");}
+			if ((winSize.h - blockSize.h) % blockStride.h != 0) {throw Exception("err");}
+
+			//if (windowSize != 2*blockSize) {throw Exception("not yet supported!");}
 
 			// upper left coordinate for the area-of-interest
 			const int sx = x - w/2;
 			const int sy = y - h/2;
 
-			// first window's center
-			const int cx = sx + windowSize / 2;
-			const int cy = sy + windowSize / 2;
+			// first block's center
+			const int cx = sx + half(blockSize.w);
+			const int cy = sy + half(blockSize.h);
 
-			// number of windows to add to the featre-vector
-			const int wx = w / blockSize - 1;		// TODO: -1 works only for blockSize = windowSize * 2
-			const int wy = h / blockSize - 1;
+			// number of x and y blocks within the window
+			const int wx = ((w - blockSize.w) / blockStride.w) + 1;
+			const int wy = ((h - blockSize.h) / blockStride.h) + 1;
 
-			Vector feature;
+			const size_t reserve = wx*wy*valuesPerBlock;
+			Vector feature(reserve);
 			for (int y = 0; y < wy; ++y) {
 				for (int x = 0; x < wx; ++x) {
-					const int x1 = cx + x*blockSize;
-					const int y1 = cy + y*blockSize;
-					//std::cout << x1 << ":" << y1 << std::endl;
-					const Vector& win = getWindow(x1, y1);
-					_assertEqual(bins*4, win.size(), "invalid number of values in window detected");
-					feature.insert(feature.end(), win.begin(), win.end());
+
+					const int x1 = cx + x*blockStride.w;
+					const int y1 = cy + y*blockStride.h;
+
+					const Vector& block = getBlock(x1, y1);
+					_assertNot0(block.size(), "invalid number of values in window detected");
+
+					feature.insert(feature.end(), block.begin(), block.end());
+
 				}
 			}
+
+			_assertEqual(reserve, feature.size(), "invalid feature size");
 
 			return feature;
 
@@ -168,19 +220,14 @@ namespace K {
 
 		// FOR TESTING
 
-		/** number of degrees, each bin is wide */
-		float degPerBin() const {
-			return 180.0f / (float)bins;
-		}
-
 		/** convert from degress to bin number [float!] */
-		float degToBin(const float deg) const {
+		inline float degToBin(const float deg) const {
 
 			// sanity check
 			if (deg < 0)	{throw Exception("degrees out of bounds");}
 			if (deg > 360)	{throw Exception("degrees out of bounds");}
 
-			return deg / degPerBin();
+			return deg / degPerBin;
 
 		}
 
@@ -190,9 +237,9 @@ namespace K {
 		Contributions getContribution(const float deg, const float mag) const {
 			const float bin = degToBin(deg);
 			Contribution c1, c2;
-			c1.bin = std::floor(bin);
-			c2.bin = std::ceil(bin);
-			const float alpha = (bin - c1.bin);
+			c1.bin = (int) std::floor(bin);
+			c2.bin = (int) std::ceil(bin);
+			const float alpha = (bin - (float)c1.bin);
 			c1.bin %= bins;
 			c2.bin %= bins;
 			c1.weight = mag * (1.0f - alpha);
@@ -205,22 +252,22 @@ namespace K {
 
 		inline float atan360(const float dy, const float dx) const {
 			const float rad = std::atan2(dy, dx);
-			return (rad >= 0) ? (rad) : (2*M_PI+rad);
+			return (rad >= 0.0) ? (rad) : (2.0f*(float)M_PI+rad);
 		}
 
 		/** perform one-time calculations for fast lookups */
 		void precalc(const ImageChannel& img) {
+			buildCells(img);
 			buildBlocks(img);
-			buildWindows(img);
 		}
 
 		/**
 		 * step1)
-		 * calculate HOG blocks [usually 8x8] around each "pixel" of the input image
+		 * calculate HOG cells [usually 8x8] around each "pixel" of the input image
 		 * TODO: do not calculate for each pixel [++i] but for [i+=stride]
 		 * that will be used during the matching phase. this is less accurate but faster
 		 */
-		void buildBlocks(const ImageChannel& img) {
+		void buildCells(const ImageChannel& img) {
 
 			const int w = img.getWidth();
 			const int h = img.getHeight();
@@ -234,20 +281,24 @@ namespace K {
 			const K::ImageChannel imgY = Derivative::getYcen(img);		// [-1: 0: +1]
 
 			// buffer containing HOG-Block-Histogram for every stride-th-pixel within the image
-			blocks = DataMatrix<Vector>(nx, ny);
+			cells = DataMatrix<Vector>(nx, ny);
 
 			// list of all pixels that belong to a HOG-window (centered at 0,0)
-			const std::vector<ImagePoint> region = getBlockPoints(Pattern::RECTANGULAR);
+			const std::vector<ImagePoint> region = getCellPoints(Pattern::RECTANGULAR);
+
+			// border to skip [half block size]
+			const int w2 = half(cellSize.w);
+			const int h2 = half(cellSize.h);
 
 			// build HOG-Histogram for each block centered at (x,y) with stride-th increment
-			const int bs2 = blockSize/2;
-			for (int y = bs2; y <= h-bs2; y += stride) {
-				for (int x = bs2; x <= w-bs2; x += stride) {
+			for (int y = h2; y <= h-h2; y += stride) {
+				for (int x = w2; x <= w-w2; x += stride) {
 
+//					const std::vector<HOGGradient> gradients = getGradients(imgX,imgY, x,y, region);
+//					const Vector hist = getHistogram(gradients);
+//					cells.set(x/stride, y/stride, hist);
 
-					std::vector<HOGGradient> gradients = getGradients(imgX, imgY, x,y, region);
-					const Vector hist = getHistogram(gradients);
-					blocks.set(x/stride, y/stride, hist);
+					cells.set(x/stride, y/stride, getHistogram(imgX, imgY, x,y, region));
 
 				}
 			}
@@ -256,11 +307,11 @@ namespace K {
 
 		/**
 		 * step2)
-		 * calculate HOG windows [usually 16x16 around each "pixel" of the input image
+		 * calculate HOG blocks [=several cells] [usually 16x16 (or 2x2 cells)] around each "pixel" of the input image
 		 */
-		void buildWindows(const ImageChannel& img) {
+		void buildBlocks(const ImageChannel& img) {
 
-			if (windowSize != 2*blockSize) {throw Exception("not yet supported!");}
+			//if (windowSize != 2*blockSize) {throw Exception("not yet supported!");}
 
 			const int w = img.getWidth();
 			const int h = img.getHeight();
@@ -270,89 +321,132 @@ namespace K {
 			const int ny = img.getHeight() / stride;
 
 			// buffer containing HOG-Window-Vector for every stride-th-pixel within the image
-			windows = DataMatrix<Vector>(nx, ny);
+			blocks = DataMatrix<Vector>(nx, ny);
 
-			const int bs2 = blockSize/2;
-			const int ws2 = windowSize/2;
+			const int bsw2 = half(blockSize.w);
+			const int bsh2 = half(blockSize.h);
 
 			// build combined/normalized Histogram for each Window centered at (x,y)
-			for (int y = ws2; y <= h-ws2; y += stride) {
-				for (int x = ws2; x <= w-ws2; x += stride) {
+			for (int y = bsh2; y <= h-bsh2; y += stride) {
+				for (int x = bsw2; x <= w-bsw2; x += stride) {
 
-					// get all blocks that belong to the window
-					const Vector& v00 = getBlock(x-bs2, y-bs2);	// upper left
-					const Vector& v10 = getBlock(x+bs2, y-bs2);	// upper right
-					const Vector& v01 = getBlock(x-bs2, y+bs2); // lower left
-					const Vector& v11 = getBlock(x-bs2, y+bs2); // lower right
+					// upper left coordinate for the area-of-interest
+					const int sx = x - half(blockSize.w);
+					const int sy = y - half(blockSize.h);
 
-					// build the window
-					Vector window;
-					window.insert(window.end(), v00.begin(), v00.end());
-					window.insert(window.end(), v10.begin(), v10.end());
-					window.insert(window.end(), v01.begin(), v01.end());
-					window.insert(window.end(), v11.begin(), v11.end());
-					window.normalize();
+					// first block's center
+					const int cx = sx + half(cellSize.w);
+					const int cy = sy + half(cellSize.h);
+
+					// number of cells within each block
+					const int cellsX = blockSize.w / cellSize.w;
+					const int cellsY = blockSize.h / cellSize.h;
+
+					// build the block
+					const size_t reserve = cellsX*cellsY*bins;
+					Vector block(reserve);
+
+					//std::cout << std::endl;
+
+					// fetch each cell that belongs to the block
+					for (int y1 = 0; y1 < cellsY; ++y1) {
+						for (int x1 = 0; x1 < cellsX; ++x1) {
+
+							const int xx = cx + x1*cellSize.w;
+							const int yy = cy + y1*cellSize.h;
+
+							//std::cout << xx << ":" << yy << std::endl;
+
+							const Vector& cell = getCell(xx, yy);
+							block.insert(block.end(), cell.begin(), cell.end());
+
+						}
+					}
+
+					_assertEqual(reserve, block.size(), "invalid number of entries in block");
+
+					// normalize the window
+					block.normalize();
 
 					// store
-					windows.set(x/stride, y/stride, window);
+					blocks.set(x/stride, y/stride, block);
 
 				}
 			}
 
 		}
 
-//		void normalize(std::vector<HOGGradient>& gradients) {
+//		/** convert gradients to histogram */
+//		Vector getHistogram(const std::vector<HOGGradient>& gradients) {
 
-//			float sum = 0;
+//			Vector res(bins);
+//			res.resize(bins);
+
 //			for (const HOGGradient& hg : gradients) {
-//				sum += hg.magnitude;
+
+//				const float deg = hg.direction * 180.0f / (float)M_PI;
+//				const Contributions c = getContribution(deg, hg.magnitude);
+
+//				if (1 == 1) {
+//					res[c.c1.bin] += c.c1.weight;	// split contribution
+//					res[c.c2.bin] += c.c2.weight;
+//				} else {
+//					res[c.c1.bin] += c.c1.weight;	// both to the same bin
+//					res[c.c1.bin] += c.c2.weight;	// both to the same bin
+//				}
+
 //			}
 
-//			if (sum != 0) {
-//				for (HOGGradient& hg : gradients) {
-//					hg.magnitude /= sum;
-//				}
-//			}
+//			return res;
 
 //		}
 
-		/** convert gradients to histogram */
-		Vector getHistogram(const std::vector<HOGGradient>& gradients) {
-
-			Vector res;
-			res.resize(bins);
 
 
-			for (const HOGGradient& hg : gradients) {
-				const float deg = hg.direction * 180.0f / (float)M_PI;
-				const Contributions c = getContribution(deg, hg.magnitude);
-				if (1 == 1) {
-					res[c.c1.bin] += c.c1.weight;	// split contribution
-					res[c.c2.bin] += c.c2.weight;
-				} else {
-					res[c.c1.bin] += c.c1.weight;	// both to the same bin
-					res[c.c1.bin] += c.c2.weight;	// both to the same bin
-				}
-			}
+//		/** get all individual gradients at the given location */
+//		std::vector<HOGGradient> getGradients(const K::ImageChannel& imgX, const K::ImageChannel& imgY, const int x, const int y, const std::vector<ImagePoint>& region) const {
 
-			return res;
+//			std::vector<HOGGradient> gradients(bins);
 
-//			for (const HOGGradient& hg : gradients) {
-//				hist.addInterpolate(hg.direction, hg.magnitude);
+//			for (size_t i = 0; i < region.size(); ++i) {
+
+//				const ImagePoint p = region[i];
+
+//				// point within the image
+//				const int x1 = x+p.x;
+//				const int y1 = y+p.y;
+
+//				// clamp
+//				if (x1 < 0 || x1 >= imgX.getWidth())	{continue;}
+//				if (y1 < 0 || y1 >= imgX.getHeight())	{continue;}
+
+//				// calculate the centered derivatives
+//				const auto dx = imgX.get(x1, y1);	// gradient's magnitude in x direction
+//				const auto dy = imgY.get(x1, y1);	// gradient's magnitude in y direction
+
+//				// calculate magnitude and direction of the gradient
+//				HOGGradient grad;
+//				grad.magnitude = std::sqrt( (dx*dx) + (dy*dy) );		// gradient's overall magnitude
+//				grad.direction = atan360(dy, dx);						// the gradient's direction
+
+//				gradients.push_back(grad);
+
 //			}
 
-//			// get
-//			return hist.getVector();
+//			return gradients;
 
-		}
+//		}
 
 
 
 		/** get all individual gradients at the given location */
-		std::vector<HOGGradient> getGradients(const K::ImageChannel& imgX, const K::ImageChannel& imgY, const int x, const int y, const std::vector<ImagePoint>& region) const {
+		Vector getHistogram(const K::ImageChannel& imgX, const K::ImageChannel& imgY, const int x, const int y, const std::vector<ImagePoint>& region) const {
 
-			std::vector<HOGGradient> gradients;
+			// output histogram
+			Vector res;
+			res.resize(bins);
 
+			// process each pixel
 			for (size_t i = 0; i < region.size(); ++i) {
 
 				const ImagePoint p = region[i];
@@ -362,50 +456,61 @@ namespace K {
 				const int y1 = y+p.y;
 
 				// clamp
-				if (x1 < 0 || x1 >= imgX.getWidth()) {continue;}
-				if (y1 < 0 || y1 >= imgX.getHeight()) {continue;}
+				if (x1 < 0 || x1 >= imgX.getWidth())	{continue;}
+				if (y1 < 0 || y1 >= imgX.getHeight())	{continue;}
 
 				// calculate the centered derivatives
 				const auto dx = imgX.get(x1, y1);	// gradient's magnitude in x direction
 				const auto dy = imgY.get(x1, y1);	// gradient's magnitude in y direction
 
 				// calculate magnitude and direction of the gradient
-				HOGGradient grad;
-				grad.magnitude = std::sqrt( (dx*dx) + (dy*dy) );		// gradient's overall magnitude
-				grad.direction = atan360(dy, dx);						// the gradient's direction
+				const float mag = std::sqrt( (dx*dx) + (dy*dy) );		// gradient's overall magnitude
+				const float dir = atan360(dy, dx);						// the gradient's direction in radians
+				const float deg = dir * 180.0f / (float)M_PI;			// in degree
 
-				gradients.push_back(grad);
+				const Contributions c = getContribution(deg, mag);
+
+				if (1 == 1) {
+					res[c.c1.bin] += c.c1.weight;	// split contribution
+					res[c.c2.bin] += c.c2.weight;
+				} else {
+					res[c.c1.bin] += c.c1.weight;	// both to the same bin
+					res[c.c1.bin] += c.c2.weight;	// both to the same bin
+				}
 
 			}
 
-			return gradients;
+			// done
+			return res;
 
 		}
 
-		enum Pattern {
-			RECTANGULAR,
-			CIRCULAR,
-		};
 
-		/** a list of all pixels within a unit-block centered at 0,0 */
-		std::vector<ImagePoint> getBlockPoints(const Pattern p) const {
+		/** a list of all pixels within a cell. (0,0) = cell-center */
+		std::vector<ImagePoint> getCellPoints(const Pattern p) const {
 
 			std::vector<ImagePoint> region;
 
 			ImagePoint dst(0,0);
 			const ImagePoint center(0,0);
-			const int size = blockSize/2;
+
+			if (p == CIRCULAR && cellSize.w != cellSize.h) {
+				throw Exception("CIRCULAR pattern requires cellSize.w == cellSize.h");
+			}
+
+			const int w2 = half(cellSize.w);
+			const int h2 = half(cellSize.w);
 
 			// process a square region...
-			for (dst.x = -size; dst.x < +size; ++dst.x) {
-				for (dst.y = -size; dst.y < +size; ++dst.y) {
+			for (dst.y = -h2; dst.y < +h2; ++dst.y) {
+				for (dst.x = -w2; dst.x < +w2; ++dst.x) {
 
 					if (p == RECTANGULAR) {
 						region.push_back(dst);
 					} else if (p == CIRCULAR) {
 						// ...but use only points within a radius around the center
 						const float d = center.distance(dst);
-						if (d <= size) {region.push_back(dst);}
+						if (d <= cellSize.w) {region.push_back(dst);}
 					}
 
 				}
@@ -414,6 +519,8 @@ namespace K {
 			return region;
 
 		}
+
+		static inline int half(const int i) {return i/2;}
 
 
 	};
