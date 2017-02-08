@@ -16,7 +16,6 @@
 #include "../../geo/Size2.h"
 #include "../../geo/Point2.h"
 
-#include <omp.h>
 
 namespace K {
 
@@ -44,11 +43,21 @@ namespace K {
 			float direction;		// in radians [0:2pi] 0 = left, pi/2 = up
 		};
 
+
+
+		// get half the given value. rounded down!
+		static inline int half(const int i) {return i/2;}
+
 	public:
 
 		enum Pattern {
 			RECTANGULAR,
 			CIRCULAR,
+		};
+
+		struct CellPoint : public ImagePoint {
+			float impact;			// from gaussian, to downweight edge-pixels
+			CellPoint(const int x, const int y, const float impact) : ImagePoint(x,y), impact(impact) {;}
 		};
 
 		struct Contribution {
@@ -62,6 +71,49 @@ namespace K {
 			Contribution c1;
 			Contribution c2;
 			Contributions(const Contribution c1, const Contribution c2) : c1(c1), c2(c2) {;}
+		};
+
+		/** helper class to describe the feature-area based on the HOG settings */
+		struct Area {
+
+			// upper left coordinate for the area-of-interest
+			int sx;
+			int sy;
+
+			// first [upper left] block's center
+			int cx;
+			int cy;
+
+			// number of x and y blocks within the window
+			int wx;
+			int wy;
+
+			const Size2i blockStride;
+
+			Area(const Point2i pos, const Size2i blockSize, const Size2i winSize, const Size2i blockStride) : blockStride(blockStride) {
+
+				// upper left coordinate for the area-of-interest
+				sx = pos.x - half(winSize.w);
+				sy = pos.y - half(winSize.h);
+
+				// first [upper left] block's center
+				cx = sx + half(blockSize.w);
+				cy = sy + half(blockSize.h);
+
+				// number of x and y blocks within the window
+				wx = ((winSize.w - blockSize.w) / blockStride.w) + 1;
+				wy = ((winSize.h - blockSize.h) / blockStride.h) + 1;
+
+			}
+
+			/** get the center for the nx-th/ny-th block */
+			Point2i getBlockCenter(const int nx, const int ny) const {
+				return Point2i(
+					cx + nx*blockStride.w,
+					cy + ny*blockStride.h
+				);
+			}
+
 		};
 
 		struct Vector : public std::vector<float> {
@@ -81,6 +133,21 @@ namespace K {
 				length += 0.2f; // this constant serves two purposes: prevent length = 0, and prevent near-0 vectors from getting too long
 				length = std::sqrt(length);
 				for (float& f : *this) {f /= length;}
+			}
+
+			float length() const {
+				float length = 0;
+				for (float  f : *this) {length += f*f;}
+				return std::sqrt(length);
+			}
+
+			float distance(const Vector& o) const {
+				float sum = 0;
+				for (size_t i = 0; i < size(); ++i) {
+					const float d = (*this)[i] - o[i];
+					sum += d*d;
+				}
+				return std::sqrt(sum);
 			}
 
 		};
@@ -109,6 +176,10 @@ namespace K {
 
 		/** number of float-values per block */
 		const int valuesPerBlock;
+
+
+		/** sigma to (slightly) downweight edge pixels */
+		const float sigma = 5.0f;
 
 
 		/** downweight each block's edge pixels [more importance to the center] */
@@ -144,7 +215,7 @@ namespace K {
 
 		}
 
-		/** get the histogram for the block around (x,y) */
+		/** get the histogram for the cell around [=centered at] (x,y) */
 		const Vector& getCell(const int x, const int y) const {
 			if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
 			if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
@@ -152,13 +223,15 @@ namespace K {
 			return cells.getConstRef(x/stride, y/stride);
 		}
 
-		/** get the historgram for the window around (x,y) */
+		/** get the historgram for the block around [=centered at] (x,y) */
 		const Vector& getBlock(const int x, const int y) const {
 			if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
 			if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
 			if ((x < blockSize.w / 2) || (y < blockSize.h / 2)) {throw Exception("window position out of bounds");}
 			return blocks.getConstRef(x/stride, y/stride);
 		}
+
+
 
 		/** get a feature-vector for the given location (x,y) = center and size(w,h) */
 		Vector getFeature(const Point2i pos, const Size2i winSize, const Size2i blockStride = Size2i(8,8)) const {
@@ -181,30 +254,26 @@ namespace K {
 
 			//if (windowSize != 2*blockSize) {throw Exception("not yet supported!");}
 
-			// upper left coordinate for the area-of-interest
-			const int sx = x - w/2;
-			const int sy = y - h/2;
+			const Area a = Area(pos, blockSize, winSize, blockStride);
 
-			// first block's center
-			const int cx = sx + half(blockSize.w);
-			const int cy = sy + half(blockSize.h);
+			const size_t reserve = a.wx*a.wy*valuesPerBlock;
 
-			// number of x and y blocks within the window
-			const int wx = ((w - blockSize.w) / blockStride.w) + 1;
-			const int wy = ((h - blockSize.h) / blockStride.h) + 1;
+			//Vector feature(reserve);
+			Vector feature;
+			feature.resize(reserve);
+			float* data = feature.data();
 
-			const size_t reserve = wx*wy*valuesPerBlock;
-			Vector feature(reserve);
-			for (int y = 0; y < wy; ++y) {
-				for (int x = 0; x < wx; ++x) {
+			for (int y = 0; y < a.wy; ++y) {
+				for (int x = 0; x < a.wx; ++x) {
 
-					const int x1 = cx + x*blockStride.w;
-					const int y1 = cy + y*blockStride.h;
+					const Point2i pt = a.getBlockCenter(x, y);
 
-					const Vector& block = getBlock(x1, y1);
+					const Vector& block = getBlock(pt.x, pt.y);
 					_assertNot0(block.size(), "invalid number of values in window detected");
 
-					feature.insert(feature.end(), block.begin(), block.end());
+					//feature.insert(feature.end(), block.begin(), block.end());
+					memcpy(data, block.data(), block.size()*sizeof(float));
+					data += block.size();
 
 				}
 			}
@@ -284,7 +353,7 @@ namespace K {
 			cells = DataMatrix<Vector>(nx, ny);
 
 			// list of all pixels that belong to a HOG-window (centered at 0,0)
-			const std::vector<ImagePoint> region = getCellPoints(Pattern::RECTANGULAR);
+			const std::vector<CellPoint> region = getCellPoints(Pattern::RECTANGULAR);
 
 			// border to skip [half block size]
 			const int w2 = half(cellSize.w);
@@ -330,6 +399,8 @@ namespace K {
 			for (int y = bsh2; y <= h-bsh2; y += stride) {
 				for (int x = bsw2; x <= w-bsw2; x += stride) {
 
+
+
 					// upper left coordinate for the area-of-interest
 					const int sx = x - half(blockSize.w);
 					const int sy = y - half(blockSize.h);
@@ -344,7 +415,14 @@ namespace K {
 
 					// build the block
 					const size_t reserve = cellsX*cellsY*bins;
-					Vector block(reserve);
+					//Vector block(reserve);
+					Vector block;
+					block.resize(reserve);
+					float* data = block.data();
+
+//					if (x == 5 && y == 4) {
+//						int i = 0; (void) i;
+//					}
 
 					//std::cout << std::endl;
 
@@ -355,10 +433,10 @@ namespace K {
 							const int xx = cx + x1*cellSize.w;
 							const int yy = cy + y1*cellSize.h;
 
-							//std::cout << xx << ":" << yy << std::endl;
-
 							const Vector& cell = getCell(xx, yy);
-							block.insert(block.end(), cell.begin(), cell.end());
+							//block.insert(block.end(), cell.begin(), cell.end());
+							memcpy(data, cell.data(), cell.size()*sizeof(float));
+							data += cell.size();
 
 						}
 					}
@@ -440,7 +518,7 @@ namespace K {
 
 
 		/** get all individual gradients at the given location */
-		Vector getHistogram(const K::ImageChannel& imgX, const K::ImageChannel& imgY, const int x, const int y, const std::vector<ImagePoint>& region) const {
+		Vector getHistogram(const K::ImageChannel& imgX, const K::ImageChannel& imgY, const int x, const int y, const std::vector<CellPoint>& region) const {
 
 			// output histogram
 			Vector res;
@@ -449,7 +527,7 @@ namespace K {
 			// process each pixel
 			for (size_t i = 0; i < region.size(); ++i) {
 
-				const ImagePoint p = region[i];
+				const CellPoint p = region[i];
 
 				// point within the image
 				const int x1 = x+p.x;
@@ -468,7 +546,9 @@ namespace K {
 				const float dir = atan360(dy, dx);						// the gradient's direction in radians
 				const float deg = dir * 180.0f / (float)M_PI;			// in degree
 
-				const Contributions c = getContribution(deg, mag);
+				// calculate bin-contribution [max 2 bins]
+				// hereby add the impact factor based on the blur-window
+				const Contributions c = getContribution(deg, mag * p.impact);
 
 				if (1 == 1) {
 					res[c.c1.bin] += c.c1.weight;	// split contribution
@@ -486,25 +566,41 @@ namespace K {
 		}
 
 
+	public:
+
 		/** a list of all pixels within a cell. (0,0) = cell-center */
-		std::vector<ImagePoint> getCellPoints(const Pattern p) const {
+		std::vector<CellPoint> getCellPoints(const Pattern p) const {
 
-			std::vector<ImagePoint> region;
+			std::vector<CellPoint> region;
 
-			ImagePoint dst(0,0);
+			CellPoint dst(0,0,0);
 			const ImagePoint center(0,0);
 
 			if (p == CIRCULAR && cellSize.w != cellSize.h) {
 				throw Exception("CIRCULAR pattern requires cellSize.w == cellSize.h");
 			}
 
-			const int w2 = half(cellSize.w);
-			const int h2 = half(cellSize.w);
+			const int sw2 = half(cellSize.w);
+			const int sh2 = half(cellSize.w);
+
+			// if the cell-size is odd, the end is included -> +1
+			const int ew2 = sw2 + ( (cellSize.w % 2 == 1) ? 1 : 0);
+			const int eh2 = sh2 + ( (cellSize.h % 2 == 1) ? 1 : 0);
+
 
 			// process a square region...
-			for (dst.y = -h2; dst.y < +h2; ++dst.y) {
-				for (dst.x = -w2; dst.x < +w2; ++dst.x) {
+			for (dst.y = -sh2; dst.y < +eh2; ++dst.y) {
+				for (dst.x = -sw2; dst.x < +ew2; ++dst.x) {
 
+
+					// impact factor based on sigma and distance from center
+					// ensure the impact pattern is symmetric, also for even block sizes [no real center]
+					const float dx = (float)dst.x + ( (cellSize.w % 2 == 0) ? 0.5f : 0.0f );
+					const float dy = (float)dst.y + ( (cellSize.h % 2 == 0) ? 0.5f : 0.0f );
+					dst.impact = std::exp( - ((dx*dx) + (dy*dy)) / (2.0f*sigma*sigma) );
+
+
+					// pattern?
 					if (p == RECTANGULAR) {
 						region.push_back(dst);
 					} else if (p == CIRCULAR) {
@@ -513,15 +609,16 @@ namespace K {
 						if (d <= cellSize.w) {region.push_back(dst);}
 					}
 
+					std::cout << dst.x << "," << dst.y << ":" << dst.impact << "\t";
+
 				}
+				std::cout << std::endl;
+
 			}
 
 			return region;
 
 		}
-
-		static inline int half(const int i) {return i/2;}
-
 
 	};
 
