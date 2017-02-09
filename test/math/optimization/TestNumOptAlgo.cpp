@@ -249,7 +249,7 @@ namespace K {
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<double, 2> opt;
+		NumOptAlgoDownhillSimplex<double> opt(2);
 		opt.calculateOptimum(TNOAfunc1, data);
 
 		ASSERT_NEAR(0, data[0], 0.1);
@@ -263,7 +263,7 @@ namespace K {
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<double, 2> opt;
+		NumOptAlgoDownhillSimplex<double> opt(2);
 		opt.setNumRestarts(2);
 		opt.setMaxIterations(100);
 		opt.calculateOptimum(TNOAfunc2, data);
@@ -280,7 +280,7 @@ namespace K {
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<double, 2> opt;
+		NumOptAlgoDownhillSimplex<double> opt(2);
 		opt.calculateOptimum(TNOAfunc3, data);
 
 		ASSERT_NEAR(-10, data[0], 0.1);
@@ -294,11 +294,16 @@ namespace K {
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<double, 2> opt;
+		NumOptAlgoDownhillSimplex<double> opt(2);
 		opt.calculateOptimum(TNOAfuncHimmelblau, data);
 
-		ASSERT_NEAR(3.584428, data[0], 0.01);
-		ASSERT_NEAR(-1.848126, data[1], 0.01);
+		// solution 1
+		ASSERT_NEAR(3, data[0], 0.01);
+		ASSERT_NEAR(2, data[1], 0.01);
+
+//		// solution 4
+//		ASSERT_NEAR(3.584428, data[0], 0.01);
+//		ASSERT_NEAR(-1.848126, data[1], 0.01);
 
 	}
 
@@ -308,7 +313,7 @@ namespace K {
 		data[0] = 0;
 		data[1] = 0;
 
-		NumOptAlgoDownhillSimplex<double, 2> opt;
+		NumOptAlgoDownhillSimplex<double> opt(2);
 		opt.setNumRestarts(2);
 		opt.setMaxIterations(100);
 		opt.calculateOptimum(TNOAfuncRosenbrock, data);

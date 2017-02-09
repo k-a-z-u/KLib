@@ -3,7 +3,7 @@
 
 
 #include "NumOptAlgo.h"
-#include "NumOptVector.h"
+//#include "NumOptVector.h"
 
 #include "../statistics/Statistics.h"
 
@@ -186,20 +186,23 @@ namespace K {
 				}
 
 				// create the new population by crossing and mutating the current one
-				while (childIdx < populationSize) {
+
+				//while (childIdx < populationSize) {
+				#pragma omp parallel for
+				for ( int _childIdx = childIdx; _childIdx < populationSize; ++_childIdx) {
 
 					// find two parents
 					const int p1 = randomParent();		// the new childs 1st parent
 					const int p2 = randomParent();		// the new childs 2nd parent
 
 					// evoluation: crossing and mutation
-					crossAndMutate(currentPopulation[p1].genes, currentPopulation[p2].genes, nextPopulation[childIdx].genes);
+					crossAndMutate(currentPopulation[p1].genes, currentPopulation[p2].genes, nextPopulation[_childIdx].genes);
 
 					// calculate the new child's fitness
-					nextPopulation[childIdx].fitness = getFitness(func, nextPopulation[childIdx].genes);
+					nextPopulation[_childIdx].fitness = getFitness(func, nextPopulation[_childIdx].genes);
 
 					// next
-					++childIdx;
+					//++childIdx;
 
 				}
 
@@ -271,7 +274,7 @@ namespace K {
 		}
 
 		/** calculate the fitness for the given genes */
-		template <typename Func, typename Params> inline float getFitness(Func& func, const Params& genes) {
+		template <typename Func, typename Params> static inline float getFitness(Func& func, const Params& genes) {
 			return - (func(genes)); // negative value to convert from "error" to "fitness"
 		}
 

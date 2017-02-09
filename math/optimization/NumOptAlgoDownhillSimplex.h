@@ -25,10 +25,11 @@ namespace K {
 	 *
 	 * http://www.scholarpedia.org/article/Nelder-Mead_algorithm
 	 */
-	template <typename Scalar, int numArgs> class NumOptAlgoDownhillSimplex {
+	template <typename Scalar> class NumOptAlgoDownhillSimplex {
 
+		unsigned int numArgs;
 
-	using Data = NumOptDataVector<Scalar>;
+		using Data = NumOptDataVector<Scalar>;
 
 	public:
 
@@ -42,7 +43,7 @@ namespace K {
 			Scalar value;
 
 			/** ctor */
-			SimplexEntry() : param(numArgs), value(0) {;}
+			SimplexEntry(const int numArgs) : param(numArgs), value(0) {;}
 
 		};
 
@@ -54,8 +55,8 @@ namespace K {
 		 * @param gamma expansion
 		 * @param sigma reduction
 		 */
-		NumOptAlgoDownhillSimplex(Scalar abortAt = 0.001, Scalar alpha = 1.0, Scalar beta = 0.5, Scalar gamma = 2.0, Scalar sigma = 0.5) :
-			abortAt(abortAt), alpha(alpha), beta(beta), gamma(gamma), sigma(sigma), maxIterations(100), numRestarts(0) {
+		NumOptAlgoDownhillSimplex(unsigned int numArgs, Scalar abortAt = 0.001, Scalar alpha = 1.0, Scalar beta = 0.5, Scalar gamma = 2.0, Scalar sigma = 0.5) :
+			numArgs(numArgs), abortAt(abortAt), alpha(alpha), beta(beta), gamma(gamma), sigma(sigma), maxIterations(100), numRestarts(0) {
 			;
 		}
 
@@ -74,8 +75,11 @@ namespace K {
 			const int IDX_2ND_WORST = numArgs - 1;
 
 			// we need n+1 parameter-sets during optimization
-			SimplexEntry set[numArgs+1];
-
+			//SimplexEntry set[numArgs+1] = {SimplexEntry(numArgs);};
+			std::vector<SimplexEntry> set;
+			for (unsigned int i = 0; i < numArgs+1; ++i) {
+				set.push_back(SimplexEntry(numArgs));
+			}
 
 			// how often to refine the solution
 			for (unsigned int run = 0; run <= numRestarts; ++run) {
@@ -99,16 +103,22 @@ namespace K {
 
 				}
 
+
+
 				// the maximum number of iterations to use
 				for (unsigned int iter = 0; iter < maxIterations; ++iter) {
 
 					// calculate f(param) = y for each of the n+1 entries
 					for (unsigned int i = 0; i < numArgs+1; ++i) {
 						set[i].value = func(set[i].param.constPtr());
+						//std::cout << i << ": " << set[i].param[0] << " " << set[i].param[1] << " -> " << set[i].value << std::endl;
 					}
+					//std:: cout << std::endl;
 
-					// now sort the n+1 entries by their result (= function value) smallest error comes first
-					std::sort(std::begin(set), std::end(set), lambda);
+					// now sort the n+1 entries by their result (= function value) smallest value [error] comes first
+					//std::sort(std::begin(set), std::end(set), lambda);
+					std::sort(set.begin(), set.end(), lambda);
+					//std::sort(&set[0], &set[numArgs], lambda);
 
 					// inform callback (if any) about the current optimum
 					if (callback) {

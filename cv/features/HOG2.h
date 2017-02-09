@@ -217,16 +217,16 @@ namespace K {
 
 		/** get the histogram for the cell around [=centered at] (x,y) */
 		const Vector& getCell(const int x, const int y) const {
-			if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
-			if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
+			//if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
+			//if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
 			if ((x < cellSize.w / 2) || (y < cellSize.h / 2)) {throw Exception("block position out of bounds");}
 			return cells.getConstRef(x/stride, y/stride);
 		}
 
 		/** get the historgram for the block around [=centered at] (x,y) */
 		const Vector& getBlock(const int x, const int y) const {
-			if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
-			if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
+			//if (x % stride != 0) {throw Exception("x-coordinate must be a multiple of the stride-size");}
+			//if (y % stride != 0) {throw Exception("y-coordinate must be a multiple of the stride-size");}
 			if ((x < blockSize.w / 2) || (y < blockSize.h / 2)) {throw Exception("window position out of bounds");}
 			return blocks.getConstRef(x/stride, y/stride);
 		}
@@ -236,15 +236,15 @@ namespace K {
 		/** get a feature-vector for the given location (x,y) = center and size(w,h) */
 		Vector getFeature(const Point2i pos, const Size2i winSize, const Size2i blockStride = Size2i(8,8)) const {
 
-			const int x = pos.x;
-			const int y = pos.y;
+			//const int x = pos.x;
+			//const int y = pos.y;
 
 			const int w = winSize.w;
 			const int h = winSize.h;
 
 			// sanity checks
-			if (x % stride != 0)	{throw Exception("x-coordinate must be a multiple of the stride-size");}
-			if (y % stride != 0)	{throw Exception("y-coordinate must be a multiple of the stride-size");}
+			//if (x % stride != 0)	{throw Exception("x-coordinate must be a multiple of the stride-size");}
+			//if (y % stride != 0)	{throw Exception("y-coordinate must be a multiple of the stride-size");}
 
 			if (w % cellSize.w != 0)	{throw Exception("window-width must be a multiple of the cell-width");}
 			if (h % cellSize.h != 0)	{throw Exception("window-height must be a multiple of the cell-height");}
@@ -361,15 +361,12 @@ namespace K {
 
 			// build HOG-Histogram for each block centered at (x,y) with stride-th increment
 			for (int y = h2; y <= h-h2; y += stride) {
+
+				#pragma omp parallel for
 				for (int x = w2; x <= w-w2; x += stride) {
-
-//					const std::vector<HOGGradient> gradients = getGradients(imgX,imgY, x,y, region);
-//					const Vector hist = getHistogram(gradients);
-//					cells.set(x/stride, y/stride, hist);
-
 					cells.set(x/stride, y/stride, getHistogram(imgX, imgY, x,y, region));
-
 				}
+
 			}
 
 		}
@@ -397,9 +394,9 @@ namespace K {
 
 			// build combined/normalized Histogram for each Window centered at (x,y)
 			for (int y = bsh2; y <= h-bsh2; y += stride) {
+
+				#pragma omp parallel for
 				for (int x = bsw2; x <= w-bsw2; x += stride) {
-
-
 
 					// upper left coordinate for the area-of-interest
 					const int sx = x - half(blockSize.w);
@@ -419,12 +416,6 @@ namespace K {
 					Vector block;
 					block.resize(reserve);
 					float* data = block.data();
-
-//					if (x == 5 && y == 4) {
-//						int i = 0; (void) i;
-//					}
-
-					//std::cout << std::endl;
 
 					// fetch each cell that belongs to the block
 					for (int y1 = 0; y1 < cellsY; ++y1) {

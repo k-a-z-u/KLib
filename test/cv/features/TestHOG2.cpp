@@ -11,15 +11,52 @@
 
 using namespace K;
 
-TEST(HOG2, benchmark) {
+TEST(HHOG2, benchmark_build1) {
 
-	K::ImageChannel img(512, 512);
+	K::ImageChannel img(768, 768);
 
 	K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(16,16));
 
 }
 
-TEST(H__OG2, resultSize) {
+TEST(HHOG2, benchmark_build2) {
+
+	K::ImageChannel img(768, 768);
+
+	K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(16,16));
+
+}
+
+TEST(HHOG2, benchmark_build3) {
+
+	K::ImageChannel img(768, 768);
+
+	K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(16,16));
+
+}
+
+
+TEST(xHHOG2, benchmark_build_get) {
+
+	K::ImageChannel img(512, 512);
+
+	K::HOG2 hog(img, K::Size2i(8,8), 9, K::Size2i(16,16));
+
+	const K::Size2i winSize(32, 32);
+	const K::Size2i blocKStride(8,8);
+
+	int dx = 32/2;
+	int dy = 32/2;
+
+	for (int y = 0+dy; y < 512-dy; ++y) {
+		for (int x = 0+dx; x < 512-dx; ++x) {
+			hog.getFeature(K::Point2i(x,y), winSize, blocKStride);
+		}
+	}
+
+}
+
+TEST(HOG2, resultSize) {
 
 //	struct Setting {
 //		int bins;
@@ -256,7 +293,7 @@ static int numNonZero(const K::HOG2::Vector& v) {
 	return cnt;
 }
 
-TEST(HxOG2, blackWhiteBlockHorizontal) {
+TEST(HOG2, blackWhiteBlockHorizontal) {
 
 	K::ImageChannel img = ImageFactory::readPNG(getDataFile("bw_h.png"));
 
