@@ -17,10 +17,14 @@ namespace K {
 		 * returns a newly created image.
 		 */
 		static ImageChannel run(const ImageChannel& src, const Kernel& k, const bool normalize = true) {
+			K::ImageChannel dst(src.getWidth(), src.getHeight());
+			convolve(src, dst, k, normalize);
+			return dst;
+		}
 
-			ImageChannel dst(src.getWidth(), src.getHeight());
+		template <typename T> static void convolve(const T& src, T& dst, const Kernel& k, const bool normalize = true) {
 
-			#pragma omp parallel for
+            #pragma omp parallel for
 			for (int y = 0; y < src.getHeight(); ++y) {
 				for (int x = 0; x < src.getWidth(); ++x) {
 
@@ -56,8 +60,6 @@ namespace K {
 
 				}
 			}
-
-			return dst;
 
 		}
 

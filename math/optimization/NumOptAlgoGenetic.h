@@ -5,7 +5,7 @@
 #include "NumOptAlgo.h"
 //#include "NumOptVector.h"
 
-#include "../statistics/Statistics.h"
+//#include "../statistics/Statistics.h"
 
 #include <vector>
 #include <random>
@@ -62,7 +62,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		NumOptAlgoGenetic(const int numParams) : numParams(numParams) {
+		NumOptAlgoGenetic(const unsigned int numParams) : numParams(numParams) {
 			_assertEqual(1, gen.min(), "random number generator's minimum is invalid");
 			gen.seed(1234);
 			setValRange(1.0);

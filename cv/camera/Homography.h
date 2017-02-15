@@ -42,6 +42,10 @@ namespace K {
 			A.resize(0, Eigen::NoChange);
 		}
 
+		const Eigen::Matrix<Scalar, 3, 3>& getMatrix() const {
+			return mat;
+		}
+
 
 		/** add a known correspondence from world(x,y,0) to img(x,y) */
 		void addCorrespondence(const float imgX, const float imgY, const float worldX, const float worldY) {

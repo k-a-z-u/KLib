@@ -101,6 +101,7 @@ namespace K {
 
 			/** get the idx-th device within this platform */
 			Device* getDevice(const int idx) const {
+				if (idx >= devices.size()) {throw Exception("device index out of bounds");}
 				return devices[idx];
 			}
 

@@ -55,6 +55,7 @@ namespace K {
 
 			/** get the idx-th available platform */
 			Platform* getPlatform(const int idx) const {
+				if (idx >= platforms.size()) {throw Exception("platform index out of bounds");}
 				return platforms[idx];
 			}
 
