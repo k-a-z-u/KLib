@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <random>
+#include "../../Assertions.h"
 
 namespace K {
 
@@ -10,9 +11,9 @@ namespace K {
 
 	private:
 
-		const double mu;
-		const double sigma;
-		const double _a;
+		double mu;
+		double sigma;
+		double _a;
 
 		std::random_device rd;
 		std::mt19937 gen;
@@ -24,8 +25,18 @@ namespace K {
 		NormalDistribution(const double mu, const double sigma) :
 			mu(mu), sigma(sigma), _a(1.0 / (sigma * std::sqrt(2.0 * M_PI))), gen(rd()), dist(mu,sigma) {
 
+			_assertNotNAN(mu, "mu is NaN");
+			_assertNotNAN(sigma, "sigma is NaN");
+
 		}
 
+		/** copy ctor */
+		NormalDistribution(const NormalDistribution& nd) : mu(nd.mu), sigma(nd.sigma), _a(nd._a) {
+
+			_assertNotNAN(mu, "mu is NaN");
+			_assertNotNAN(sigma, "sigma is NaN");
+
+		}
 
 		/** get probability for the given value */
 		double getProbability(const double val) const {

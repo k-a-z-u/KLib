@@ -37,7 +37,7 @@ namespace K {
 			}
 
 
-			template <typename Interpolator> static K::ImageChannel apply(ImageChannel& img, const float scaler) {
+			template <typename Interpolator> static K::ImageChannel apply(const ImageChannel& img, const float scaler) {
 				return apply<Interpolator>(img, (int)(img.getWidth() * scaler), (int)(img.getHeight() * scaler));
 			}
 
