@@ -53,9 +53,9 @@ namespace K {
 				static void set(ImageChannel& img, const float x, const float y, const float val) {
 
 					const float x1 =	std::floor(x);	// low
-					const float x2 =	std::ceil(x);		// high
+					const float x2 =	std::ceil(x);	// high
 					const float y1 =	std::floor(y);	// low
-					const float y2 =	std::ceil(y);		// high
+					const float y2 =	std::ceil(y);	// high
 
 					const float d11 =	std::sqrt( (x-x1)*(x-x1) + (y-y1)*(y-y1) );
 					const float d21 =	std::sqrt( (x-x2)*(x-x2) + (y-y1)*(y-y1) );
@@ -63,10 +63,10 @@ namespace K {
 					const float d22 =	std::sqrt( (x-x2)*(x-x2) + (y-y2)*(y-y2) );
 					const float d =		std::sqrt( 2.0f );
 
-					img.set((int)x1,(int)y1, img.get((int)x1,(int)y1)*(d11/d) + val*(d-d11)/d);
-					img.set((int)x2,(int)y1, img.get((int)x2,(int)y1)*(d21/d) + val*(d-d21)/d);
-					img.set((int)x1,(int)y2, img.get((int)x1,(int)y2)*(d12/d) + val*(d-d12)/d);
-					img.set((int)x2,(int)y2, img.get((int)x2,(int)y2)*(d22/d) + val*(d-d22)/d);
+					if (img.isWithin(x1,y1)) {img.set((int)x1,(int)y1, img.get((int)x1,(int)y1)*(d11/d) + val*(d-d11)/d);}
+					if (img.isWithin(x2,y1)) {img.set((int)x2,(int)y1, img.get((int)x2,(int)y1)*(d21/d) + val*(d-d21)/d);}
+					if (img.isWithin(x1,y2)) {img.set((int)x1,(int)y2, img.get((int)x1,(int)y2)*(d12/d) + val*(d-d12)/d);}
+					if (img.isWithin(x2,y2)) {img.set((int)x2,(int)y2, img.get((int)x2,(int)y2)*(d22/d) + val*(d-d22)/d);}
 
 				}
 

@@ -132,6 +132,11 @@ namespace K {
 			data[x + y*width] = v;
 		}
 
+		/** is the given location contained within the matrix? */
+		inline bool isWithin(const int x, const int y) const {
+			return (x >= 0) && (y >= 0) && (x < width) && (y < height);
+		}
+
 		/** set all entries to the given value */
 		void setAll(const T v) {
 			std::fill(data.begin(), data.end(), v);

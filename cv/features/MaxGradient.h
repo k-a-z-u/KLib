@@ -5,7 +5,7 @@
 #include "../../geo/Point2.h"
 #include "../ImageChannel.h"
 #include "../Derivative.h"
-
+#include "Moments.h"
 
 namespace K {
 
@@ -13,11 +13,15 @@ namespace K {
 
 	public:
 
-		struct Direction {
-			float rad;	// direction in radians
-			float mag;	// direction's strength
-			Direction() : rad(0), mag(0) {;}
-			Direction(const float rad, const float mag) : rad(rad), mag(mag) {;}
+		struct Params {
+			float rad;		// direction in radians
+			float mag;		// direction's strength
+			float avg;		// regions brightness average
+			float stdDev;	// regions brightness std-dev
+			float m00;
+			float m11;
+			Params() : rad(0), mag(0), avg(0), stdDev(0), m00(0), m11(0) {;}
+			Params(const float rad, const float mag, const float avg, const float stdDev) : rad(rad), mag(mag), avg(avg), stdDev(stdDev) {;}
 		};
 
 		using Pattern = std::vector<float>;
@@ -34,7 +38,7 @@ namespace K {
 		Point2i cellStride;
 
 		/** every precalculated cell */
-		DataMatrix<Direction> cells;
+		DataMatrix<Params> cells;
 
 		/** every precalculated block */
 		DataMatrix<Pattern> blocks;
@@ -49,7 +53,7 @@ namespace K {
 
 		}
 
-		const Direction& getCell(const int x, const int y) const {
+		const Params& getCell(const int x, const int y) const {
 			return cells.getConstRef(x,y);
 		}
 
@@ -71,18 +75,14 @@ namespace K {
 
 		}
 
-		inline int halfL(const int inp) const {
-			return inp/2;
-		}
-		inline int halfH(const int inp) const {
-			return (inp+1)/2;
-		}
+		static inline int halfL(const int inp) { return inp/2; }
+		static inline int halfH(const int inp) { return (inp+1)/2; }
 
 		/** build every n*m cell by calculating its biggest gradient */
-		DataMatrix<Direction> buildCells(const ImageChannel& img) const {
+		DataMatrix<Params> buildCells(const ImageChannel& img) const {
 
 			// output
-			DataMatrix<Direction> cells(img.getWidth(), img.getHeight());
+			DataMatrix<Params> cells(img.getWidth(), img.getHeight());
 
 			// x/y derivative [-1, 0, +1]
 			const K::ImageChannel imgX = K::Derivative::getXcen(img);
@@ -94,27 +94,41 @@ namespace K {
 				#pragma omp parallel for
 				for (int x = 0; x < img.getWidth(); ++x) {
 
+					Params p;
+
 					// track the maximum gradient within the window
 					float maxMag = 0;
 					float maxDir = 0;
+					float pxSum = 0;
+					float pxSum2 = 0;
+					int pxCnt = 0;
+
+//					K::Point2f avgSum;
+//					int avgCnt = 0;
 
 					// region
-					const int wx1 = x -halfL(cellSize.w);
-					const int wx2 = x +halfH(cellSize.w);
-					const int wy1 = y -halfL(cellSize.h);
-					const int wy2 = y +halfH(cellSize.h);
+					const int wx1 = -halfL(cellSize.w);
+					const int wx2 = +halfH(cellSize.w);
+					const int wy1 = -halfL(cellSize.h);
+					const int wy2 = +halfH(cellSize.h);
 
 					// find the highest gradient within the window
-					for (int y1 = wy1; y1 < wy2; ++y1) {
-						for (int x1 = wx1; x1 < wx2; ++x1) {
+					for (int oy = wy1; oy < wy2; ++oy) {
+						for (int ox = wx1; ox < wx2; ++ox) {
+
+							//const float dFromCenter = std::sqrt(ox*ox + oy*oy);
+							const float sigma = 7;
+							const float mul = std::exp( - (float)((ox*ox)+(oy*oy)) / (2.0f*sigma*sigma) );
+							const int x1 = x+ox;
+							const int y1 = y+oy;
 
 							// clamp
 							if (x1 < 0 || x1 >= img.getWidth())		{continue;}
 							if (y1 < 0 || y1 >= img.getHeight())	{continue;}
 
 							// calculate the centered derivatives
-							const auto dx = imgX.get(x1, y1);	// gradient's magnitude in x direction
-							const auto dy = imgY.get(x1, y1);	// gradient's magnitude in y direction
+							const auto dx = mul * imgX.get(x1, y1);	// gradient's magnitude in x direction
+							const auto dy = mul * imgY.get(x1, y1);	// gradient's magnitude in y direction
 
 							const float mag = std::sqrt( (dx*dx) + (dy*dy) );		// gradient's overall magnitude
 							const float dir = atan360(dy, dx);
@@ -125,14 +139,38 @@ namespace K {
 								maxDir = dir;
 							}
 
+//							avgSum += K::Point2f(dx, dy);
+//							++avgCnt;
+
+							const auto val = mul * img.get(x1, y1);	// raw image value
+							pxSum += val;
+							pxSum2 += val*val;
+							++pxCnt;
+
 						}
 					}
 
+					p.m00 = Moments::get<0,0>(img, Point2i(x,y), cellSize);
+					p.m11 = Moments::get<1,1>(img, Point2i(x,y), cellSize);
 
+
+					const float pxAvg = pxSum/pxCnt;
+					const float pxStdDev = std::sqrt( (pxSum2/pxCnt) - (pxSum/pxCnt)*(pxSum/pxCnt) );
+
+					// 180 degree regions
 					const float dirRad = std::fmod(maxDir, M_PI);		// TODO: check
 
+//					const K::Point2f avg = avgSum / avgCnt;
+//					const float avgDir = std::fmod(atan360(avg.y, avg.x), M_PI);
+//					const float mag = avg.getLength() * 3.5;
+
 					// persist
-					cells.set(x,y, Direction(dirRad, maxMag));
+					p.rad = dirRad;
+					p.mag = maxMag;
+					p.avg = pxAvg;
+					p.stdDev = pxStdDev;
+					cells.set(x,y, p);
+					//cells.set(x,y, Params(avgDir, mag, pxAvg, pxStdDev));
 
 				}
 			}
@@ -153,7 +191,7 @@ namespace K {
 			return val;
 		}
 
-		DataMatrix<Pattern> buildBlocks(const DataMatrix<Direction>& cells) const {
+		DataMatrix<Pattern> buildBlocks(const DataMatrix<Params>& cells) const {
 
 			// output
 			DataMatrix<Pattern> blocks(cells.getWidth(), cells.getHeight());
@@ -172,36 +210,61 @@ namespace K {
 					const int wy1 = y -halfL(blockSize.h);
 					const int wy2 = y +halfH(blockSize.h) - cellSize.h;
 
-					std::vector<Direction> dirs;
+					std::vector<Params> params;
 
 					for (int y1 = wy1; y1 <= wy2; y1 += cellStride.y) {
 						for (int x1 = wx1; x1 <= wx2; x1 += cellStride.x) {
 
-							const Direction in = cells.get(
+							const Params in = cells.get(
 								clamp(x1, 0, cells.getWidth()-1),
 								clamp(y1, 0, cells.getHeight()-1)
 							);
 
-							dirs.push_back(in);
-
-							//patOut.push_back(in.rad);
-							//patOut.push_back(in.mag);
+							params.push_back(in);
 
 						}
 					}
 
-					auto lambda = [] (const Direction& d1, const Direction& d2) {return d1.mag < d2.mag;};
-					std::sort(dirs.begin(), dirs.end(), lambda);
-					for (const Direction dir : dirs) {
-						patOut.push_back(dir.rad);
-						patOut.push_back(dir.mag);
+					//normalize(params);
+
+					for (const Params& p : params) {
+
+						patOut.push_back(p.rad / M_PI);
+						patOut.push_back(p.mag);
+						patOut.push_back(p.avg);
+						patOut.push_back(std::sqrt(p.stdDev));
+
+						//const int div = cellSize.w * cellSize.h;
+						//patOut.push_back(p.m00 / div);
+						//patOut.push_back(std::sqrt(p.m11) / div);
 					}
+
 
 				}
 			}
 
 			// done
 			return blocks;
+
+		}
+
+		static void normalize(std::vector<Params>& vec) {
+
+			float sumMag = 0;
+			float sumStdDev = 0;
+
+			for (const Params& p : vec) {
+				sumMag += p.mag * p.mag;
+				sumStdDev += p.stdDev * p.stdDev;
+			}
+
+			sumMag = std::sqrt(sumMag + 0.5);
+			sumStdDev = std::sqrt(sumStdDev + 0.5);
+
+			for (Params& p : vec) {
+				//p.mag /= sumMag;			// normalizing the magnitude makes things worse
+				p.stdDev /= sumStdDev;
+			}
 
 		}
 
