@@ -11,6 +11,8 @@
 #include "../../misc/gnuplot/GnuplotPlot.h"
 #include "../../misc/gnuplot/GnuplotPlotElementPoints.h"
 
+#include "../../math/distribution/Normal.h"
+
 #include <thread>
 #include <chrono>
 
@@ -66,17 +68,44 @@ namespace K {
 
 		}
 
+		/** get a normal-distrbution matching the given class */
+		NormalDistribution getDistribution(const ClassType clazz) {
+
+			// get average and std-dev
+			Stats stats;
+
+			const std::vector<Pattern>& patterns = classifiedPatterns[clazz];
+			for (const Pattern& p : patterns) {
+				const Feature v = mul(matrix, p);
+				stats.add(v);
+			}
+
+			NormalDistribution nd(stats.getAvg(), stats.getStdDev());
+			return nd;
+
+		}
+
+		/** debug dump current training stats */
+		void dumpTrainingStats() const {
+			std::cout << "Training Data:\n";
+			std::cout << "\tpattern size: " << patternLength << "\n";
+			for (auto it : classifiedPatterns) {
+				std::cout << "\tclass '" << it.first << "': " << it.second.size() << " patterns\n";
+			}
+			std::cout << std::endl;
+		}
+
 		/** estimate the linear transform */
 		template <typename Func> void estimate(Func func) {
 
 			allocateMatrix();
 
 			NumOptAlgoGenetic<Scalar> opt(matrix.size());
-			opt.setPopulationSize(100);
-			opt.setMaxIterations(100);
-			opt.setValRange(1.0f);
-			opt.setElitism(0.02f);
-			opt.setMutation(0.40f);
+			opt.setPopulationSize(200);
+			opt.setMaxIterations(200);
+			opt.setValRange(0.33f);
+			opt.setElitism(0.05f);
+			opt.setMutation(0.10f);
 
 			auto callback = [&] (const int x, const Scalar error, const Scalar* params) {
 				std::cout << x << ": " << error << std::endl;
@@ -124,31 +153,47 @@ namespace K {
 			for (size_t i = 0; i < cnt; ++i) {
 				sum += m[i] * p[i];
 			}
+
+			_assertNotNAN(sum, "feature contains NaN");
+
 			return sum;
 
 		}
 
 	public:
 
+		Gnuplot gp;
+
 		void debugView(const Scalar* params) {
 
-			static Gnuplot gp;
 			GnuplotPlot plot;
 			std::vector<GnuplotPlotElementPoints*> classes;
 
+			std::string colors[] = {"#000000", "#ff0000", "#00ff00", "#0000ff", "#ffff00"};
+
+			int idx = 0;
 			for (const auto it : classifiedPatterns) {
 
-				const ClassType clazz = it.first;
+				//const ClassType clazz = it.first;
 				GnuplotPlotElementPoints* pts = new GnuplotPlotElementPoints();
+				pts->setColorHex(colors[idx % 5]);
 				plot.add(pts);
 
 				// convert each pattern to a feature vector
+				int idx2 = 0;
 				for (const Pattern& p : it.second) {
 					const Feature f = mul(params, p.data(), p.size());
-					pts->add(GnuplotPoint2(f, 0));
+					if (f == f) {
+						const float offset = std::sin(idx2) * 0.1; ++idx2;
+						pts->add(GnuplotPoint2(f, idx+offset));
+					}
 				}
 
+				++idx;
+
 			}
+
+			gp << "set yrange [-1:" << (idx) << "]\n";
 
 			gp.draw(plot);
 			gp.flush();
@@ -191,16 +236,16 @@ namespace K {
 					const Stats& s2 = it2.second;
 
 					// s1 right of s2;
-					const float d1 = (s1.getAvg() - s1.getStdDev()) - (s2.getAvg() + s2.getStdDev());
-					const float d2 = (s2.getAvg() - s2.getStdDev()) - (s1.getAvg() + s1.getStdDev());
-
+					const float fac = 2.2;
+					const float d1 = (s1.getAvg() - s1.getStdDev()*fac) - (s2.getAvg() + s2.getStdDev()*fac);
+					const float d2 = (s2.getAvg() - s2.getStdDev()*fac) - (s1.getAvg() + s1.getStdDev()*fac);
 					score += std::max(d1,d2);
 
 				}
 
 			}
 
-			return score / all.getRegion();
+			return (score / all.getRegion());
 
 		}
 
@@ -209,10 +254,10 @@ namespace K {
 		struct Stats {
 
 			int cnt = 0;
-			Scalar min = +999999999;
-			Scalar max = -999999999;
-			Scalar sum;
-			Scalar sum2;
+			double min = +999999999;
+			double max = -999999999;
+			double sum = 0;
+			double sum2 = 0;
 
 			void add(const Scalar s) {
 				if (s < min) {min = s;}
@@ -222,13 +267,13 @@ namespace K {
 				++cnt;
 			}
 
-			Scalar getRegion() const {return max - min;}
+			inline double getRegion() const {return max - min;}
 
-			Scalar getAvg() const {return sum / cnt;}
+			inline double getAvg() const {return sum / (double)cnt;}
 
-			Scalar getAvg2() const {return sum2 / cnt;}
+			inline double getAvg2() const {return sum2 / (double)cnt;}
 
-			Scalar getStdDev() const {return std::sqrt (getAvg2() - getAvg()*getAvg());}
+			inline double getStdDev() const {return std::sqrt (getAvg2() - getAvg()*getAvg());}
 
 		};
 

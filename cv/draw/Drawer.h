@@ -169,6 +169,20 @@ namespace K {
 
 		}
 
+		void drawCircle(int cx, int cy, float radius) {
+
+			const float perimeter = 2 * M_PI * radius;
+			const float stepSize = 2*M_PI / perimeter;
+
+			for (float f = 0; f < 2*M_PI; f += stepSize) {
+				const float x = cx + std::cos(f) * radius;
+				const float y = cy + std::sin(f) * radius;
+				CV::Interpolation::Bilinear::set(img, x, y, fg);
+				//img.set(x, y, fg);
+			}
+
+		}
+
 	private:
 
 		template <typename T> inline bool isOutside(const T x, const T y, const int frame = 0) const {
