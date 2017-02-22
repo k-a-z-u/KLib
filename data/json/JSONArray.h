@@ -67,6 +67,10 @@ namespace K {
 		}
 
 
+		std::vector<JSONValue>::const_iterator begin() const {return entries.begin();}
+
+		std::vector<JSONValue>::const_iterator end() const {return entries.end();}
+
 
 		/** get the idx-th entry within the array */
 		const JSONValue& get(const int idx) {

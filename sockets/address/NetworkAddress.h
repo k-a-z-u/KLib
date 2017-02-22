@@ -4,11 +4,16 @@
 #include "../SocketException.h"
 
 #include <cstring>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+
+#if defined(__GNUC__)
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <unistd.h>
+	#include <arpa/inet.h>
+	#include <netdb.h>
+#endif
+
+//#include <winsock2.h>
 
 namespace K {
 
@@ -183,7 +188,9 @@ namespace K {
 			const int flags = 0;
 
 			// reverse lookup
+#if defined(__GNUC__)
 			getnameinfo( (struct sockaddr*) &sockAddr, sizeof(sockAddr), hostNameBuf, 128, nullptr, 0, flags );
+#endif
 			this->hostName = std::string(hostNameBuf);
 
 		}

@@ -43,8 +43,10 @@ namespace K {
 		explicit JSONValue(const bool b) : type(JSONValueType::BOOLEAN), b(b) {;}
 		/** ctor: double-value */
 		explicit JSONValue(const double d): type(JSONValueType::DOUBLE), d(d) {;}
-		/** ctor: integer-value */
-		explicit JSONValue(const int64_t i) : type(JSONValueType::INT), i(i) {;}
+		///** ctor: integer-value */
+		//explicit JSONValue(const int64_t i) : type(JSONValueType::INT), i(i) {;}
+		/** ctor: long-value */
+		explicit JSONValue(const long l) : type(JSONValueType::INT), i(l) {;}
 		/** ctor: json-object */
 		explicit JSONValue(JSONObject* obj) : type(JSONValueType::JSON_OBJECT), obj(obj) {;}
 		/** ctor: json-array */
