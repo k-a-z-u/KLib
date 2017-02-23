@@ -168,6 +168,7 @@ namespace K {
 
 			// run function for each element
 			for (int y = 0; y < height; ++y) {
+				#pragma omp parallel for
 				for (int x = 0; x < width; ++x) {
 					exec(x, y, get(x,y));
 				}

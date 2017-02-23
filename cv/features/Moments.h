@@ -22,15 +22,14 @@ namespace K {
 			float sum = 0;
 
 			for (int oy = y1; oy < y2; ++oy) {
+
+				#pragma omp parallel for
 				for (int ox = x1; ox < x2; ++ox) {
 
 					const int x = center.x + ox;
 					const int y = center.y + oy;
 
-					if (x < 0)					{continue;}
-					if (y < 0)					{continue;}
-					if (x >= img.getWidth())	{continue;}
-					if (y >= img.getHeight())	{continue;}
+					if (!img.contains(x,y)) {continue;}
 
 					const float mx = std::pow(ox+x1, p);
 					const float my = std::pow(oy+y1, q);
@@ -38,6 +37,31 @@ namespace K {
 					sum += mx * my * img.get(x, y);
 
 				}
+			}
+
+			return sum;
+
+		}
+
+		template <int p, int q> static float get(const ImageChannel& img, const Point2i center, const std::vector<Point2i>& offsets) {
+
+			float sum = 0;
+
+			#pragma omp parallel for
+			for (size_t i = 0; i < offsets.size(); ++i) {
+
+				const Point2i offset = offsets[i];
+
+				const int x = center.x + offset.x;
+				const int y = center.y + offset.y;
+
+				if (!img.contains(x,y)) {continue;}
+
+				const float mx = std::pow(offset.x, p);
+				const float my = std::pow(offset.y, q);
+
+				sum += mx * my * img.get(x, y);
+
 			}
 
 			return sum;

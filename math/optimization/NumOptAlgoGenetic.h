@@ -134,22 +134,26 @@ namespace K {
 		 */
 		template <typename Func> void calculateOptimum(Func& func, Scalar* dst) {
 
-			// allocate space for the whole population and its genes (twice: current and next)
-			std::vector<Entity> currentPopulation;			currentPopulation.resize(populationSize);
-			std::vector<Scalar> currentPopulationGenes;		currentPopulationGenes.resize(populationSize * numParams);
-			for (int i = 0; i < populationSize; ++i)		{currentPopulation[i].genes = &currentPopulationGenes[i*numParams];}
+			// start with a much larger population for a good initial set of genes
+			int currentPopulationSize = populationSize * 10;
 
-			std::vector<Entity> nextPopulation;				nextPopulation.resize(populationSize);
-			std::vector<Scalar> nextPopulationGenes;		nextPopulationGenes.resize(populationSize * numParams);
-			for (int i = 0; i < populationSize; ++i)		{nextPopulation[i].genes = &nextPopulationGenes[i*numParams];}
+			// allocate space for the whole population and its genes (twice: current and next)
+			std::vector<Entity> currentPopulation;			currentPopulation.resize(currentPopulationSize);
+			std::vector<Scalar> currentPopulationGenes;		currentPopulationGenes.resize(currentPopulationSize * numParams);
+			for (int i = 0; i < currentPopulationSize; ++i)	{currentPopulation[i].genes = &currentPopulationGenes[i*numParams];}
+
+			std::vector<Entity> nextPopulation;				nextPopulation.resize(currentPopulationSize);
+			std::vector<Scalar> nextPopulationGenes;		nextPopulationGenes.resize(currentPopulationSize * numParams);
+			for (int i = 0; i < currentPopulationSize; ++i)	{nextPopulation[i].genes = &nextPopulationGenes[i*numParams];}
 
 			// number of children to survive within each generation
 			const int toSurvive = (int) std::ceil(elitism * populationSize);	// ceil: round up to at-least 1
 
+
 			// initialize the 1st poulation
 			// one entry is the given parameter-set (Scalar* dst)
 			// all other entries are random within the provided valueRegion (setValRegion())
-			for (int p = 0; p < populationSize; ++p) {
+			for (int p = 0; p < currentPopulationSize; ++p) {
 
 				// first entry = parameters as-is
 				if (p == 0) {
@@ -176,6 +180,11 @@ namespace K {
 			// generate X new popultions
 			for (int iter = 0; iter < maxIterations; ++iter) {
 
+				// adjust the population's size (if needed)
+				currentPopulationSize = std::max(populationSize, currentPopulationSize / 2);
+				currentPopulation.resize(currentPopulationSize);
+				nextPopulation.resize(currentPopulationSize);
+
 				int childIdx = 0;
 
 				// if configured: let the best x percent survive without recombination / mutation
@@ -189,7 +198,7 @@ namespace K {
 
 				//while (childIdx < populationSize) {
 				#pragma omp parallel for
-				for ( int _childIdx = childIdx; _childIdx < populationSize; ++_childIdx) {
+				for ( int _childIdx = childIdx; _childIdx < currentPopulationSize; ++_childIdx) {
 
 					// find two parents
 					const int p1 = randomParent();		// the new childs 1st parent
@@ -232,7 +241,7 @@ namespace K {
 		 * init the given genes with random values
 		 * based on the given hint or provided valRegion values (if any)
 		 */
-		void initWithRandomValues(Entity& e, Scalar* hint) {
+		void initWithRandomValues(Entity& e, const Scalar* hint) {
 
 			// valRegion setting available? use it!
 			if (!this->valRegion.empty()) {

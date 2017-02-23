@@ -38,6 +38,14 @@ namespace K {
 
 		}
 
+		/** assignment operator */
+		NormalDistribution& operator = (const NormalDistribution& o) {
+			mu = o.mu;
+			sigma = o.sigma;
+			_a = o._a;
+			return *this;
+		}
+
 		/** get probability for the given value */
 		double getProbability(const double val) const {
 			const double b = -0.5 * ((val-mu)/sigma) * ((val-mu)/sigma);

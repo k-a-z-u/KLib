@@ -11,23 +11,24 @@
 
 namespace K {
 
-//	TEST(GeneticLinearTransform, test1) {
+	TEST(GeneticLinearTransform, test1) {
 
-//		GeneticLinearTransform<float, int> glt;
+		GeneticLinearTransform<float, int> glt;
 
-//		glt.addTrainingPattern(0, {+0, -1, -0});
-//		glt.addTrainingPattern(0, {+2, -3, -1});
-//		glt.addTrainingPattern(0, {+0, -2, -0});
+		glt.addTrainingPattern(0, {+0, -1, -0});
+		glt.addTrainingPattern(0, {+2, -3, -1});
+		glt.addTrainingPattern(0, {+0, -2, -0});
 
-//		glt.addTrainingPattern(1, {+0, +3, -0});
-//		glt.addTrainingPattern(1, {+2, +5, -1});
-//		glt.addTrainingPattern(1, {+0, +4, -0});
+		glt.addTrainingPattern(1, {+0, +3, -0});
+		glt.addTrainingPattern(1, {+2, +5, -1});
+		glt.addTrainingPattern(1, {+0, +4, -0});
 
-//		glt.estimate(GeneticLinearTransform<float, int>::maximizeDistance);
+		glt.usedOnlyBestValues(GeneticLinearTransform<float, int>::maximizeDistance, 1);
+		glt.estimate(GeneticLinearTransform<float, int>::maximizeDistance);
 
-//		int i = 0; (void) i;
+		int i = 0; (void) i;
 
-//	}
+	}
 
 	TEST(GeneticLinearTransform, testLines) {
 
