@@ -44,6 +44,9 @@ namespace K {
 		/** chance of mutating a gene during crossover */
 		float mutation = 0.10f;
 
+		/** start with a larger initial population? */
+		int initPopMultiplier = 1;
+
 		/** the random value range for mutation */
 		std::vector<Scalar> valRange;
 
@@ -81,6 +84,11 @@ namespace K {
 		/** configure whether to use elitism: (unmodified!) survival of the fittest. [0.0:1.0] */
 		void setElitism(const float elitism) {
 			this->elitism = elitism;
+		}
+
+		/** start with an initial population that has x times the size of the target population's size */
+		void setInitialPopulationMultiplier(const int x) {
+			this->initPopMultiplier = x;
 		}
 
 		/** set the chance of mutation [0.0:1.0] */
@@ -135,7 +143,7 @@ namespace K {
 		template <typename Func> void calculateOptimum(Func& func, Scalar* dst) {
 
 			// start with a much larger population for a good initial set of genes
-			int currentPopulationSize = populationSize * 10;
+			int currentPopulationSize = populationSize * initPopMultiplier;
 
 			// allocate space for the whole population and its genes (twice: current and next)
 			std::vector<Entity> currentPopulation;			currentPopulation.resize(currentPopulationSize);

@@ -28,13 +28,14 @@ namespace K {
 
 		/** set all pixels to zero */
 		void zero() {
-			std::fill(data.begin(), data.end(), 0);
+			setAll(0);
 		}
 
 		/** set all pixels to one */
 		void ones() {
-			std::fill(data.begin(), data.end(), 1);
+			setAll(1);
 		}
+
 
 		/**
 		 * initialize the image like libeigen does with matrices:
