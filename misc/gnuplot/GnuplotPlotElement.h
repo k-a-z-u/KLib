@@ -16,6 +16,8 @@ namespace K {
 
 	public:
 
+		virtual void addGeneralTo(std::stringstream& ss) const {(void)ss;}
+
 		virtual void addHeaderTo(std::stringstream& ss) const = 0;
 
 		virtual void addDataTo(std::stringstream& ss) const = 0;
