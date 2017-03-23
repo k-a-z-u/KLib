@@ -27,6 +27,13 @@ namespace K {
 			const Scalar diff() const {return max - min;}
 		};
 
+		/** callback-function to inform after every run */
+		using Callback = std::function<void(const int iteration, const Scalar error, const Scalar* values)>;
+
+		/** an initializer function is able to provide "starting-genes" for the idx-th child */
+		using Initializer = std::function<void(const int childIdx, Scalar* genes)>;
+
+
 	private:
 
 		/** number of parameters */
@@ -60,7 +67,7 @@ namespace K {
 		std::exponential_distribution<float> expDist = std::exponential_distribution<float>(10.0);
 
 		/** callback-function to inform after every run */
-		std::function<void(const int iteration, const Scalar error, const Scalar* values)> callback;
+		Callback callback;
 
 	public:
 
@@ -128,7 +135,32 @@ namespace K {
 			this->callback = func;
 		}
 
+		/** using the default initializer instead of a custom one */
+		template <typename Func> void calculateOptimum(Func& func, Scalar* dst) {
 
+			// default initializer
+			Initializer init = [this, dst] (const int p, Scalar* p_genes) {
+
+				// first entry = parameters as-is
+				if (p == 0) {
+
+					// start with the given initial genes (if any)
+					std::copy(&dst[0], &dst[numParams], p_genes);
+
+				// all other entries = truely random
+				} else {
+
+					// initialize with random values, but use the given values (if any) as a hint
+					initWithRandomValues(p_genes, dst);
+
+				}
+
+			};
+
+			// fire
+			calculateOptimum(func, dst, init);
+
+		}
 
 		/**
 		 * how it works:
@@ -140,7 +172,7 @@ namespace K {
 		 *		and a slight chance of mutation
 		 * 6) repeat until X populations were created
 		 */
-		template <typename Func> void calculateOptimum(Func& func, Scalar* dst) {
+		template <typename Func> void calculateOptimum(Func& func, Scalar* dst, Initializer init) {
 
 			// start with a much larger population for a good initial set of genes
 			int currentPopulationSize = populationSize * initPopMultiplier;
@@ -163,21 +195,10 @@ namespace K {
 			// all other entries are random within the provided valueRegion (setValRegion())
 			for (int p = 0; p < currentPopulationSize; ++p) {
 
-				// first entry = parameters as-is
-				if (p == 0) {
+				// let the initializer provide the values
+				init(p, currentPopulation[p].genes);
 
-					// start with the given initial genes (if any)
-					std::copy(&dst[0], &dst[numParams], currentPopulation[p].genes);
-
-				// all other entries = truely random
-				} else {
-
-					// initialize with random values, but use the given values (if any) as a hint
-					initWithRandomValues(currentPopulation[p], dst);
-
-				}
-
-				// calculate the fitness for the chosen random values
+				// calculate the resulting fitness
 				currentPopulation[p].fitness = getFitness(func, currentPopulation[p].genes);
 
 			}
@@ -205,7 +226,7 @@ namespace K {
 				// create the new population by crossing and mutating the current one
 
 				//while (childIdx < populationSize) {
-				#pragma omp parallel for
+				//#pragma omp parallel for
 				for ( int _childIdx = childIdx; _childIdx < currentPopulationSize; ++_childIdx) {
 
 					// find two parents
@@ -249,7 +270,7 @@ namespace K {
 		 * init the given genes with random values
 		 * based on the given hint or provided valRegion values (if any)
 		 */
-		void initWithRandomValues(Entity& e, const Scalar* hint) {
+		void initWithRandomValues(Scalar* dst, const Scalar* hint) {
 
 			// valRegion setting available? use it!
 			if (!this->valRegion.empty()) {
@@ -257,14 +278,14 @@ namespace K {
 				for (int i = 0; i < numParams; ++i) {
 					std::uniform_real_distribution<Scalar> dist(valRegion[i].min, valRegion[i].max);
 					const Scalar val = dist(gen);
-					e.genes[i] = val;
+					dst[i] = val;
 				}
 
 			// no valRegion provided. use a mutated hint as fallback
 			} else {
 
-				std::copy(&hint[0], &hint[numParams], e.genes);
-				mutate(e.genes);
+				std::copy(&hint[0], &hint[numParams], dst);
+				mutate(dst);
 
 			}
 

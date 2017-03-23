@@ -49,7 +49,7 @@ namespace K {
 		void drawString(const std::string& str, const Point2i& pos, const bool alphaBlend = false) {
 
 			auto mix = [] (const float orig, const float letter) {
-				return orig * letter;
+				return orig + letter;
 			};
 
 			Point2i p = pos;

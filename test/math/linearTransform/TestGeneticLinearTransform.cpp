@@ -23,7 +23,7 @@ namespace K {
 		glt.addTrainingPattern(1, {+2, +5, -1});
 		glt.addTrainingPattern(1, {+0, +4, -0});
 
-		glt.usedOnlyBestValues(GeneticLinearTransform<float, int>::maximizeDistance, 1);
+//		glt.usedOnlyBestValues(GeneticLinearTransform<float, int>::maximizeDistance, 1);
 		glt.estimate(GeneticLinearTransform<float, int>::maximizeDistance);
 
 		int i = 0; (void) i;
