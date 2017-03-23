@@ -34,6 +34,11 @@ namespace K {
 		/** get a string of what to draw */
 		void addTo(std::stringstream& ss) const override {
 
+			// append general parts beforehand
+			for (const GnuplotPlotElement* elem : elements) {
+				elem->addGeneralTo(ss);
+			}
+
 			ss << "plot ";
 
 			// append the drawing-header for each element

@@ -48,6 +48,10 @@ namespace K {
 			points.clear();
 		}
 
+		const std::vector<ColorPoint>& get() const {
+			return points;
+		}
+
 		bool empty() const override {
 			return points.empty();
 		}
