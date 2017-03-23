@@ -157,7 +157,7 @@ namespace K {
 			ssize_t start = 0;
 			ssize_t todo = data.length();
 			while(todo > 0) {
-				const ssize_t ret = write( pipeToProcess[WRITE], data.c_str()+start, data.length() );
+				const ssize_t ret = write( pipeToProcess[WRITE], data.c_str()+start, data.length()-start );
 				if (ret == -1) { throw new ProcessException("error while writing to process"); }
 				todo -= ret;
 				start += ret;
