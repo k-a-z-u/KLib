@@ -16,7 +16,7 @@
 namespace K {
 
 
-	template <typename Scalar> class NumOptAlgoGenetic {
+	template <typename Scalar, bool parallel = false> class NumOptAlgoGenetic {
 
 	public:
 
@@ -226,7 +226,7 @@ namespace K {
 				// create the new population by crossing and mutating the current one
 
 				//while (childIdx < populationSize) {
-				//#pragma omp parallel for
+				#pragma omp parallel for if(parallel)
 				for ( int _childIdx = childIdx; _childIdx < currentPopulationSize; ++_childIdx) {
 
 					// find two parents
@@ -326,7 +326,11 @@ namespace K {
 				child[i] = (rand5050()) ? (parent1[i]) : (parent2[i]);
 
 				//  mutate this gene?
-				if (doMutate()) {child[i] += randGene(i);}
+				if (doMutate()) {
+//					const int mul = doMutate() ? (5) : (1);
+//					child[i] += randGene(i) * mul;
+					child[i] += randGene(i);
+				}
 
 			}
 

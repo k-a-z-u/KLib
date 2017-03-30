@@ -41,13 +41,12 @@ int main(int argc, char** argv) {
 //	srv.setListener(new MyListener());w
 //	srv.start();
 //	sleep(100);
-//	srv.stop();
-	const double heading = 0;
+//	srv.stop();	const double heading = 0;
 	const double heading2 = 90;
 
-	const double h1Rad = (heading / 180 * M_PI);
-	const double h2Rad = (heading2 / 180 * M_PI);
-	const double diffRad = std::fmod(((h1Rad-h2Rad) + M_PI), 2*M_PI) - M_PI;
+//	const double h1Rad = (heading / 180 * M_PI);
+//	const double h2Rad = (heading2 / 180 * M_PI);
+//	const double diffRad = std::fmod(((h1Rad-h2Rad) + M_PI), 2*M_PI) - M_PI;
 
 
 
@@ -56,8 +55,15 @@ int main(int argc, char** argv) {
 	//::testing::GTEST_FLAG(filter) = "*LensCalibration*";
 	//::testing::GTEST_FLAG(filter) = "*KDTree*";
 	//::testing::GTEST_FLAG(filter) = "*OCR*";
-	::testing::GTEST_FLAG(filter) = "*Circle3*";
+	//::testing::GTEST_FLAG(filter) = "*Circle3*";
 	//::testing::GTEST_FLAG(filter) = "*Plane3*";
+
+	//::testing::GTEST_FLAG(filter) = "*NumericalOptimizationAlgo*";
+
+	//::testing::GTEST_FLAG(filter) = "*BravaisPearson*";
+	//::testing::GTEST_FLAG(filter) = "*Distribution.normalN*";
+	//::testing::GTEST_FLAG(filter) = "HHOG2*";
+	::testing::GTEST_FLAG(filter) = "ICP*";
 
 	//::testing::GTEST_FLAG(filter) = "*BBox2*";
 	//::testing::GTEST_FLAG(filter) = "*Ellipse*";

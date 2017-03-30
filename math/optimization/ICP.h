@@ -46,7 +46,7 @@ namespace K {
 				centered2[i] = set2[i] - avg2;
 			}
 
-			// calculate M
+			// calculate M = sum(v1_i * v2_i')
 			Mat3f M = Mat3f::Zero();
 			for (int i = 0; i < cnt; ++i) {
 				const Vec3f v1(centered1[i].x, centered1[i].y, centered1[i].z);
@@ -55,8 +55,10 @@ namespace K {
 				M += v1 * v2.transpose();
 			}
 
-			// calculate SVD
+			// calculate SVD(M)
 			Eigen::JacobiSVD<Mat3f> svd(M, Eigen::ComputeFullU | Eigen::ComputeFullV);
+
+			// build the final rot ation matrix
 			Mat3f rot3 = (svd.matrixV()*(svd.matrixU().transpose())).transpose();
 			Mat4f rot4; rot4 <<
 				rot3(0,0),	rot3(0,1),	rot3(0,2),	0,
@@ -75,17 +77,27 @@ namespace K {
 
 
 		/**
-		 * A * p1 = p1'
-		 * A * p2 = p2'
-		 * A * p3 = p3'
-		 * ....
+		 * A matrix that converts all points P to another point-set P':		 *
+		 *		A * p1 = p1'
+		 *		A * p2 = p2'
+		 *		A * p3 = p3'
+		 *		...
+		 *
+		 * which gives us many individual formulas:
+		 *		p1'.x = a * p1.x + b * p1.y + c * p1.z
+		 *		p1'.y = d * p1.x + e * p1.y + f * p1.z
+		 *
+		 * build a matrix from pointset_1
+		 * calculate its pseude-inverse
+		 * multiply by the values of pointset_2
+		 * -> least-squares error
+		 *
 		 */
-		// THIS IS NOT ICP AS IT ALSO ADJUSTS THE SCALE!
+		// THIS IS NOT A NORMAL ICP AS IT ALSO ADJUSTS THE SCALE!
 //		template <typename T> static Mat3f solve(std::vector<Point3<T>>& set1, std::vector<Point3<T>>& set2) {
 
 //			Eigen::Matrix<float, Eigen::Dynamic, 9> A;
 //			Eigen::Matrix<float, Eigen::Dynamic, 1> b;
-
 
 //			for (int i = 0; i < (int) set1.size(); ++i) {
 
@@ -106,7 +118,6 @@ namespace K {
 //				b(b.rows()-3) = p2.x;
 //				b(b.rows()-2) = p2.y;
 //				b(b.rows()-1) = p2.z;
-
 
 //			}
 
