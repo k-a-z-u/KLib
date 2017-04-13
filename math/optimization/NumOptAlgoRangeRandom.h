@@ -16,7 +16,7 @@
 
 namespace K {
 
-	template <typename Scalar> class NumOptAlgoRangeRandom {
+	template <typename Scalar, bool parallel = false> class NumOptAlgoRangeRandom {
 
 	public:
 		struct MinMax {
@@ -184,6 +184,7 @@ namespace K {
 			// favor lower indicies (as those have a lower error)
 			std::gamma_distribution<float> dist(1,2);
 
+			#pragma omp parallel for if(parallel)
 			for (int dstIdx = numBase; dstIdx < populationSize; ++dstIdx) {
 
 				// gamma[1,2](10) ~ 0 -> divide by 10 and multiply by number of desired max value
