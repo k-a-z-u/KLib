@@ -1,0 +1,4 @@
+#ifndef GNUPLOTVIEW_H
+#define GNUPLOTVIEW_H
+
+#endif // GNUPLOTVIEW_H

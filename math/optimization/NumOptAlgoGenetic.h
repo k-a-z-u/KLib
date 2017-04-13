@@ -131,7 +131,7 @@ namespace K {
 		};
 
 		/** set a callback-function to inform after every run */
-		void setCallback(std::function<void(const int iteration, const Scalar error, const Scalar* params)> func) {
+		void setCallback(Callback func) {
 			this->callback = func;
 		}
 

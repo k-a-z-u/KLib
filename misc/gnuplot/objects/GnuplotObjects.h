@@ -1,0 +1,4 @@
+#ifndef GNUPLOTOBJECTS_H
+#define GNUPLOTOBJECTS_H
+
+#endif // GNUPLOTOBJECTS_H

@@ -1,0 +1,4 @@
+#ifndef GNUPLOTSTROKE_H
+#define GNUPLOTSTROKE_H
+
+#endif // GNUPLOTSTROKE_H

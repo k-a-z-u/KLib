@@ -136,7 +136,7 @@ namespace K {
 			const Point3<Scalar> avg = sum / (float) aligned.size();
 
 			// now we can perform a 2D parameter estimation using (x,y) coordinate [z values are all the same]
-			const Circle2<float>::CanonicalParams circle2 = CircleEstimator2<Scalar>::getParams(aligned);
+			const Circle2::CanonicalParams circle2 = CircleEstimator2<Scalar>::getParams(aligned);
 
 			// sanity check
 			if (circle2.getRadius() != circle2.getRadius()) {
@@ -145,7 +145,7 @@ namespace K {
 			}
 
 			// convert to geometric parameters
-			const Circle2<float> circle2Geo = circle2.toGeometric();
+			const Circle2::GeometricParams circle2Geo = circle2.toGeometric();
 
 			// now, we need to "un-rotate" the 2D estimation to get the 3D estimation
 			// as z-component we use the average z-value the points had after the axis-alignment

@@ -37,6 +37,13 @@ namespace K {
 			values.insert(value);
 		}
 
+		/** add all values from the given statistics instance */
+		void add(const K::Statistics<T>& other) {
+			for (const T val : other.values) {
+				this->add(val);
+			}
+		}
+
 		/** get the std-dev of all values */
 		T getStdDev() const {
 			double E1 = sumSquared / (double) cnt;
@@ -51,7 +58,8 @@ namespace K {
 
 		/** get the given quantile (e.g. 0.5 for median) */
 		T getQuantile(const double q) const {
-			if (q < 0 || q >= 1.0) {return -1;}
+			if (q < 0) {return *values.begin();}
+			if (q >= 1) {return *(--values.end());}
 			uint32_t pos = cnt * q;
 			uint32_t curPos = 0;
 			for (auto val : values) {
@@ -118,6 +126,8 @@ namespace K {
 
 		/** send to the given stream */
 		void appendTo(std::ostream& out) const {
+			out.precision(6);
+			out.setf( std::ios::fixed, std:: ios::floatfield );
 			out << "cnt(" << getCount() << ")\t";
 			out << "min(" << getMin() << ")\t";
 			out << "max(" << getMax() << ")\t";

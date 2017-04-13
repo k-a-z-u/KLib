@@ -102,7 +102,7 @@ namespace K {
 
 		/** calculate the probability within the underlying CDF */
 		static double getProbability(const double mu, const double sigma, const double val) {
-			return (1.0 + std::erf( (val - mu) / (sigma * std::sqrt(2)) ) ) / 2.0;
+			return (1.0 + std::exp( (val - mu) / (sigma * std::sqrt(2)) ) ) / 2.0;
 		}
 
 	};

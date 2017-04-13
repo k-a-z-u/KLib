@@ -46,9 +46,6 @@ namespace K {
 		/** number of refinement iterations */
 		int numIterations = 50;
 
-		/** elitism in percent? */
-		float elitism = 0.02;
-
 		/** number of parameters to optimize */
 		const int numParams;
 
@@ -135,24 +132,6 @@ namespace K {
 
 	private:
 
-
-		//void modeXX() {
-			//				// skip the best X entries due to elitism
-			//				const int startIdx = std::ceil(populationSize * elitism);
-
-			//				// modify the following ones
-			//				for (int x = startIdx; x < populationSize; ++x) {
-
-			//					// how "hard" to modify this population entry
-			//					// "bad-ones" (at the end) receive a higher modification
-			//					const float modStrength = (float) x / (float) populationSize;
-
-			//					// modify it
-			//					modify(population[x], func, paramDeviation, modStrength);
-
-			//				}
-		//}
-
 		/** keep the first X elements as-is. refine all others (higher error -> higher modification) */
 		template <typename Func> inline void modeRefineAll(Func& func, std::vector<Entity>& population, const float modOverIteration) {
 
@@ -174,19 +153,24 @@ namespace K {
 
 		}
 
+		/** keep the best X elements and let the rest be a "refinement" of the best ones */
 		template <typename Func> inline void modeRefineBest(Func& func, std::vector<Entity>& population, const float modOverIteration) {
 
-			// too low -> might miss good ones!
+			// how many source elements to use for the next population
+			// too low -> might miss other good ones!
 			// too high -> needs more iterations
-			const float baseSize = 0.15f;
+			const float baseSize = 0.25f;
 			const int numBase = populationSize * baseSize;	// the values to refine
 
+			// distribution to pick source elements [= good ones]
 			// favor lower indicies (as those have a lower error)
+			// output range ~[0:10] where near-0 is most likely
 			std::gamma_distribution<float> dist(1,2);
 
 			for (int dstIdx = numBase; dstIdx < populationSize; ++dstIdx) {
 
-				// gamma[1,2](10) ~ 0 -> divide by 10 and multiply by number of desired max value
+				// gamma[1,2] outputs ~[0:10]
+				// to get srcIdx between [0:numBase] we have to divide by 10
 				const int srcIdx = dist(gen) * numBase / 10;
 
 				// modification strength is decreased within increasing number of iterations (cooling)

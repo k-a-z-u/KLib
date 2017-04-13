@@ -58,6 +58,7 @@ namespace K {
 				D = -2*A*center.x - B*center.y;
 				E = -B*center.x - 2*C*center.y;
 				F = A*center.x*center.x + B*center.x*center.y + C*center.y*center.y - a*a*b*b;
+				fixF();
 				normalize();
 				checkMe();
 			}

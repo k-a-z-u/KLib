@@ -1,0 +1,4 @@
+#ifndef GNUPLOTAXIS_H
+#define GNUPLOTAXIS_H
+
+#endif // GNUPLOTAXIS_H

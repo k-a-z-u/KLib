@@ -19,7 +19,7 @@ namespace K {
 		 * Dx + Ey + F = - x² - y²
 		 * and solved using Ax=b -> x = inv(A)b
 		 */
-		template <typename List> static Circle2<float>::CanonicalParams getParams(const List& points) {
+		template <typename List> static Circle2::CanonicalParams getParams(const List& points) {
 
 			// number of points to use
 			const int num = (int) points.size();
@@ -60,7 +60,7 @@ namespace K {
 			// as -D/2 is the circle's x-center we need to subtract avg.x*2 to even this out
 			// same goes for y-center and F
 			// is a bit tricky, but works out!
-			Circle2<float>::CanonicalParams canon( vals(0)-avg.x*2, vals(1)-avg.y*2, vals(2) + avg.x*avg.x - (vals(0)*avg.x) + avg.y*avg.y - (vals(1)*avg.y) );
+			Circle2::CanonicalParams canon( vals(0)-avg.x*2, vals(1)-avg.y*2, vals(2) + avg.x*avg.x - (vals(0)*avg.x) + avg.y*avg.y - (vals(1)*avg.y) );
 			return canon;
 
 		}

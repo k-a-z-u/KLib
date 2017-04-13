@@ -31,6 +31,8 @@ namespace K {
 
 		using Data = NumOptDataVector<Scalar>;
 
+		using Callback = std::function<void(const int start, const int iteration, const Scalar error, const Scalar* params)>;
+
 	public:
 
 		/** function parameters and function result f(param) = y */
@@ -61,7 +63,7 @@ namespace K {
 		}
 
 		/** set a callback-function to inform after every run */
-		void setCallback(std::function<void(const int iteration, const Scalar error, const Scalar* params)> func) {
+		void setCallback(Callback func) {
 			this->callback = func;
 		}
 
@@ -122,7 +124,7 @@ namespace K {
 
 					// inform callback (if any) about the current optimum
 					if (callback) {
-						callback(iter, set[IDX_BEST].value, set[IDX_BEST].param.constPtr());
+						callback(run, iter, set[IDX_BEST].value, set[IDX_BEST].param.constPtr());
 					}
 
 					// done?
@@ -259,7 +261,7 @@ namespace K {
 		unsigned int numRestarts;
 
 		/** callback-function to inform after every run */
-		std::function<void(const int iteration, const Scalar error, const Scalar* params)> callback;
+		Callback callback;
 
 
 	};

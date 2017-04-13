@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <sys/wait.h>
+#include <string>
 
 namespace K {
 
@@ -23,6 +24,7 @@ namespace K {
 #include <iosfwd>
 #include <cstdio>
 #include <iostream>
+#include <vector>
 
 
 #include <fcntl.h>

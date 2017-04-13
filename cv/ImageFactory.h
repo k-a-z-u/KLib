@@ -30,8 +30,10 @@ namespace K {
 			return out;
 		}
 
-#ifdef WITH_PNG
+
 		static void writePNG(const std::string& file, const ImageChannel& _img) {
+
+		#ifdef WITH_PNG
 
 			DataMatrix<uint8_t> img = to8(_img);
 
@@ -63,10 +65,16 @@ namespace K {
 			// cleanup
 			png_destroy_write_struct (&png, &info_ptr);
 
+		#else
+			throw Exception("compiled without PNG support");
+		#endif
+
 		}
 
 		/** read a PNG from the given file */
 		static ImageChannel readPNG(const std::string& file) {
+
+		#ifdef WITH_PNG
 
 			png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 			if (!png) {throw Exception("Could not allocate read struct");}
@@ -121,10 +129,16 @@ namespace K {
 
 			return img;
 
+		#else
+			throw Exception("compiled without PNG support");
+		#endif
+
 		}
 
 		/** read a PNG from the given file */
 		static ImageChannel readPNG(const uint8_t bytes[]) {
+
+		#ifdef WITH_PNG
 
 			png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 			if (!png) {throw Exception("Could not allocate read struct");}
@@ -182,15 +196,17 @@ namespace K {
 
 			return img;
 
+		#else
+			throw Exception("compiled without PNG support");
+		#endif
+
 		}
 
 
-#endif
-
-#ifdef WITH_JPEG
-
 		/** read a JPEG from the given file */
 		static ImageChannel readJPEG(const std::string& file) {
+
+		#ifdef WITH_JPEG
 
 			struct jpeg_decompress_struct cinfo;
 			struct jpeg_error_mgr jerr;
@@ -243,9 +259,15 @@ namespace K {
 			// done
 			return img;
 
+		#else
+			throw Exception("compiled without JPEG support");
+		#endif
+
 		}
 
 		static void writeJPEG(const std::string& file, const ImageChannel& _img) {
+
+		#ifdef WITH_JPEG
 
 			DataMatrix<uint8_t> img = to8(_img);
 
@@ -278,9 +300,11 @@ namespace K {
 			jpeg_destroy_compress(&cinfo);
 			fclose(fp);
 
-		}
+		#else
+			throw Exception("compiled without JPEG support");
+		#endif
 
-#endif
+		}
 
 	private:
 
