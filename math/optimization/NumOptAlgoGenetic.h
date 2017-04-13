@@ -69,6 +69,9 @@ namespace K {
 		/** callback-function to inform after every run */
 		Callback callback;
 
+		/** cross genes between two parents? */
+		bool doCross = true;
+
 	public:
 
 		/** ctor */
@@ -133,6 +136,11 @@ namespace K {
 		/** set a callback-function to inform after every run */
 		void setCallback(Callback func) {
 			this->callback = func;
+		}
+
+		/** whether to cross genes between two parents or not */
+		void setUseCrossing(const bool cross) {
+			this->doCross = cross;
 		}
 
 		/** using the default initializer instead of a custom one */
@@ -323,7 +331,11 @@ namespace K {
 			for (int i = 0; i < numParams; ++i) {
 
 				// take this gene from either parent1 or parent2
-				child[i] = (rand5050()) ? (parent1[i]) : (parent2[i]);
+				if (doCross) {
+					child[i] = (rand5050()) ? (parent1[i]) : (parent2[i]);
+				} else {
+					child[i] = parent1[i];
+				}
 
 				//  mutate this gene?
 				if (doMutate()) {

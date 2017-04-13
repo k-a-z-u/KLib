@@ -68,7 +68,7 @@ namespace K {
 		}
 
 		/** optimize the functions only parameter until epsilon is reached */
-		template <typename Func> void calculateOptimum(Func& func, Scalar* dst) {
+		template <typename Func> float calculateOptimum(Func& func, Scalar* dst) {
 
 			const auto& lambda = [] (const SimplexEntry& a, const SimplexEntry& b) {return a.value < b.value;};
 
@@ -218,12 +218,14 @@ namespace K {
 
 				}
 
-				// the best result
+				// the best result [needed for output AND restart!]
 				set[IDX_BEST].param.copyTo(dst);
 				//param = set[IDX_BEST].param;
 
-
 			}
+
+			// value of the best result
+			return set[IDX_BEST].value;
 
 		}
 
