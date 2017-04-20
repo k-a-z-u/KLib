@@ -31,7 +31,7 @@ namespace K {
 	 * this output value is "as distinct as possible" between all of the given classes
 	 * using some optimization criteria
 	 */
-	template <typename Scalar, typename ClassType> class GeneticLinearTransform {
+	template <typename Scalar, typename ClassType, bool parallel = false> class GeneticLinearTransform {
 
 	public:
 
@@ -219,7 +219,7 @@ namespace K {
 				return -func(data, classifiedPatterns);
 			};
 
-			NumOptAlgoGenetic<Scalar> opt2(matrix.size());
+			NumOptAlgoGenetic<Scalar, parallel> opt2(matrix.size());
 			opt2.setPopulationSize(100);
 			opt2.setMaxIterations(200);
 			opt2.setValRange(0.25f);
@@ -336,7 +336,8 @@ namespace K {
 
 				//const ClassType clazz = it.first;
 				GnuplotPlotElementPoints* pts = new GnuplotPlotElementPoints();
-				pts->getColor().setHexStr(colors[idx % 5]);
+				//pts->getColor().setHexStr(colors[idx % 5]);
+				pts->setColorHex(colors[idx % 5]);
 				plot.add(pts);
 
 				// convert each pattern to a feature vector

@@ -1,7 +1,3 @@
-#ifndef TESTLINEARTRANSFORM_CPP
-#define TESTLINEARTRANSFORM_CPP
-
-
 #ifdef WITH_TESTS
 
 #include "../../Test.h"
@@ -59,8 +55,5 @@ namespace K {
 	}
 
 }
-
-#endif
-
 
 #endif

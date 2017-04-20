@@ -99,7 +99,7 @@ namespace K {
 		Eigen::Matrix2d sigma; sigma << 1, 0, 0, 1;
 
 		// 2D distribution is the same probability as 1D*1D
-		NormalDistributionN dist(mu, sigma);
+		NormalDistributionN<double> dist(mu, sigma);
 		const double d1 = dist.getProbability(val);
 		const double d0 = std::pow(NormalDistribution::getProbability(0, 1, 0), 2);
 		ASSERT_NEAR(d0, d1, 0.0001);
@@ -113,7 +113,7 @@ namespace K {
 		Eigen::Matrix2d sigma; sigma << 1, 0, 0, 1;
 
 		// 2D distribution is the same probability as 1D*1D
-		NormalDistributionN dist(mu, sigma);
+		NormalDistributionN<double> dist(mu, sigma);
 		const double d1 = dist.getProbability(val);
 		const double d0 = std::pow(NormalDistribution::getProbability(0, 1, 0), 2);
 		ASSERT_NEAR(d0, d1, 0.0001);
@@ -127,7 +127,7 @@ namespace K {
 		Eigen::Matrix2d sigma; sigma << 2, 0, 0, 2;
 
 		// 2D distribution is the same probability as 1D*1D
-		NormalDistributionN dist(mu, sigma);
+		NormalDistributionN<double> dist(mu, sigma);
 		const double d1 = dist.getProbability(val);
 		const double d0 = std::pow(NormalDistribution::getProbability(0, 2, 0), 2);
 		ASSERT_NEAR(d0, d1, 0.0001);

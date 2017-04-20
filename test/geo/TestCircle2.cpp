@@ -10,7 +10,7 @@ namespace K {
 
 	TEST(Circle2, distance) {
 
-		Circle2i circ(Point2i(0,0), 5);
+		Circle2::GeometricParams circ(Point2i(0,0), 5);
 
 		// center
 		ASSERT_EQ(5, circ.getDistanceFromOutline(Point2i(0,0)));
@@ -37,7 +37,7 @@ namespace K {
 
 	TEST(Circle2, estimateExact) {
 
-		const Circle2f src(Point2f(1, 2), 3);
+		const Circle2::GeometricParams src(Point2f(1, 2), 3);
 		const K::Point2f p1 = src.getPointFor(1.0f);
 		const K::Point2f p2 = src.getPointFor(1.5f);
 		const K::Point2f p3 = src.getPointFor(2.5f);
@@ -47,11 +47,11 @@ namespace K {
 
 		const std::vector<K::Point2f> lst = {p1, p2, p3, p4, p5, p6};
 
-		Circle2f::CanonicalParams canon = CircleEstimator2<float>::getParams(lst);
+		Circle2::CanonicalParams canon = CircleEstimator2<float>::getParams(lst);
 
 		const float rad = canon.getRadius();
 		Point2f center = canon.getCenter();
-		Circle2f circ = canon.toGeometric();
+		Circle2::GeometricParams circ = canon.toGeometric();
 
 		std::cout << center.x << " " << center.y << " " << rad << std::endl;
 
@@ -70,7 +70,7 @@ namespace K {
 		std::minstd_rand gen;
 		std::uniform_real_distribution<float> dist(-0.2f, +0.2f);
 
-		const Circle2f src(Point2f(1, 2), 3);
+		const Circle2::GeometricParams src(Point2f(1, 2), 3);
 		const K::Point2f p1 = src.getPointFor(0.0f) + K::Point2f(dist(gen), dist(gen));
 		const K::Point2f p2 = src.getPointFor(1.0f) + K::Point2f(dist(gen), dist(gen));
 		const K::Point2f p3 = src.getPointFor(2.0f) + K::Point2f(dist(gen), dist(gen));
@@ -80,11 +80,11 @@ namespace K {
 
 		const std::vector<K::Point2f> lst = {p1, p2, p3, p4, p5, p6};
 
-		Circle2f::CanonicalParams canon = CircleEstimator2<float>::getParams(lst);
+		Circle2::CanonicalParams canon = CircleEstimator2<float>::getParams(lst);
 
 		const float rad = canon.getRadius();
 		Point2f center = canon.getCenter();
-		Circle2f circ = canon.toGeometric();
+		Circle2::GeometricParams circ = canon.toGeometric();
 
 		std::cout << center.x << " " << center.y << " " << rad << std::endl;
 

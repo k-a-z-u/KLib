@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 	//::testing::GTEST_FLAG(filter) = "*BravaisPearson*";
 	//::testing::GTEST_FLAG(filter) = "*Distribution.normalN*";
 	//::testing::GTEST_FLAG(filter) = "HHOG2*";
-	::testing::GTEST_FLAG(filter) = "ICP*";
+	::testing::GTEST_FLAG(filter) = "GeneticLinearTransformN*";
 
 	//::testing::GTEST_FLAG(filter) = "*BBox2*";
 	//::testing::GTEST_FLAG(filter) = "*Ellipse*";

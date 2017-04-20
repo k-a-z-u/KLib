@@ -1,5 +1,5 @@
-#ifndef POINT2_H
-#define POINT2_H
+#ifndef K_POINT2_H
+#define K_POINT2_H
 
 #include <cmath>
 #include <cstdint>

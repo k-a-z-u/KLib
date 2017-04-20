@@ -6,28 +6,37 @@
 
 namespace K {
 
-	class NormalDistributionN {
+	template <typename Scalar = double> class NormalDistributionN {
+
+	public:
+
+		using Vector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+		using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
 
 	private:
 
-		const Eigen::VectorXd mu;
-		const Eigen::MatrixXd sigma;
+		/** average vector */
+		const Vector mu;
 
+		/** covariance matrix */
+		const Matrix covar;
+
+		/** pre-calculated internal values */
 		const double _a;
-		const Eigen::MatrixXd _sigmaInv;
+		const Matrix _covarInv;
 
 	public:
 
 		/** ctor */
-		NormalDistributionN(const Eigen::VectorXd mu, const Eigen::MatrixXd sigma) :
-			mu(mu), sigma(sigma), _a( 1.0 / std::sqrt( (sigma * 2.0 * M_PI).determinant() ) ), _sigmaInv(sigma.inverse()) {
-
+		NormalDistributionN(const Vector& mu, const Matrix& covar) :
+			mu(mu), covar(covar), _a( 1.0 / std::sqrt( (covar * 2.0 * M_PI).determinant() ) ), _covarInv(covar.inverse()) {
+			//mu(mu), covar(covar), _a( 1.0 / std::sqrt( 2.0 * M_PI * covar.determinant() ) ), _covarInv(covar.inverse()) {
+			;
 		}
 
-
 		/** get probability for the given value */
-		double getProbability(const Eigen::VectorXd val) const {
-			const double b = ((val-mu).transpose() * _sigmaInv * (val-mu));
+		double getProbability(const Vector& val) const {
+			const double b = ((val-mu).transpose() * _covarInv * (val-mu));
 			return _a * std::exp(-b/2.0);
 		}
 
