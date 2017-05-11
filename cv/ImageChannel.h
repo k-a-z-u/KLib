@@ -54,7 +54,7 @@ namespace K {
 			return *this;
 		}
 
-		ImageChannel region(const int x1, const int y1, const int x2, const int y2) {
+		ImageChannel region(const int x1, const int y1, const int x2, const int y2) const {
 
 			const int w = x2-x1;
 			const int h = y2-y1;

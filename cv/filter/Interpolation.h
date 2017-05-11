@@ -17,8 +17,21 @@ namespace K {
 
 		public:
 
-			/** do not use any interpolation. just round to the nearest pixel */
+			/** do not use any interpolation. just (int) to the pixel */
 			struct None {
+
+				static Scalar get(const ImageChannel& img, const float x, const float y) {
+					return img.getClamped((int)x, (int)y);
+				}
+
+				static void set(ImageChannel& img, const float x, const float y, const float val) {
+					img.set((int)x, (int)y, val);
+				}
+
+			};
+
+			/** do not use any interpolation. just round to the nearest pixel */
+			struct Nearest {
 
 				static Scalar get(const ImageChannel& img, const float x, const float y) {
 					return img.getClamped((int)std::round(x), (int)std::round(y));
@@ -75,12 +88,15 @@ namespace K {
 
 
 
-			/** do not use any interpolation. just round to the nearest pixel */
+			/** do not use any interpolation. just (int) to the pixel */
 			static Scalar none(const ImageChannel& img, const float x, const float y) {
-				return img.get((int)std::round(x), (int)std::round(y));
+				return img.get((int)x, (int)y);
 			}
 
-
+			/** do not use any interpolation. just round to the nearest pixel */
+			static Scalar nearest(const ImageChannel& img, const float x, const float y) {
+				return img.get((int)std::round(x), (int)std::round(y));
+			}
 
 			/** use bilinear interpolation (4 samples) */
 			static Scalar bilinear(const ImageChannel& img, const float x, const float y) {
