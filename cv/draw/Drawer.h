@@ -30,6 +30,11 @@ namespace K {
 
 		}
 
+		/** get the underlying image */
+		ImageChannel& getImage() {
+			return img;
+		}
+
 		/** change the foreground color-value */
 		void setForeground(const float fg) {
 			this->fg = fg;
