@@ -37,32 +37,32 @@ namespace K {
 
 			const uint32_t cnt = (uint32_t) particles.size();
 
-			// copy the particles
-			std::vector<Particle<State>> copy = particles;
+			// sort particles by weight (highest first)
+			std::sort(particles.begin(), particles.end(), comp);
 
-			// sort them by weight (highest first)
-			std::sort(copy.begin(), copy.end(), comp);
 
-			// remove the last X percent
-			const int start = copy.size() * (1-percent);
-			for (int idx = start; idx < copy.size(); ++idx) {
-				copy[idx].weight = 0;
+			// to-be-removed region
+			const int start = particles.size() * (1-percent);
+			const int end = particles.size();
+			std::uniform_int_distribution<int> dist(0, start-1);
+
+			// remove by re-drawing
+			for (uint32_t i = start; i < end; ++i) {
+				const int rnd = dist(gen);
+				particles[i] = particles[rnd];
+				particles[i].weight /= 2;
+				particles[rnd].weight /= 2;
 			}
 
-			// cumulate
-			double cumWeight = 0;
-			for (Particle<State>& p : copy) {
-				cumWeight += p.weight;
-				p.weight = cumWeight;
+			// calculate weight-sum
+			double weightSum = 0;
+			for (const auto& p : particles) {
+				weightSum += p.weight;
 			}
 
-			// re-draw the last X percent
-			for (int idx = start; idx < (int) copy.size(); ++idx) {
-				copy[idx] = draw(copy, cumWeight);
-			}
 
-			// swap copy and input
-			std::swap(particles, copy);
+			int i = 0;
+
 
 
 		}

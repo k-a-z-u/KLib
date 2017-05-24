@@ -123,6 +123,8 @@ namespace K {
 			this->nEffThresholdPercent = thresholdPercent;
 		}
 
+		double lastNEff = 9999999999999;
+
 		/** perform resampling -> transition -> evaluation -> estimation */
 		State update(const Control* control, const Observation& observation) {
 
@@ -132,20 +134,22 @@ namespace K {
 			_assertNotNull(evaluation, "evaluation MUST not be null! call setEvaluation() first!");
 			_assertNotNull(estimation, "estimation MUST not be null! call setEstimation() first!");
 
+			// if the number of efficient particles is too low, perform resampling
+			if (lastNEff < particles.size() * nEffThresholdPercent) {resampler->resample(particles); }
+
 			// perform the transition step
 			transition->transition(particles, control);
 
 			// perform the evaluation step and calculate the sum of all particle weights
-			const double weightSum = evaluation->evaluation(particles, observation);
+			evaluation->evaluation(particles, observation);
 
 			// normalize the particle weights and thereby calculate N_eff
-			const double neff = normalize(weightSum);
+			lastNEff = normalize();
+
+			//std::cout << "normalized. n_eff is " << lastNEff << std::endl;
 
 			// estimate the current state
 			const State est = estimation->estimate(particles);
-
-			// if the number of efficient particles is too low, perform resampling
-			if (neff < particles.size() * nEffThresholdPercent) { resampler->resample(particles); }
 
 			// done
 			return est;
@@ -172,14 +176,15 @@ namespace K {
 			_assertNotNull(estimation, "estimation MUST not be null! call setEstimation() first!");
 
 			// perform the evaluation step and calculate the sum of all particle weights
-			const double weightSum = evaluation->evaluation(particles, observation);
+			evaluation->evaluation(particles, observation);
 
+			// not needed anymore.. was to tricky to forget etc...
 			// sanity check
-			_assertNotNAN(weightSum, "sum of all particle weights (returned from eval) is NAN!");
-			_assertNot0(weightSum, "sum of all particle weights (returned from eval) is 0.0!");
+			//_assertNotNAN(weightSum, "sum of all particle weights (returned from eval) is NAN!");
+			//_assertNot0(weightSum, "sum of all particle weights (returned from eval) is 0.0!");
 
 			// normalize the particle weights and thereby calculate N_eff
-			const double neff = normalize(weightSum);
+			const double neff = normalize();
 
 			// estimate the current state
 			const State est = estimation->estimate(particles);
@@ -204,22 +209,46 @@ namespace K {
 
 	private:
 
-		/** normalize the weight of all particles to one */
-		double normalize(const double weightSum) {
-			double sum = 0.0;
+		/** normalize the weight of all particles to 1.0 and perform some sanity checks */
+		double normalize() {
+
+			// calculate sum(weights)
+			//double min1 = 9999999;
+			double weightSum = 0.0;
+			for (const auto& p : particles) {
+				weightSum += p.weight;
+				//if (p.weight < min1) {min1 = p.weight;}
+			}
+
+			// sanity check. always!
+			if (weightSum != weightSum) {
+				throw Exception("sum of paticle-weights is NaN");
+			}
+			if (weightSum == 0) {
+				throw Exception("sum of paticle-weights is 0.0");
+			}
+
+			// normalize and calculate N_eff
+			double sum2 = 0.0;
+			//double min2 = 9999999;
 			for (auto& p : particles) {
 				p.weight /= weightSum;
-				sum += (p.weight * p.weight);
+				//if (p.weight < min2) {min2 = p.weight;}
+				sum2 += (p.weight * p.weight);
 			}
-			return 1.0 / sum;
+
+			// N_eff
+			return 1.0 / sum2;
+
 		}
 
-		/** calculate the number of efficient particles (N_eff) */
-		double getNeff() const {
-			double sum = 0.0;
-			for (auto& p : particles) {sum += (p.weight * p.weight);}
-			return 1.0 / sum;
-		}
+//		/** calculate the number of efficient particles (N_eff) */
+//		double getNeff() const {
+//			double sum = 0.0;
+//			for (auto& p : particles) {sum += (p.weight * p.weight);}
+//			return 1.0 / sum;
+//		}
+
 	};
 
 }

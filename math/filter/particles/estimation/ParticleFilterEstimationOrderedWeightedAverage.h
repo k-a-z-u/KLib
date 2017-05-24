@@ -27,7 +27,7 @@ namespace K {
 		/** ctor */
 		ParticleFilterEstimationOrderedWeightedAverage(const float percent) : percent(percent) {;}
 
-		State estimate(std::vector<Particle<State>>& particles) override {
+		State estimate(const std::vector<Particle<State>>& particles) override {
 
 			// compile-time sanity checks
 			static_assert( HasOperatorPlusEq<State>::value, "your state needs a += operator!" );
@@ -55,6 +55,10 @@ namespace K {
 				const Particle<State>& p = copy[i];
 				tmp += p.state * p.weight;
 				weightSum += p.weight;
+			}
+
+			if (weightSum != weightSum) {
+				int i = 0; (void) i;
 			}
 
 			_assertTrue( (weightSum == weightSum), "the sum of particle weights is NaN!");
