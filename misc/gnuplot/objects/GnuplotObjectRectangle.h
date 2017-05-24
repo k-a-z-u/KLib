@@ -33,8 +33,11 @@ namespace K {
 			ss << " set object " << _id << " rectangle ";
 			ss << " from " << from.toGP();
 			ss << " to " << to.toGP();
-			ss << " " << fill.toGP();
-			ss << " " << stroke.toGP();
+			ss << getStyle(fill, stroke);
+			//ss << " " << fill.toGP();
+			//ss << " " << stroke.toGP();
+			if (front) {ss << " front ";}
+			if (back) {ss << " back ";}
 			ss << "\n";
 		}
 

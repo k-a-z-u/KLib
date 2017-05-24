@@ -70,14 +70,14 @@ namespace K {
 
 		StereoPlot(Desc& desc) : multiplot(1,2), lImg(desc.fileLeft), rImg(desc.fileRight) {
 
-			lPoints.setColorHex("#ff0000"); lPoints.setPointSize(0.8f); lPoints.setPointType(7);
-			lLines.setColorHex("#0000ff");
+			lPoints.getColor().setHexStr("#ff0000"); lPoints.setPointSize(0.8f); lPoints.setPointType(7);
+			lLines.getStroke().getColor().setHexStr("#0000ff");
 			plotL.add(&lImg);
 			plotL.add(&lLines);
 			plotL.add(&lPoints);
 
-			rPoints.setColorHex("#00AA00"); rPoints.setPointSize(0.8f); rPoints.setPointType(7);
-			rLines.setColorHex("#0000ff");
+			rPoints.getColor().setHexStr("#00AA00"); rPoints.setPointSize(0.8f); rPoints.setPointType(7);
+			rLines.getStroke().getColor().setHexStr("#0000ff");
 			plotR.add(&rImg);
 			plotR.add(&rLines);
 			plotR.add(&rPoints);

@@ -17,8 +17,9 @@ namespace K {
 		/** ctor */
 		Gnuplot() : debug(false) {
 			proc = new K::Process("/usr/bin/gnuplot");
+			usleep(1000*25);
 			setSize(640,480);
-			flush();
+			//flush();
 		}
 
 		/** dtor */
@@ -46,9 +47,15 @@ namespace K {
 		}
 
 		void close() {
-			if (proc) {proc->close();}
-			delete proc;
+
+			if (proc) {
+				proc->close();
+				usleep(1000*100);	// dunno why but some processes need a little time here to close correctly
+				proc->kill();
+			}
+			delete proc;		// will close() and kill() the process;
 			proc = nullptr;
+
 		}
 
 		float getWidth() {return width;}

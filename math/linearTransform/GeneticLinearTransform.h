@@ -337,7 +337,7 @@ namespace K {
 				//const ClassType clazz = it.first;
 				GnuplotPlotElementPoints* pts = new GnuplotPlotElementPoints();
 				//pts->getColor().setHexStr(colors[idx % 5]);
-				pts->setColorHex(colors[idx % 5]);
+				pts->getColor().setHexStr(colors[idx % 5]);
 				plot.add(pts);
 
 				// convert each pattern to a feature vector

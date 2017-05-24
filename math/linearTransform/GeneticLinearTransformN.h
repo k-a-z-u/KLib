@@ -339,10 +339,12 @@ namespace K {
 
 				// 2D or 3D plot?
 				if (dimensions < 3) {
-					points2[classIdx].setColorHex(colors[classIdx % 5]);
+					//points2[classIdx].setColorHex(colors[classIdx % 5]);
+					points2[classIdx].getColor().setHexStr(colors[classIdx % 5]);
 					plot.add(&points2[classIdx]);
 				} else {
-					points3[classIdx].setColorHex(colors[classIdx % 5]);
+					//points3[classIdx].setColorHex(colors[classIdx % 5]);
+					points3[classIdx].getColor().setHexStr(colors[classIdx % 5]);
 					splot.add(&points3[classIdx]);
 				}
 
@@ -356,7 +358,8 @@ namespace K {
 					// 1D, 2D or 3D?
 					if (dimensions == 1) {
 						const float offset = std::sin(idx2) * 0.1; ++idx2;
-						points2[classIdx].add(GnuplotPoint2(f[0], ((rand() % 25)*2+classIdx) / 100.0));//classIdx+offset));
+						//points2[classIdx].add(GnuplotPoint2(f[0], ((rand() % 25)*2+classIdx) / 100.0));//classIdx+offset));
+						points2[classIdx].add(GnuplotPoint2(f[0], classIdx+offset));
 					} else if (dimensions == 2) {
 						points2[classIdx].add(GnuplotPoint2(f[0], f[1]));
 					} else {
@@ -369,16 +372,17 @@ namespace K {
 
 			}
 
-			static int xxx = 0;
-			gp << "unset xtics\n";
-			gp << "unset ytics\n";
-			gp << "unset border\n";
-			gp << "set margins 0.1, 0.1, 0.1, 0.1\n";
-			gp.setTerminal("pngcairo", K::GnuplotSize(14, 3));
-			gp.setOutput("/tmp/2/opt_" + std::to_string(++xxx) + ".png");
+			// write to file
+//			static int xxx = 0;
+//			gp << "unset xtics\n";
+//			gp << "unset ytics\n";
+//			gp << "unset border\n";
+//			gp << "set margins 0.1, 0.1, 0.1, 0.1\n";
+//			gp.setTerminal("pngcairo", K::GnuplotSize(14, 3));
+//			gp.setOutput("/tmp/2/opt_" + std::to_string(++xxx) + ".png");
 
 			if (dimensions == 1) {
-				//gp << "set yrange [-1:" << (classIdx) << "]\n";
+				gp << "set yrange [-1:" << (classIdx) << "]\n";
 				gp.draw(plot);
 			} else if (dimensions == 2) {
 				gp.draw(plot);

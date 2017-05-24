@@ -111,7 +111,8 @@ namespace K {
 			this->ticsStep += ") ";
 		}
 
-		/** set the format for the tics-labels */
+
+		/** set the format for the tics-labels (default: "%h") */
 		void setTicsLabelFormat(const std::string& format) {
 			this->ticsLabelFormat = format;
 		}

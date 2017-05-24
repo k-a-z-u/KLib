@@ -61,6 +61,12 @@ namespace K {
 			elements.push_back(elem);
 		}
 
+
+		/** remove an element from this splot */
+		void remove(const GnuplotSplotElement* elem) {
+			elements.erase(std::remove(elements.begin(), elements.end(), elem), elements.end());
+		}
+
 		/** get the first x axis */
 		GnuplotAxis& getAxisX() {
 			return axisX;

@@ -38,6 +38,8 @@ namespace K {
 
 		GnuplotMargin margin;
 
+		std::stringstream custom;
+
 		bool gridVisible = false;
 
 		GnuplotKey key;
@@ -57,6 +59,11 @@ namespace K {
 		/** remove a to-be-drawn element from the plot */
 		void remove(const GnuplotPlotElement* elem) {
 			elements.erase(std::find(elements.begin(), elements.end(), elem));
+		}
+
+		/** access to additional custom commands/attributes/settings */
+		std::stringstream& getCustom() {
+			return custom;
 		}
 
 		/** get the first x axis */
@@ -118,7 +125,8 @@ namespace K {
 			axisY2.addTo(ss, mod);
 
 			// background grid?
-			if (gridVisible)		{ss << "set grid\n";}
+
+			if (gridVisible)		{ss << "set grid front\n";}	// TODO
 
 			// key?
 			key.addTo(ss);
@@ -132,6 +140,8 @@ namespace K {
 
 			// plot objects
 			objects.addTo(ss);
+
+			ss << custom.str();
 
 			ss << "plot ";
 

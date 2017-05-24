@@ -15,8 +15,9 @@ namespace K {
 		/** set internally when added to the plot */
 		int _id;
 
-		/** object in the front? */
+		/** object in the front/back? */
 		bool front = false;
+		bool back = false;
 
 		/** z-index for manual draw-ordering */
 		float zIndex = 0;
@@ -32,6 +33,11 @@ namespace K {
 		/** object in the front of others? */
 		void setFront(const bool front) {
 			this->front = front;
+		}
+
+		/** object behind others? */
+		void setBack(const bool back) {
+			this->back = back;
 		}
 
 		/**

@@ -24,7 +24,7 @@ namespace K {
 
 	public:
 
-		State estimate(std::vector<Particle<State>>& particles) override {
+		State estimate(const std::vector<Particle<State>>& particles) override {
 
 			// compile-time sanity checks
 			static_assert( HasOperatorPlusEq<State>::value, "your state needs a += operator!" );

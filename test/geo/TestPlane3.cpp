@@ -21,7 +21,7 @@ namespace K {
 		K::GnuplotSplot plot;
 		K::GnuplotSplotElementLines lines;		plot.add(&lines);
 		K::GnuplotSplotElementPoints points1;	plot.add(&points1);	points1.setPointType(7); points1.setPointSize(0.75);
-		K::GnuplotSplotElementPoints points2;	plot.add(&points2); points2.setPointType(7); points2.setPointSize(0.25); points2.setColorHex("#0000ff");
+		K::GnuplotSplotElementPoints points2;	plot.add(&points2); points2.setPointType(7); points2.setPointSize(0.25); points2.getColor().setHexStr("#0000ff");
 
 		for (const Point3f& p : pts1) {
 			points1.add(K::GnuplotPoint3(p.x, p.y, p.z));

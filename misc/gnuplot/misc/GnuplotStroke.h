@@ -62,9 +62,10 @@ namespace K {
 		}
 
 		/** to gnuplot */
-		std::string toGP() const {
+
+		std::string toGP(const bool withColor = true) const {
 			std::string res;
-			if (!color.isAuto()) {res += " linecolor " + color.toGP();}
+			if (!color.isAuto() && withColor) {res += " linecolor " + color.toGP();}
 			res += " linewidth " + std::to_string(width);
 			res += " dashtype " + dashtypeToGP(type);
 			return res;

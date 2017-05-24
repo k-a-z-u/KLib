@@ -54,6 +54,23 @@ namespace K {
 			return *this;
 		}
 
+		ImageChannel region(const int x1, const int y1, const int x2, const int y2) const {
+
+			const int w = x2-x1;
+			const int h = y2-y1;
+			ImageChannel res(w,h);
+
+			int i = 0;
+			for (int y = y1; y < y2; ++y) {
+				for (int x = x1; x < x2; ++x) {
+					res.data[i] = this->get(x,y);
+					++i;
+				}
+			}
+
+			return res;
+
+		}
 
 		K::Statistics<float> getStats() const {
 			K::Statistics<float> stats;

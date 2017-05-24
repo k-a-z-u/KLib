@@ -17,7 +17,7 @@ namespace K {
 
 	public:
 
-		State estimate(std::vector<Particle<State>>& particles) override {
+		State estimate(const std::vector<Particle<State>>& particles) override {
 
 			// comparator
 			auto comp = [] (const Particle<State>& p1, const Particle<State>& p2) {

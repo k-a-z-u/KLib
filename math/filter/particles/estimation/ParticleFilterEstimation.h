@@ -2,6 +2,7 @@
 #define K_MATH_FILTER_PARTICLES_PARTICLEFILTERESTIMATION_H
 
 #include "../Particle.h"
+#include <vector>
 
 namespace K {
 
@@ -11,10 +12,10 @@ namespace K {
 	public:
 
 		// dtor
-		//virtual ~ParticleFilterEstimation() {;}
+		virtual ~ParticleFilterEstimation() {;}
 
 		// get the current state estimation for the given particle set
-		virtual State estimate(std::vector<Particle<State>>& particles) = 0;
+		virtual State estimate(const std::vector<Particle<State>>& particles) = 0;
 
 	};
 

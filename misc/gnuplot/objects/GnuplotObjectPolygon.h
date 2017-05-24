@@ -64,18 +64,22 @@ namespace K {
 
 		virtual void addTo(std::stringstream& ss) const override {
 
-			if (!enabled) {return;}
+			if (!enabled) {
+				ss << " unset object " << _id << "\n";
+			} else {
 
-			ss << " set object " << _id << " polygon ";
-			for (size_t i = 0; i < points.size(); ++i) {
-				ss << ( i==0 ? "from " : "to ");
-				ss << points[i].toGP();
+				ss << " set object " << _id << " polygon ";
+				for (size_t i = 0; i < points.size(); ++i) {
+					ss << ( i==0 ? "from " : "to ");
+					ss << points[i].toGP();
+				}
+				//ss << " " << fill.toGP();
+				//ss << " " << stroke.toGP();
+				ss << getStyle(fill, stroke);
+				if (front) {ss << " front ";}
+				ss << "\n";
+
 			}
-			//ss << " " << fill.toGP();
-			//ss << " " << stroke.toGP();
-			ss << getStyle(fill, stroke);
-			if (front) {ss << " front ";}
-			ss << "\n";
 
 		}
 

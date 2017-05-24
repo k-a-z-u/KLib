@@ -43,9 +43,9 @@ namespace K {
 	public:
 
 		virtual std::string modLabel(const std::string& src) const override {return fix(toTex(src));}
-		virtual std::string modTitle(const std::string& src) const override {return fix(toTex(src));}
+		virtual std::string modTitle(const std::string& src) const override {return (src.empty()) ? (src) : (fix(toTex(src)));}
 		virtual std::string modTics(const std::string& src) const override {return fixAlt(toTex(src));}
-		virtual std::string modEntryTitle(const std::string& src) const override {return fix(toTex(src));}
+		virtual std::string modEntryTitle(const std::string& src) const override {return (src.empty()) ? (src) : (fix(toTex(src)));}
 
 	private:
 
