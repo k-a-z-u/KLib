@@ -105,8 +105,9 @@ namespace K {
 				// check
 				if (ret < 0) {
 					throw ProcessException("error while executing process: " + cmd);
+					exit(0);
 				}
-				exit(0);
+
 
 			} else {
 
@@ -127,7 +128,7 @@ namespace K {
 
 			// cleanup
 			close();
-			kill(pid, 9);
+			kill();
 
 		}
 
@@ -175,13 +176,26 @@ namespace K {
 		void close() {
 			closeFD(pipeFromProcess[READ]);
 			closeFD(pipeToProcess[WRITE]);
+			usleep(1000*10);	// dunno why but some processes need a little time here to close correctly
+		}
+
+		/** kill the process */
+		void kill() {
+			if (pid) {
+				const int res = ::kill(pid, SIGTERM);
+				if (res != 0) {
+					::kill(pid, SIGKILL);
+				}
+				join();
+				pid = 0;
+			}
 		}
 
 		/** wait for the process to terminate */
 		void join() {
 			int status;
 			while (wait(&status) != pid) {
-				usleep(10000);
+				usleep(1000 * 10);
 			}
 		}
 

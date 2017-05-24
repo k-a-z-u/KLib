@@ -21,7 +21,10 @@ namespace K {
 		void addDataTo(std::ostream& ss) const override {
 
 			for (const GnuplotPoint3& p : points) {
-				ss << p.x << ' ' << p.y << ' ' << p.z << "\n";
+				if (!p.isEmpty()) {
+					ss << p.x << ' ' << p.y << ' ' << p.z;
+				};
+				ss << "\n";
 			}
 			ss << "e\n";
 

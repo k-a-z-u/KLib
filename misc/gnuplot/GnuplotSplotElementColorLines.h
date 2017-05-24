@@ -1,12 +1,15 @@
-#ifndef GNUPLOTSPLOTELEMENTCOLORPOINTS_H
-#define GNUPLOTSPLOTELEMENTCOLORPOINTS_H
+#ifndef GNUPLOTSPLOTELEMENTCOLORLINES_H
+#define GNUPLOTSPLOTELEMENTCOLORLINES_H
+
 
 #include <vector>
-#include "GnuplotSplotElement.h"
+#include "GnuplotSplotElementRaw.h"
+#include "attributes/GnuplotAttrStroke.h"
+#include "misc/GnuplotStroke.h"
 
 namespace K {
 
-	class GnuplotSplotElementColorPoints : public GnuplotSplotElement {
+	class GnuplotSplotElementColorLines : public GnuplotSplotElementRaw, public GnuplotAttrStroke {
 
 		struct ColorPoint {
 			GnuplotPoint3 p;
@@ -14,42 +17,27 @@ namespace K {
 			ColorPoint(const GnuplotPoint3& p, const float color) : p(p), color(color) {;}
 		};
 
-	private:
-
 		std::vector<ColorPoint> points;
-
-		float pointSize = 0.2;
-		int pointType = 7;
-
 
 	public:
 
-		void setPointType(const int t) {this->pointType = t;}
-
-		void setPointSize(const float s) {this->pointSize = s;}
-
-
 		void addHeaderTo(std::ostream& ss, const GnuplotStringMod* mod) const override {
-			ss << "'-' with points palette ";
+			if (empty()) {return;}
+			ss << "'-' with lines palette ";
 			ss << attrCustom << " ";
-			ss << " pt " << pointType;
-			ss << " ps " << pointSize;
+			ss << stroke.toGP(false);
 			ss << " title '" << mod->modEntryTitle(title) << "'";
-			ss << " ";
+		}
+
+		/** add an empty line */
+		void splitFace() {
+			GnuplotPoint3 gp = GnuplotPoint3::getEmpty();
+			points.push_back(ColorPoint(gp, 0));
 		}
 
 		/** add a new point to output */
 		void add(const GnuplotPoint3 p, const float palette) {
 			points.push_back(ColorPoint(p,palette));
-		}
-
-		/** remove all added elements */
-		void clear() {
-			points.clear();
-		}
-
-		const std::vector<ColorPoint>& get() const {
-			return points;
 		}
 
 		bool empty() const override {
@@ -58,7 +46,8 @@ namespace K {
 
 		void addDataTo(std::ostream& ss) const override {
 			for (const ColorPoint& p : points) {
-					ss << p.p.x << ' ' << p.p.y << ' ' << p.p.z << ' ' << p.color << "\n";
+				if (p.p.isEmpty()) {continue;}
+				ss << p.p.x << ' ' << p.p.y << ' ' << p.p.z << ' ' << p.color << "\n";
 			}
 			ss << "e\n";
 		}
@@ -67,4 +56,4 @@ namespace K {
 
 }
 
-#endif // GNUPLOTSPLOTELEMENTCOLORPOINTS_H
+#endif // GNUPLOTSPLOTELEMENTCOLORLINES_H

@@ -1,4 +1,0 @@
-#ifndef GNUPLOTLEGEND_H
-#define GNUPLOTLEGEND_H
-
-#endif // GNUPLOTLEGEND_H

@@ -5,6 +5,7 @@
 #include "GnuplotStructs.h"
 #include "attributes/GnuplotAttrTitle.h"
 #include "attributes/GnuplotAttrCustom.h"
+#include "misc/GnuplotStringMod.h"
 
 namespace K {
 
@@ -15,7 +16,7 @@ namespace K {
 
 	public:
 
-		virtual void addHeaderTo(std::ostream& ss) const = 0;
+		virtual void addHeaderTo(std::ostream& ss, const GnuplotStringMod* mod) const = 0;
 
 		virtual void addDataTo(std::ostream& ss) const = 0;
 

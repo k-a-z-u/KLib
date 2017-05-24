@@ -4,28 +4,22 @@
 
 #include <vector>
 #include "GnuplotPlotElementRaw.h"
-
+#include "attributes/GnuplotAttrStroke.h"
 
 namespace K {
 
-	class GnuplotPlotElementLines : public GnuplotPlotElementRaw {
-
-	private:
-
-		int lineWidth = 1;
-
+	class GnuplotPlotElementLines : public GnuplotPlotElementRaw, public GnuplotAttrStroke {
 
 	public:
 
-		/** set the line-width to use for drawing */
-		void setLineWidth(const int lineWidth) {this->lineWidth = lineWidth;}
+		void addHeaderTo(std::stringstream& ss, const GnuplotStringMod* mod) const override {
 
-		void addHeaderTo(std::stringstream& ss) const override {
 			ss << "'-' with lines ";
 			ss << attrCustom << " ";
-			ss << " lw " << lineWidth;
-			ss << " lc " << color;
-			ss << " title '" << title << "'";
+			ss << stroke.toGP();
+			ss << " title '" << mod->modEntryTitle(title) << "' ";
+			ss << getUseAxis();
+
 		}
 
 		/** add a new point to output */

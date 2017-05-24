@@ -33,8 +33,9 @@ namespace K {
 			return points.empty();
 		}
 
-		void addHeaderTo(std::ostream& ss) const override {
+		void addHeaderTo(std::ostream& ss, const GnuplotStringMod* mod) const override {
 			ss << "'-' with pm3d ";
+			//ss << "'-' lc rgb '#444444' ";
 		}
 
 		void addDataTo(std::ostream& ss) const override {

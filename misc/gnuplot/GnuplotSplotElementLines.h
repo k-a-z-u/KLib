@@ -3,28 +3,24 @@
 
 #include <vector>
 #include "GnuplotSplotElementRaw.h"
-#include "attributes/GnuplotAttrColor.h"
+#include "attributes/GnuplotAttrStroke.h"
+#include "misc/GnuplotStroke.h"
 
 namespace K {
 
-	class GnuplotSplotElementLines : public GnuplotSplotElementRaw, public GnuplotAttrColor {
-
-	private:
-
-		int lineWidth = 1;
+	class GnuplotSplotElementLines : public GnuplotSplotElementRaw, public GnuplotAttrStroke {
 
 	public:
 
-		/** set the line-width to use for drawing */
-		void setLineWidth(const int lineWidth) {this->lineWidth = lineWidth;}
-
-		void addHeaderTo(std::ostream& ss) const override {
+		void addHeaderTo(std::ostream& ss, const GnuplotStringMod* mod) const override {
 			if (empty()) {return;}
 			ss << "'-' with lines ";
 			ss << attrCustom << " ";
-			ss << " lw " << lineWidth;
-			ss << " lc " << color;
-			ss << " title '" << title << "'";
+			ss << stroke.toGP();
+			//ss << " lw " << lineWidth;
+			//if (!color.isAuto()) {ss << " lc " << color.toGP();}
+			//if (dashType != 1) {ss << " dashtype " << dashType;}
+			ss << " title '" << mod->modEntryTitle(title) << "'";
 		}
 
 		/** add an empty line */
