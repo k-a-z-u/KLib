@@ -29,12 +29,12 @@ namespace K {
 		void setPointSize(const float s) {this->pointSize = s;}
 
 
-		void addHeaderTo(std::stringstream& ss) const override {
+		void addHeaderTo(std::stringstream& ss, const GnuplotStringMod* mod) const override {
 			ss << "'-' with points palette ";
 			ss << attrCustom << " ";
 			ss << " pt " << pointType;
 			ss << " ps " << pointSize;
-			ss << " title '" << title << "'";
+			ss << " title '" << mod->modEntryTitle(title) << "'";
 		}
 
 		/** add a new point to output */

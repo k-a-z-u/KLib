@@ -10,9 +10,8 @@ namespace K {
 
 	private:
 
-		float pointSize = 0.2;
+		float pointSize = 0.2f;
 		int pointType = 7;
-
 
 	public:
 
@@ -20,15 +19,15 @@ namespace K {
 
 		void setPointSize(const float s) {this->pointSize = s;}
 
-		void setColorHex(const std::string& hex) {this->color = "rgb '" + hex + "'";}
+		//void setColorHex(const std::string& hex) {this->color = "rgb '" + hex + "'";}
 
-		void addHeaderTo(std::ostream& ss) const override {
+		void addHeaderTo(std::ostream& ss, const GnuplotStringMod* mod) const override {
 			ss << "'-' with points ";
 			ss << attrCustom << " ";
 			ss << " pt " << pointType;
 			ss << " ps " << pointSize;
-			ss << " lc " << color;
-			ss << " title '" << title << "'";
+			if (!color.isAuto()) {ss << " lc " << color.toGP();}
+			ss << " title '" << mod->modEntryTitle(title) << "'";
 		}
 
 	};

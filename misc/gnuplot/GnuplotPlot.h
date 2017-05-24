@@ -6,6 +6,11 @@
 
 #include "GnuplotDrawable.h"
 #include "GnuplotPlotElement.h"
+#include "objects/GnuplotObjects.h"
+#include "misc/GnuplotKey.h"
+#include "misc/GnuplotAxis.h"
+#include "misc/GnuplotStringMod.h"
+#include "misc/GnuplotMargin.h"
 
 namespace K {
 
@@ -14,12 +19,35 @@ namespace K {
 	 */
 	class GnuplotPlot : public GnuplotDrawable  {
 
+
 	private:
 
 		/** the elements to draw */
 		std::vector<const GnuplotPlotElement*> elements;
 
+		/** other objects to draw [those require special handling] */
+		GnuplotObjects objects;
+
+		GnuplotAxis axisX;
+		GnuplotAxis axisX2;
+		GnuplotAxis axisY;
+		GnuplotAxis axisY2;
+
+		GnuplotStringModNone* MOD_NONE = new GnuplotStringModNone();
+		GnuplotStringMod* mod = MOD_NONE;
+
+		GnuplotMargin margin;
+
+		bool gridVisible = false;
+
+		GnuplotKey key;
+
 	public:
+
+		/** ctor */
+		GnuplotPlot() : axisX("x", true), axisX2("x2", false), axisY("y", true), axisY2("y2", false) {
+			;
+		}
 
 		/** add a to-be-drawn element to this plot */
 		void add(const GnuplotPlotElement* elem) {
@@ -31,25 +59,93 @@ namespace K {
 			elements.erase(std::find(elements.begin(), elements.end(), elem));
 		}
 
+		/** get the first x axis */
+		GnuplotAxis& getAxisX() {
+			return axisX;
+		}
+
+		/** get the second x axis */
+		GnuplotAxis& getAxisX2() {
+			return axisX2;
+		}
+
+		/** get the first y axis */
+		GnuplotAxis& getAxisY() {
+			return axisY;
+		}
+
+		/** get the second y axis */
+		GnuplotAxis& getAxisY2() {
+			return axisY2;
+		}
+
+		/** configure the to-be-used string modifier (e.g. for latex) */
+		void setStringMod(GnuplotStringMod* mod) {
+			this->mod = mod;
+		}
+
+		/** whether to show the background grid */
+		void setGrid(const bool show) {
+			this->gridVisible = show;
+		}
+
+		/** get the plot's key */
+		GnuplotKey& getKey() {
+			return key;
+		}
+
+		/** get special objects */
+		GnuplotObjects& getObjects() {
+			return objects;
+		}
+
+		/** get the plot's margins */
+		GnuplotMargin& getMargin() {
+			return margin;
+		}
+
+
+
+	public:
+
 		/** get a string of what to draw */
 		void addTo(std::stringstream& ss) const override {
+
+			// axis setup
+			axisX.addTo(ss, mod);
+			axisX2.addTo(ss, mod);
+			axisY.addTo(ss, mod);
+			axisY2.addTo(ss, mod);
+
+			// background grid?
+			if (gridVisible)		{ss << "set grid\n";}
+
+			// key?
+			key.addTo(ss);
+
+			margin.addTo(ss);
 
 			// append general parts beforehand
 			for (const GnuplotPlotElement* elem : elements) {
 				elem->addGeneralTo(ss);
 			}
 
+			// plot objects
+			objects.addTo(ss);
+
 			ss << "plot ";
 
 			// append the drawing-header for each element
 			for (const GnuplotPlotElement* elem : elements) {
-				elem->addHeaderTo(ss);
+				if (elem->isEmpty()) {continue;}
+				elem->addHeaderTo(ss, mod);
 				ss << ", ";
 			}
 			ss << "\n";
 
 			// append the drawing data for each element
 			for (const GnuplotPlotElement* elem : elements) {
+				if (elem->isEmpty()) {continue;}
 				elem->addDataTo(ss);
 			}
 			ss << "\n\n";

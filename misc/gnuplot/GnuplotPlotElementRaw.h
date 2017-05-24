@@ -2,7 +2,7 @@
 #define GNUPLOTPLOTELEMENTRAW_H
 
 #include "GnuplotPlotElement.h"
-
+#include <vector>
 namespace K {
 
 	/**
@@ -17,8 +17,14 @@ namespace K {
 
 	public:
 
+		/** nothing to plot? */
+		bool isEmpty() const override {
+			return points.empty();
+		}
+
 		void addDataTo(std::stringstream& ss) const override {
 
+			// plot points
 			for (const GnuplotPoint2& p : points) {
 				if (p.isEmpty()) {
 					ss << "\n";

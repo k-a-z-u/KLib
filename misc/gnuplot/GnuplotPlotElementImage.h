@@ -23,15 +23,20 @@ namespace K {
 			;
 		}
 
-		void addHeaderTo(std::stringstream& ss) const override {
+		void addHeaderTo(std::stringstream& ss, const GnuplotStringMod* mod) const override {
 			std::string filetype = filename.substr(filename.size() - 3, filename.size());
 			ss << "'" << filename << "' binary  filetype=" << filetype << " flipy with rgbimage ";
 			ss << attrCustom << " ";
-			ss << " title '" << title << "'";
+			ss << " title '" << mod->modEntryTitle(title) << "'";
 		}
 
 		void addDataTo(std::stringstream& ss) const override {
+			(void) ss;
 			;	// nothing to-do here
+		}
+
+		bool isEmpty() const override {
+			return false;
 		}
 
 	};

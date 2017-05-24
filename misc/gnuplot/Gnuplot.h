@@ -3,6 +3,7 @@
 
 #include "../../os/Process.h"
 #include "../../fs/File.h"
+#include <fstream>
 
 #include "GnuplotSize.h"
 #include "GnuplotDrawable.h"
@@ -45,6 +46,7 @@ namespace K {
 		}
 
 		void close() {
+			if (proc) {proc->close();}
 			delete proc;
 			proc = nullptr;
 		}
@@ -72,16 +74,25 @@ namespace K {
 
 		/** set the file to write to */
 		void setOutput(const K::File& file) {
-			(*this) << "set output '" << file.getAbsolutePath() << "'\n";
+			(*this) << "set output " << '"' << file.getAbsolutePath() << '"' << "\n";
 		}
 
 		/** send all buffered commands to gnuplot */
 		void flush() {
-			//buffer << std::endl;
+
+			// write to file?
+			if (commandsFile != "") {
+				std::ofstream out(commandsFile);
+				out << getBuffer();
+				out.close();
+			}
+
+			// write to process
 			*proc << buffer.str();
 			if (debug) {std::cout << buffer.str() << std::endl;}
 			proc->flush();
 			buffer.str("");
+
 		}
 
 		/** attach the given drawablw to the draw buffer */
@@ -92,6 +103,11 @@ namespace K {
 		/** get the current buffer content as string */
 		std::string getBuffer() const {
 			return buffer.str();
+		}
+
+		/** set a filename to write the flush() data to [gnuplot commands] */
+		void writePlotToFile(const std::string& fileName) {
+			this->commandsFile = fileName;
 		}
 
 	private:
@@ -107,6 +123,9 @@ namespace K {
 
 		/** perform debug output? */
 		bool debug;
+
+		/** write gnuplot commands to file? */
+		std::string commandsFile;
 
 	};
 

@@ -6,10 +6,11 @@
 #include <map>
 #include "GnuplotPlotElementRaw.h"
 #include "../../math/statistics/SimpleHistogram.h"
+#include "attributes/GnuplotAttrStroke.h"
 
 namespace K {
 
-	class GnuplotPlotElementHistogram : public GnuplotPlotElementRaw {
+	class GnuplotPlotElementHistogram : public GnuplotPlotElementRaw, public GnuplotAttrStroke {
 
 
 	public:
@@ -18,11 +19,11 @@ namespace K {
 			ss << "set style fill solid 0.5 border lt -1\n";
 		}
 
-		void addHeaderTo(std::stringstream& ss) const override {
+		void addHeaderTo(std::stringstream& ss, const GnuplotStringMod* mod) const override {
 			ss << "'-' with boxes ";
 			ss << attrCustom << " ";
-			ss << " lc " << color;
-			ss << " title '" << title << "'";
+			ss << stroke.toGP();
+			ss << " title '" << mod->modEntryTitle(title) << "'";
 		}
 
 		/** add a new sample to the histogram */
