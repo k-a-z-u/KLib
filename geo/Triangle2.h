@@ -8,7 +8,7 @@ namespace K {
 
 	template <typename T> class Triangle2 {
 
-	private:
+	public:
 
 		Point2<T> p1;
 		Point2<T> p2;

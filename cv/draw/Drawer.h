@@ -30,9 +30,19 @@ namespace K {
 
 		}
 
-		/** change the foreground color */
+		/** get the underlying image */
+		ImageChannel& getImage() {
+			return img;
+		}
+
+		/** change the foreground color-value */
 		void setForeground(const float fg) {
 			this->fg = fg;
+		}
+
+		/** change the background color-value */
+		void setBackground(const float bg) {
+			this->bg = bg;
 		}
 
 
@@ -141,6 +151,15 @@ namespace K {
 			for (int y = 0; y < img.getHeight(); ++y) {
 				for (int x = 0; x < img.getWidth(); ++x) {
 					if (bbox.contains(x,y)) {continue;}
+					this->img.set(x,y,bg);
+				}
+			}
+		}
+
+		/** fill the given rect */
+		void fillRect(int x1, int y1, const int x2, const int y2) {
+			for (int y = y1; y < y2; ++y) {
+				for (int x = x1; x < x2; ++x) {
 					this->img.set(x,y,bg);
 				}
 			}

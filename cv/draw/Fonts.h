@@ -733,7 +733,7 @@ namespace K {
 			return this->stride;
 		}
 
-		Glyph getGlyph(const char c) const {
+		Glyph getGlyph(const unsigned char c) const {
 			const int gw = img.getWidth() / cols;
 			const int gh = img.getHeight() / rows;
 			const int col = c % cols;
