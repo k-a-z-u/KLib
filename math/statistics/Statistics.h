@@ -117,6 +117,11 @@ namespace K {
 			return numFound;
 		}
 
+		/** get all contained values in ascending order */
+		const std::multiset<T>& getAll() const {
+			return values;
+		}
+
 		/** get as string */
 		std::string asString() const {
 			std::stringstream ss;

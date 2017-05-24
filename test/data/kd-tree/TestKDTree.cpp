@@ -421,8 +421,8 @@ TEST(KDTree, addManyAtOnce) {
 
 	K::Gnuplot gp;
 	K::GnuplotPlot p1;
-	K::GnuplotPlotElementPoints ps1;	p1.add(&ps1);	ps1.setColorHex("#999999");
-	K::GnuplotPlotElementPoints ps2;	p1.add(&ps2);	ps2.setColorHex("#000000");
+	K::GnuplotPlotElementPoints ps1;	p1.add(&ps1);	ps1.getColor().setHexStr("#999999");
+	K::GnuplotPlotElementPoints ps2;	p1.add(&ps2);	ps2.getColor().setHexStr("#000000");
 
 	for (size_t i = 0; i < vals.size(); i += 32) {
 		const KDPoint3& v = vals[i];

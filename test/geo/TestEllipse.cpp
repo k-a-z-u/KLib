@@ -14,6 +14,20 @@
 
 namespace K {
 
+	TEST(Ellipse, paramConvert3) {
+
+		Ellipse::GeometricParams geo (K::Point2f(0, 0), 8, 5, 0);		// geo
+		Ellipse::CanonicalParams can = geo.toCanonical();					// geo -> can
+		Ellipse::GeometricParams geo2 = can.toGeometric();					// can -> geo
+
+		ASSERT_NEAR(geo.center.x, geo2.center.x, 0.001);
+		ASSERT_NEAR(geo.center.y, geo2.center.y, 0.001);
+		ASSERT_NEAR(geo.a, geo2.a, 0.001);
+		ASSERT_NEAR(geo.b, geo2.b, 0.001);
+		ASSERT_NEAR(geo.rad, geo2.rad, 0.001);
+
+	}
+
 	TEST(Ellipse, paramConvert) {
 
 		Ellipse::GeometricParams geo (K::Point2f(10, 15), 8, 6, 1.2f);		// geo
