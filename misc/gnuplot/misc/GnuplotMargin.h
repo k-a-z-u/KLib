@@ -1,0 +1,4 @@
+#ifndef GNUPLOTMARGIN_H
+#define GNUPLOTMARGIN_H
+
+#endif // GNUPLOTMARGIN_H
