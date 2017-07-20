@@ -11,9 +11,12 @@
 	#include <unistd.h>
 	#include <arpa/inet.h>
 	#include <netdb.h>
+#elif defined(_WIN32)
+	//#include <winsock2.h>
+	using namespace std;
+#else
+	#error "TODO"
 #endif
-
-//#include <winsock2.h>
 
 namespace K {
 

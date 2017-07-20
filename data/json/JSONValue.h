@@ -2,6 +2,7 @@
 #define K_DATA_JSON_JSONVALUE_H
 
 #include <string>
+#include <cstring>
 #include <cstdint>
 #include "JSONTypes.h"
 

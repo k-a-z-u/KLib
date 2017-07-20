@@ -42,7 +42,7 @@ namespace K {
 		}
 
 		/** set an integer-value for the given key */
-		void put(const std::string& key, const int64_t i) {
+		void put(const std::string& key, const long i) {
 			keyVal[key] = JSONValue(i);
 		}
 
@@ -72,8 +72,8 @@ namespace K {
 		}
 
 		/** get the value for the given key. throws an exception if no such value is present */
-		const JSONValue& getValue(const std::string& key) {
-			auto it = keyVal.find(key);
+		const JSONValue& getValue(const std::string& key) const {
+			const auto& it = keyVal.find(key);
 			if (it == keyVal.end()) {throw "value for key not present";}
 			return it->second;
 		}
@@ -89,22 +89,22 @@ namespace K {
 		}
 
 		/** get the integer-value behind the given key */
-		int64_t getInt(const std::string& key) {
+		int64_t getInt(const std::string& key) const {
 			return getValue(key).asInt();
 		}
 
 		/** get the string-value behind the given key */
-		std::string getString(const std::string& key) {
+		std::string getString(const std::string& key) const {
 			return getValue(key).asString();
 		}
 
 		/** get the json-object behind the given key */
-		JSONObject* getObject(const std::string& key) {
+		JSONObject* getObject(const std::string& key) const {
 			return getValue(key).asObject();
 		}
 
 		/** get the json-array behind the given key */
-		JSONArray* getArray(const std::string& key) {
+		JSONArray* getArray(const std::string& key) const {
 			return getValue(key).asArray();
 		}
 

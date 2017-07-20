@@ -47,7 +47,7 @@ namespace K {
 		}
 
 		/** add an integer-value for the given key */
-		void addInt(const int64_t i) {
+		void addInt(const long i) {
 			entries.push_back(JSONValue(i));
 		}
 

@@ -160,7 +160,7 @@ namespace K {
 					return getBoolean(r);
 				case 'n':
 					return getNull(r);
-				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+			    case '-': case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 					return getNumber(r);
 				case '"':
 					return getString(r);
@@ -193,6 +193,7 @@ namespace K {
 			while (true) {
 				if		(r.peek() == '.')						{isFloat = true; str += r.consume();}
 				else if	(r.peek() >= '0' && r.peek() <= '9')	{str += r.consume();}
+				else if (r.peek() == '-')						{str += r.consume();}	// negative number
 				else											{break;}
 			}
 			return (isFloat) ? JSONValue(std::stod(str)) : JSONValue(std::stol(str));
