@@ -59,9 +59,10 @@ namespace K {
 			const std::vector<std::vector<K::Point2i>> allSegments = getSegments(imgEdges);
 
 			// TODO
-			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitFix(allSegments, 200); //debug(splitSegments, imgEdges);
+			//const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitFix(allSegments, 200); //debug(splitSegments, imgEdges);
 			//const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitVar(allSegments, 75, 450);
-
+			const std::vector<std::vector<K::Point2i>> splitSegments = getSegmentsSplitUnsplit(allSegments, 100, 1);
+			//const std::vector<std::vector<K::Point2i>> splitSegments = allSegments;
 
 			const K::ImageChannel imgEdgesBlur = getBlurred(imgEdges);
 
@@ -133,6 +134,54 @@ namespace K {
 //			K::ImageFactory::writePNG("/tmp/bla.png", imgEdgesBlur);
 
 			return imgEdgesBlur;
+
+		}
+
+
+		std::vector<std::vector<K::Point2i>> getSegmentsSplitUnsplit(const std::vector<std::vector<K::Point2i>>& segments, const size_t maxSize, int maxSplits) {
+
+			std::vector<std::vector<K::Point2i>> splitSegments;
+
+			// process every input segment
+			for (const std::vector<K::Point2i>& seg : segments) {
+
+				// use as is
+				splitSegments.push_back(seg);
+
+				// large? -> also split
+				if (seg.size() > maxSize) {
+
+					int maxSubSegs = std::ceil((float)seg.size() / (float)maxSize);
+					maxSubSegs = std::min(maxSubSegs, maxSplits+1);
+
+					// 1) divide into 2 subsegments
+					// 2) divide into 3 subsegments
+					// 3) divide into 4 subsegments
+					// ....
+					for (int subSegs = 2; subSegs <= maxSubSegs; ++subSegs) {
+
+						//const int segSize = seg.size() / subSegs;
+						for (int subSeg = 0; subSeg < subSegs; ++subSeg) {
+							int start = seg.size() * subSeg / subSegs;
+							int end = seg.size() * (subSeg+1) / subSegs;
+							const std::vector<K::Point2i> sub(seg.begin()+start, seg.begin()+end);
+							splitSegments.push_back(sub);
+						}
+
+					}
+
+//					// split in two parts
+//					const int mid = seg.size()/2;
+//					const std::vector<K::Point2i> left(seg.begin(), seg.begin()+mid);
+//					const std::vector<K::Point2i> right(seg.begin()+mid, seg.end());
+//					splitSegments.push_back(left);
+//					splitSegments.push_back(right);
+
+				}
+
+			}
+
+			return splitSegments;
 
 		}
 
@@ -237,8 +286,10 @@ namespace K {
 
 		}
 
+	public:
+
 		/** combine ellipses that are similar and return a new ellipse which is given by their average */
-		std::vector<K::Ellipse::GeometricParams> filterDuplicates(const std::vector<K::Ellipse::GeometricParams>& src) {
+		static inline std::vector<K::Ellipse::GeometricParams> filterDuplicates(const std::vector<K::Ellipse::GeometricParams>& src) {
 
 			std::vector<K::Ellipse::GeometricParams> filtered;
 
@@ -248,8 +299,9 @@ namespace K {
 				for (K::Ellipse::GeometricParams& e2 : filtered) {
 
 					const float dCenterDiff = e1.center.getDistance(e2.center);
-					const float dSizeRatio = std::max(e1.getCircumfence(), e2.getCircumfence()) / std::min(e1.getCircumfence(), e2.getCircumfence());
-					const bool isSimilar = (dCenterDiff < 16) && (dSizeRatio < 1.12f);
+					//const float dSizeRatio = std::max(e1.getCircumfence(), e2.getCircumfence()) / std::min(e1.getCircumfence(), e2.getCircumfence());
+					const float dAxis = std::sqrt(  ((e1.a - e2.a) * (e1.a - e2.a)) + ((e1.b - e2.b) * (e1.b - e2.b))  );
+					const bool isSimilar = (dCenterDiff < 16) && (dAxis < 6);// && (dSizeRatio < 1.12f);
 
 					// if this ellipse is similar to an existing one, join the two
 					if (isSimilar) { unique = false; e2.mix(e1, 0.50f); break; }

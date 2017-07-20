@@ -2,7 +2,7 @@
 #define GNUPLOTSCENE_H
 
 #include "GnuplotDrawable.h"
-#include "GnuplotObject.h"
+#include "objects/GnuplotObject.h"
 
 namespace K {
 
@@ -26,7 +26,8 @@ namespace K {
 			// add all objects
 			int id = 0;
 			for (const GnuplotObject* o : objects) {
-				o->addTo(ss, ++id);
+			//	o->addTo(ss, ++id);
+				std::cout << "GnuplotScene: warning! todo! " << std::endl;
 			}
 
 			// add the scene

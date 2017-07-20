@@ -43,15 +43,20 @@ namespace K {
 			pMax = Point2<T>(_MIN, _MIN);
 		}
 
-		/** "resize" the bounding-box by adding the given point */
+		/** adjust the bounding-box by adding the given point */
+		void add(const T x, const T y) {
+
+			if (x < pMin.x) {pMin.x = x;}
+			if (y < pMin.y) {pMin.y = y;}
+
+			if (x > pMax.x) {pMax.x = x;}
+			if (y > pMax.y) {pMax.y = y;}
+
+		}
+
+		/** adjust the bounding-box by adding the given point */
 		void add(const Point2<T>& p) {
-
-			if (p.x < pMin.x) {pMin.x = p.x;}
-			if (p.y < pMin.y) {pMin.y = p.y;}
-
-			if (p.x > pMax.x) {pMax.x = p.x;}
-			if (p.y > pMax.y) {pMax.y = p.y;}
-
+			add(p.x, p.y);
 		}
 
 		/** grow the bounding-box by the given factor (0.1 = +5% in each direction) */

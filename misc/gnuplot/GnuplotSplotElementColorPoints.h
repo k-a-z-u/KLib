@@ -21,6 +21,7 @@ namespace K {
 		float pointSize = 0.2;
 		int pointType = 7;
 
+		bool front = false;
 
 	public:
 
@@ -28,6 +29,7 @@ namespace K {
 
 		void setPointSize(const float s) {this->pointSize = s;}
 
+		void setFront(const bool front) {this->front = front;}
 
 		void addHeaderTo(std::ostream& ss, const GnuplotStringMod* mod) const override {
 			ss << "'-' with points palette ";
@@ -35,6 +37,7 @@ namespace K {
 			ss << " pt " << pointType;
 			ss << " ps " << pointSize;
 			ss << " title '" << mod->modEntryTitle(title) << "'";
+			if (front) {ss << " front ";}
 			ss << " ";
 		}
 

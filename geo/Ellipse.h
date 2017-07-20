@@ -43,6 +43,10 @@ namespace K {
 				;
 			}
 
+			std::string asString() const {
+				return std::to_string(A) + "x^2 + " + std::to_string(B) + "xy " + std::to_string(C) + "y^2 + " + std::to_string(D) + "x + " + std::to_string(E) + "y + " + std::to_string(F) + " = 0";
+			}
+
 			/** is this a valid ellipse? */
 			bool valid() const {
 				return (A+B+C+D+E) != 0;	// see empty ctor

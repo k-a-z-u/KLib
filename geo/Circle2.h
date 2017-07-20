@@ -49,6 +49,10 @@ namespace K {
 				F = -(radius*radius - (D/2)*(D/2) - (E/2)*(E/2));
 			}
 
+			std::string asString() const {
+				return "x^2 + y^2 + " + std::to_string(D) + "x + " + std::to_string(E) + "y + " + std::to_string(F) + " = 0";
+			}
+
 			/** is this a valid circle? */
 			bool valid() const {
 				return (D+E) != 0;	// see empty ctor

@@ -27,8 +27,8 @@ namespace K {
 
 		private:
 
-			int numRuns = 64;				// number of iterations
-			int numSamples = 6+4;			// 6 suffice but using some more is a little more stable? espicially for thicker boarders!
+			size_t numRuns = 64;				// number of iterations
+			size_t numSamples = 6+4;			// 6 suffice but using some more is a little more stable? espicially for thicker boarders!
 			float minCoverage = 0.5f;		// at least 50% of the ellipse's outline must be covered by inliers
 			float threshold = 0.5f;			// pixels >= 0.5f are accepted
 
@@ -191,22 +191,29 @@ namespace K {
 				Estimation bestParams;
 
 				// provides random samples
-				RandomIterator<Point2<Scalar>> it(rndPoints, numSamples);
-//				MySegIter<Point2<Scalar>> it(rndPoints, numSamples);
-//				std::cout << "TODO: REMOVE num runs" << std::endl;
-//				size_t numRuns = rndPoints.size() / 5;		// 20%
-
-				//MyIter<Point2<Scalar>> it(rndPoints, numSamples);
-				//std::cout << "SWITCH ITER!" << std::endl;
-
+				//RandomIterator<Point2<Scalar>> it(rndPoints, numSamples);
+				static int seed = 0; ++seed;
+				std::minstd_rand gen(seed);
+				std::uniform_int_distribution<int> dist(1, rndPoints.size()-1);
 
 
 				// process X RANSAC runs
 				for (size_t i = 0; i < numRuns; ++i) {
 
+
+					// get X random samples
+					std::vector<Point2f> points;
+					for (size_t i = 0; i < numSamples; ++i) {
+						const int idx = dist(gen);
+						Point2f point = ((Point2f)rndPoints[idx-1] + (Point2f)rndPoints[idx] + (Point2f)rndPoints[idx+1]) / 3.0f;
+						//Point2f point = (Point2f)rndPoints[idx];
+						points.push_back(point);
+					}
+
 					// estimate params from a random sample-set
-					it.randomize();
-					const Estimation params = Estimation::getParams<float>(it);
+					//it.randomize();
+					//const Estimation params = Estimation::getParams<float>(it);
+					const Estimation params = Estimation::getParams<float>(points);
 
 					// get geometric representation (if possible)
 					Ellipse::CanonicalParams canon = params.toEllipse();
