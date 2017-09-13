@@ -1,12 +1,13 @@
-#ifndef GNUPLOTPLOTELEMENTCOLORPOINTS_H
-#define GNUPLOTPLOTELEMENTCOLORPOINTS_H
+#ifndef GNUPLOTPLOTELEMENTCOLORLINES_H
+#define GNUPLOTPLOTELEMENTCOLORLINES_H
 
-
-#include "GnuplotPlotElement.h"
+#include <vector>
+#include "GnuplotPlotElementRaw.h"
+#include "attributes/GnuplotAttrStroke.h"
 
 namespace K {
 
-	class GnuplotPlotElementColorPoints : public GnuplotPlotElement {
+	class GnuplotPlotElementColorLines : public GnuplotPlotElementRaw, public GnuplotAttrStroke {
 
 		struct ColorPoint {
 			GnuplotPoint2 p;
@@ -24,17 +25,18 @@ namespace K {
 
 	public:
 
-		void setPointType(const int t) {this->pointType = t;}
-
-		void setPointSize(const float s) {this->pointSize = s;}
-
-
 		void addHeaderTo(std::stringstream& ss, const GnuplotStringMod* mod) const override {
-			ss << "'-' with points palette ";
+			ss << "'-' with lines palette ";
 			ss << attrCustom << " ";
 			ss << " pt " << pointType;
 			ss << " ps " << pointSize;
 			ss << " title '" << mod->modEntryTitle(title) << "'";
+		}
+
+		/** add an empty line */
+		void splitFace() {
+			GnuplotPoint2 gp = GnuplotPoint2::getEmpty();
+			points.push_back(ColorPoint(gp, 0));
 		}
 
 		/** add a new point to output */
@@ -63,4 +65,5 @@ namespace K {
 
 }
 
-#endif // GNUPLOTPLOTELEMENTCOLORPOINTS_H
+
+#endif // GNUPLOTPLOTELEMENTCOLORLINES_H

@@ -32,6 +32,7 @@ namespace K {
 		GnuplotAxis axisX2;
 		GnuplotAxis axisY;
 		GnuplotAxis axisY2;
+		GnuplotAxis axisCB;
 
 		GnuplotStringModNone* MOD_NONE = new GnuplotStringModNone();
 		GnuplotStringMod* mod = MOD_NONE;
@@ -47,7 +48,7 @@ namespace K {
 	public:
 
 		/** ctor */
-		GnuplotPlot() : axisX("x", true), axisX2("x2", false), axisY("y", true), axisY2("y2", false) {
+		GnuplotPlot() : axisX("x", true), axisX2("x2", false), axisY("y", true), axisY2("y2", false), axisCB("cb", true) {
 			;
 		}
 
@@ -86,6 +87,12 @@ namespace K {
 			return axisY2;
 		}
 
+		/** get the cb axis */
+		GnuplotAxis& getAxisCB() {
+			return axisCB;
+		}
+
+
 		/** configure the to-be-used string modifier (e.g. for latex) */
 		void setStringMod(GnuplotStringMod* mod) {
 			this->mod = mod;
@@ -123,6 +130,7 @@ namespace K {
 			axisX2.addTo(ss, mod);
 			axisY.addTo(ss, mod);
 			axisY2.addTo(ss, mod);
+			axisCB.addTo(ss, mod);
 
 			// background grid?
 
