@@ -11,7 +11,8 @@ namespace K {
 
 	public:
 
-		void addHeaderTo(std::stringstream& ss, const GnuplotStringMod* mod) const override {
+
+		void addHeaderTo(std::ostream& ss, const GnuplotStringMod* mod) const override {
 			ss << "'-' with image";
 			ss << " title '" << mod->modEntryTitle(title) << "' ";
 			ss << attrCustom;
