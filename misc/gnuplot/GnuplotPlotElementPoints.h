@@ -40,6 +40,14 @@ namespace K {
 			points.clear();
 		}
 
+		/** remove all points if the given function matches */
+		void removeIf(std::function<bool(GnuplotPoint2)> func) {
+			for (size_t i = 0; i < points.size(); ++i) {
+				const bool remove = func(points[i]);
+				if (remove) {points.erase(points.begin()+i); --i;}
+			}
+		}
+
 	};
 
 }

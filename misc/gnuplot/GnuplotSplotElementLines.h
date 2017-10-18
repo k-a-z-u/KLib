@@ -10,17 +10,26 @@ namespace K {
 
 	class GnuplotSplotElementLines : public GnuplotSplotElementRaw, public GnuplotAttrStroke {
 
+	private:
+
+		bool showPoints = false;
+
 	public:
 
 		void addHeaderTo(std::ostream& ss, const GnuplotStringMod* mod) const override {
 			if (empty()) {return;}
-			ss << "'-' with lines ";
+			ss << "'-' with " << (showPoints ? "linespoints" : "lines");
 			ss << attrCustom << " ";
 			ss << stroke.toGP();
 			//ss << " lw " << lineWidth;
 			//if (!color.isAuto()) {ss << " lc " << color.toGP();}
 			//if (dashType != 1) {ss << " dashtype " << dashType;}
 			ss << " title '" << mod->modEntryTitle(title) << "'";
+		}
+
+		/** whether to show points along the lines */
+		void setShowPoints(const bool show) {
+			this->showPoints = show;
 		}
 
 		/** add an empty line */

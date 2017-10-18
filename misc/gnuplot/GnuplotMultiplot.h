@@ -29,7 +29,10 @@ namespace K {
 		virtual void addTo(std::stringstream& ss) const override {
 			ss << "set multiplot layout " << rows << ',' << cols << "\n";
 			for (const GnuplotDrawable* d : elements) {
+				ss << "set time\n";
 				d->addTo(ss);
+				ss << "unset time\n";
+				//ss << "unset xrange\n unset yrange\n unset zrange\n";
 			}
 			ss << "unset multiplot\n";
 		}

@@ -56,6 +56,10 @@ namespace K {
 			points.push_back(GnuplotCoordinate3(coord.x, coord.sysX, coord.y, coord.sysY));
 		}
 
+		void clear() {
+			points.clear();
+		}
+
 		void close() {
 			points.push_back(points.front());
 		}

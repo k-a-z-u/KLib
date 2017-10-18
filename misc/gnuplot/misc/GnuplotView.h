@@ -13,6 +13,7 @@ namespace K {
 		float degY = 40;
 		float scaleAll = 1.0;
 		float scaleZ = 1.0;
+		bool enabled = true;
 
 	public:
 
@@ -31,7 +32,13 @@ namespace K {
 			this->scaleAll = scale;
 		}
 
+		/** disable "view" (allows for manual rotation for live-plots) */
+		void setEnabled(bool en) {
+			this->enabled = en;
+		}
+
 		void addTo(std::ostream& ss) const {
+			if (!enabled) {return;}
 			ss << "set view " << degX << "," << degY << " ";
 			if (scaleAll != 1 || scaleZ != 1) {
 				ss << "," << scaleAll << "," << scaleZ << " ";

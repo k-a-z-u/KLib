@@ -34,6 +34,8 @@ namespace K {
 		GnuplotAxis axisY2;
 		GnuplotAxis axisCB;
 
+		std::string title = "";
+
 		GnuplotStringModNone* MOD_NONE = new GnuplotStringModNone();
 		GnuplotStringMod* mod = MOD_NONE;
 
@@ -60,6 +62,11 @@ namespace K {
 		/** remove a to-be-drawn element from the plot */
 		void remove(const GnuplotPlotElement* elem) {
 			elements.erase(std::find(elements.begin(), elements.end(), elem));
+		}
+
+		/** set the plot's title */
+		void setTitle(const std::string& title) {
+			this->title = title;
 		}
 
 		/** access to additional custom commands/attributes/settings */
@@ -124,6 +131,11 @@ namespace K {
 
 		/** get a string of what to draw */
 		void addTo(std::stringstream& ss) const override {
+
+			// title?
+			if (!title.empty()) {
+				ss << "set title '" << mod->modTitle(title) << "'\n";
+			}
 
 			// axis setup
 			axisX.addTo(ss, mod);
