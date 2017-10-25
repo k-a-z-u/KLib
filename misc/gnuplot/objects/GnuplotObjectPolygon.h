@@ -64,6 +64,14 @@ namespace K {
 			points.push_back(points.front());
 		}
 
+		void addRectangle(float cx, float cy, float w, float h, K::GnuplotCoordinateSystem sys) {
+			add(K::GnuplotCoordinate2(cx-w, cy-h, sys));
+			add(K::GnuplotCoordinate2(cx+w, cy-h, sys));
+			add(K::GnuplotCoordinate2(cx+w, cy+h, sys));
+			add(K::GnuplotCoordinate2(cx-w, cy+h, sys));
+			add(K::GnuplotCoordinate2(cx-w, cy-h, sys));
+		}
+
 	public:
 
 		virtual void addTo(std::stringstream& ss) const override {
@@ -74,7 +82,7 @@ namespace K {
 
 				ss << " set object " << _id << " polygon ";
 				for (size_t i = 0; i < points.size(); ++i) {
-					ss << ( i==0 ? "from " : "to ");
+					ss << ( i==0 ? " from " : " to ");
 					ss << points[i].toGP();
 				}
 				//ss << " " << fill.toGP();
