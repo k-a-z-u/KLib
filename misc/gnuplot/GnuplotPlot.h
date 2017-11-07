@@ -132,9 +132,12 @@ namespace K {
 		/** get a string of what to draw */
 		void addTo(std::stringstream& ss) const override {
 
+			ss << "\n";
+
 			// title?
 			if (!title.empty()) {
-				ss << "set title '" << mod->modTitle(title) << "'\n";
+				const std::string _title = mod->modTitle(title);
+				ss << "set title '" << _title << "' \n";
 			}
 
 			// axis setup

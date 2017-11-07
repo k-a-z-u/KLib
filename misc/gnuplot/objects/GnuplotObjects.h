@@ -42,6 +42,13 @@ namespace K {
 			objects[id] = obj;
 		}
 
+		/** get the object for the given ID */
+		GnuplotObject* get(const int id) {
+			const auto& it = objects.find(id);
+			if (it == objects.end()) {return nullptr;}
+			return it->second;
+		}
+
 		/** remove the object with the given id */
 		void remove(const int id) {
 			objects[id]->removeFrom(pending);
@@ -52,6 +59,11 @@ namespace K {
 		void remove(GnuplotObject* obj) {
 			remove(obj->_id);
 		}
+
+//		void deleteAll() {
+//			for (const auto& it : objects) {delete it.second;}
+//			objects.clear();
+//		}
 
 		void reOrderByZIndex() {
 
