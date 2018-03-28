@@ -4,6 +4,8 @@
 #include "../../os/Process.h"
 #include "../../fs/File.h"
 #include <fstream>
+#include <chrono>
+#include <thread>
 
 #include "GnuplotSize.h"
 #include "GnuplotDrawable.h"
@@ -17,7 +19,7 @@ namespace K {
 		/** ctor */
 		Gnuplot() : debug(false) {
 			proc = new K::Process("/usr/bin/gnuplot");
-			usleep(1000*25);
+			std::this_thread::sleep_for(std::chrono::milliseconds(25));
 			setSize(640,480);
 			//flush();
 		}
@@ -50,7 +52,7 @@ namespace K {
 
 			if (proc) {
 				proc->close();
-				usleep(1000*100);	// dunno why but some processes need a little time here to close correctly
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));	// dunno why but some processes need a little time here to close correctly
 				proc->kill();
 			}
 			delete proc;		// will close() and kill() the process;

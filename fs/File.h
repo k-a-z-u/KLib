@@ -27,6 +27,8 @@
 #elif _WIN32
 #define NOMINMAX
 #include "dirent.h"
+#undef near
+#undef far
 #include <direct.h>
 #define getCurrentDir _getcwd
 #define NEEDED_SLASH '/'
