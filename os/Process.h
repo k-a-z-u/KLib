@@ -2,7 +2,6 @@
 #define K_OS_PROCESS_H
 
 #include <exception>
-#include <sys/wait.h>
 #include <string>
 
 namespace K {
@@ -32,7 +31,7 @@ namespace K {
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
-
+#include <sys/wait.h>
 
 namespace K {
 
@@ -239,6 +238,11 @@ namespace K {
 	public:
 
 		/** open the process using the given command */
+		Process(const std::string& cmd) : Process(cmd, {}) {
+
+		}
+
+		/** open the process using the given command and arguments */
 		Process(const std::string& cmd, const std::string& args) {
 			;
 		}
@@ -264,7 +268,15 @@ namespace K {
 			ss.str("");
 		}
 
+		/** close the streams */
+		void close() {
+		   // NOT IMPLEMENTED
+		}
 
+		/** kill the process */
+		void kill() {
+			// NOT IMPLEMENTED
+		}
 
 
 	};
