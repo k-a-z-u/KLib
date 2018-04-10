@@ -17,10 +17,14 @@ namespace K {
 	public:
 
 		/** ctor */
-		Gnuplot() : debug(false) {
-			proc = new K::Process("/usr/bin/gnuplot");
+		Gnuplot() : Gnuplot("/usr/bin/gnuplot") {
+
+		}
+
+		Gnuplot(const std::string& gnuPlotPath) : debug(false) {
+			proc = new K::Process(gnuPlotPath);
 			std::this_thread::sleep_for(std::chrono::milliseconds(25));
-			setSize(640,480);
+			setSize(640, 480);
 			//flush();
 		}
 
