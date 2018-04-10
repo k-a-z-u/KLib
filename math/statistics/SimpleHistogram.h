@@ -60,7 +60,7 @@ namespace K {
 
 		/** convert from x to bin-number */
 		int xToBin(const float x) const {
-			return std::round(x/binSize);
+			return (int)std::round(x/binSize);
 		}
 
 		/** convert from bin-number to x */
