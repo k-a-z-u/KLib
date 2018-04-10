@@ -18,7 +18,7 @@ namespace K {
 
 		std::vector<ColorPoint> points;
 
-		float pointSize = 0.2;
+		float pointSize = 0.2f;
 		int pointType = 7;
 
 		bool front = false;

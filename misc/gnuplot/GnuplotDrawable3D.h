@@ -4,6 +4,8 @@
 #include <vector>
 #include <sstream>
 
+#include "GnuplotStructs.h"
+
 namespace K {
 
 
