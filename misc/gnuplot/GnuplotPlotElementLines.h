@@ -1,7 +1,7 @@
 #ifndef GNUPLOTPLOTELEMENTLINES_H
 #define GNUPLOTPLOTELEMENTLINES_H
 
-
+#include <functional>
 #include <vector>
 #include "GnuplotPlotElementRaw.h"
 #include "attributes/GnuplotAttrStroke.h"
