@@ -196,9 +196,7 @@ namespace K {
 		/** kill the process */
 		void kill() {
 			if (piProcInfo.hProcess) {
-				if (!TerminateProcess(piProcInfo.hProcess, 0)) {
-					ThrowWin32Exception("Failed to terminate gnuplot process.");
-				}
+                TerminateProcess(piProcInfo.hProcess, 0);
 
 				join();
 
