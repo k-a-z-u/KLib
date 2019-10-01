@@ -60,6 +60,11 @@ namespace K {
 
 		/** remove object */
 		virtual void removeFrom(std::stringstream& ss) const = 0;
+		
+		int getID() const
+		{
+			return _id;
+		}
 
 	protected:
 
