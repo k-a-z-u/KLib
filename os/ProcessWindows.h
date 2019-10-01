@@ -52,7 +52,7 @@ namespace K {
 			saAttr.lpSecurityDescriptor = NULL;
 
 			// Create a pipe for the child process's STDOUT. 
-			if (!CreatePipe(&hChildStdOutRx, &hChildStdInTx, &saAttr, 0)) {
+			if (!CreatePipe(&hChildStdOutRx, &hChildStdOutTx, &saAttr, 0)) {
 				ThrowWin32Exception("Failed to create pipe for stdout.");
 			}
 
@@ -74,8 +74,8 @@ namespace K {
 			// Create the child process. 
 			STARTUPINFOA siStartInfo = {};
 			siStartInfo.cb = sizeof(STARTUPINFOA);
-			siStartInfo.hStdError = hChildStdOutTx;
-			siStartInfo.hStdOutput = hChildStdOutTx;
+			//siStartInfo.hStdError = hChildStdOutTx;
+			//siStartInfo.hStdOutput = hChildStdOutTx;
 			siStartInfo.hStdInput = hChildStdInRx;
 			siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
