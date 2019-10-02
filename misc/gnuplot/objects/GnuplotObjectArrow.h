@@ -43,7 +43,7 @@ namespace K {
 
 		/** ctor */
 		GnuplotObjectArrow(const GnuplotCoordinate2& from, const GnuplotCoordinate2& to, const GnuplotStroke& stroke, const Head head) :
-		    from(from.x, from.sysX, from.y, from.sysY), to(to.x, from.sysX, to.y, from.sysY), stroke(stroke), head(head) {
+			from(from.x, from.sysX, from.y, from.sysY), to(to.x, from.sysX, to.y, from.sysY), stroke(stroke), head(head) {
 			;
 		}
 
@@ -58,9 +58,11 @@ namespace K {
 			ss << " set arrow " << _id;
 			ss << " from " << from.toGP();
 			ss << " to " << to.toGP();
+			if (front) {ss << " front ";}
+			if (back) {ss << " back ";}
 			ss << " " << stroke.toGP();
 			ss << " " << headToGP(head);
-			ss << " back ";
+			//ss << " back ";
 			ss << "\n";
 		}
 

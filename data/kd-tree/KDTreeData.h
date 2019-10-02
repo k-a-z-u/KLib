@@ -2,6 +2,9 @@
 #define K_DATA_KDTREE_KDTREEDATA_H
 
 #include <vector>
+#include <cstdint>
+#include <cmath>
+#include <algorithm>
 
 namespace K {
 
@@ -200,7 +203,7 @@ namespace K {
 		}
 
 		/** get the difference between numLeft and numRight as absolute value */
-		KDIdx getAbsDiff() const {return std::abs(numLeft - numRight);}
+		KDIdx getAbsDiff() const {return static_cast<KDIdx>(std::abs( static_cast<int32_t>(numLeft) - static_cast<int32_t>(numRight)));}
 
 		/** get the number of elements (left + right) */
 		KDIdx numElements() const {return numLeft + numRight;}

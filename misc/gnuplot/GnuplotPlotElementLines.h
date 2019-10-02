@@ -5,6 +5,7 @@
 #include <vector>
 #include "GnuplotPlotElementRaw.h"
 #include "attributes/GnuplotAttrStroke.h"
+#include <functional>
 
 namespace K {
 

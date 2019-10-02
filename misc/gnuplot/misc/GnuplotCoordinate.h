@@ -64,15 +64,15 @@ namespace K {
 
 		/** ctor */
 		GnuplotCoordinate2(const float x, const GnuplotCoordinateSystem sysX, const float y, const GnuplotCoordinateSystem sysY) :
-		    x(x), sysX(sysX),
-		    y(y), sysY(sysY) {;}
+			x(x), sysX(sysX),
+			y(y), sysY(sysY) {;}
 
 
 		/** convert to gnuplot syntax */
 		std::string toGP() const {
 			return
-			    coordSysToGP(sysX) + " " + std::to_string(x) + "," +
-			    coordSysToGP(sysY) + " " + std::to_string(y);
+				coordSysToGP(sysX) + " " + std::to_string(x) + "," +
+				coordSysToGP(sysY) + " " + std::to_string(y);
 		}
 
 	};
@@ -97,23 +97,23 @@ namespace K {
 
 		/** ctor */
 		GnuplotCoordinate3(const float x, const GnuplotCoordinateSystem sysX, const float y, const GnuplotCoordinateSystem sysY, const float z, const GnuplotCoordinateSystem sysZ) :
-		    x(x), sysX(sysX),
-		    y(y), sysY(sysY),
-		    z(z), sysZ(sysZ) {;}
+			x(x), sysX(sysX),
+			y(y), sysY(sysY),
+			z(z), sysZ(sysZ) {;}
 
 		/** ctor for 2D points, where 3D is supported */
 		GnuplotCoordinate3(const float x, const GnuplotCoordinateSystem sysX, const float y, const GnuplotCoordinateSystem sysY) :
-		    x(x), sysX(sysX),
-		    y(y), sysY(sysY),
-		    z(0), sysZ(GnuplotCoordinateSystem::GRAPH) {;}
+			x(x), sysX(sysX),
+			y(y), sysY(sysY),
+			z(0), sysZ(GnuplotCoordinateSystem::GRAPH) {;}
 
 
 		/** convert to gnuplot syntax */
 		std::string toGP() const {
 			return
-			    coordSysToGP(sysX) + " " + std::to_string(x) + "," +
-			    coordSysToGP(sysY) + " " + std::to_string(y) + "," +
-			    coordSysToGP(sysZ) + " " + std::to_string(z);
+				coordSysToGP(sysX) + " " + std::to_string(x) + "," +
+				coordSysToGP(sysY) + " " + std::to_string(y) + "," +
+				coordSysToGP(sysZ) + " " + std::to_string(z);
 		}
 
 	};

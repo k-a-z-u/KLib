@@ -1,5 +1,7 @@
 #ifdef WITH_TESTS
 
+#ifdef WITH_OPENCL
+
 #include "../Test.h"
 #include "../../cl/opencl1/CL.h"
 #include "../../fs/File.h"
@@ -237,5 +239,7 @@ TEST(OpenCL, buffer) {
 	int i = 0; (void) i;
 
 }
+
+#endif
 
 #endif

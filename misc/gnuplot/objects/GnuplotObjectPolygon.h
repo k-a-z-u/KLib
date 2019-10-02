@@ -18,7 +18,6 @@ namespace K {
 		GnuplotFill fill;
 		GnuplotStroke stroke;
 		std::vector<GnuplotCoordinate3> points;
-		bool front = false;
 
 	public:
 
@@ -85,10 +84,12 @@ namespace K {
 					ss << ( i==0 ? " from " : " to ");
 					ss << points[i].toGP();
 				}
+				if (front) {
+					ss << " front ";}
+				if (back) {ss << " back ";}
 				//ss << " " << fill.toGP();
 				//ss << " " << stroke.toGP();
 				ss << getStyle(fill, stroke);
-				if (front) {ss << " front ";}
 				ss << "\n";
 
 			}

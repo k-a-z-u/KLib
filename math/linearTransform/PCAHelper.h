@@ -2,6 +2,7 @@
 #define K_MATH_PATTERN_PCA_PCAHELPER_H
 
 #include <eigen3/Eigen/Dense>
+#include <vector>
 
 namespace K {
 

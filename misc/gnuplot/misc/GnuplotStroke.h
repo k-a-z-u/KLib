@@ -26,6 +26,12 @@ namespace K {
 		}
 
 		/** ctor */
+		GnuplotStroke(const GnuplotColor& color) :
+		    type(GnuplotDashtype::SOLID), width(1.0f), color(color) {
+			;
+		}
+
+		/** ctor */
 		GnuplotStroke(const GnuplotDashtype type, const float width, const GnuplotColor& color) :
 		    type(type), width(width), color(color) {
 			;

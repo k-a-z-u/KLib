@@ -1,6 +1,8 @@
 #ifndef K_OPENCV_H
 #define K_OPENCV_H
 
+#ifdef WITH_OPENCV
+
 #include <opencv2/opencv.hpp>
 #include "ImageChannel.h"
 
@@ -45,5 +47,7 @@ namespace K {
 	}
 
 }
+
+#endif
 
 #endif // K_OPENCV_H

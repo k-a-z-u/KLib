@@ -67,6 +67,15 @@ ELSE()
 	MESSAGE(STATUS "OpenCL support: DISABLED")
 ENDIF()
 
+OPTION(WITH_OPENCV "Build with OpenCV support" ON)
+IF(WITH_OPENCL)
+    MESSAGE(STATUS "OpenCV support: ENABLED")
+	add_definitions(-DWITH_OPENCV)
+	SET(EXTRA_LIBS ${EXTRA_LIBS} OpenCV)
+ELSE()
+    MESSAGE(STATUS "OpenCV support: DISABLED")
+ENDIF()
+
 # for libeigen 3.3.x
 INCLUDE_DIRECTORIES(
 	/apps/lib/
@@ -98,7 +107,7 @@ IF(MSVC)
 	ADD_DEFINITIONS(-W3)
 ELSE()
 	ADD_DEFINITIONS(
-		-std=c++11
+		-std=c++17
 		-Wall
 		-Wextra
 		-Wconversion

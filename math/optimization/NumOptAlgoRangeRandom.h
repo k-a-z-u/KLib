@@ -54,7 +54,7 @@ namespace K {
 		std::vector<Scalar> valDeviation;
 
 		/** random number generator */
-		std::minstd_rand gen;
+		std::mt19937 gen;
 
 		/** callback-function to inform after every run */
 		std::function<void(const int iteration, const Scalar error, const Scalar* values)> callback;

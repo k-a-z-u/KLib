@@ -38,6 +38,8 @@ namespace K {
 			ss << "set object " << _id << " circle";
 			ss << " at " << at.toGP();
 			ss << " size " << radius.toGP();
+			if (front) {ss << " front ";}
+			if (back) {ss << " back ";}
 			ss << " " << getStyle(fill, stroke);
 			ss << "\n";
 		}

@@ -1,6 +1,8 @@
 #ifndef K_CL_BASE_H
 #define K_CL_BASE_H
 
+#ifdef WITH_OPENCL
+
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS		// we do not yet use openCL 2.0
 //#define __NO_STD_VECTOR // Use cl::vector instead of STL version
 #include <CL/cl.h>
@@ -58,5 +60,7 @@ namespace K {
 
 	}
 }
+
+#endif
 
 #endif // K_CL_BASE_H

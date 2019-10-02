@@ -39,15 +39,18 @@ namespace K {
 	template <typename Scalar, typename ClassType, bool parallel = false> class GeneticLinearTransformN {
 
 	public:
+		using Vec = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+		using Mat = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+
 
 		/** input patterns are a vector containing several values */
-		using Pattern = Eigen::VectorXf;
+		using Pattern = Vec;
 
 		/** the to-be-estimated matrix */
-		using Matrix =  Eigen::MatrixXf;
+		using Matrix =  Mat;
 
 		/** output feature is currently a single scalar value */
-		using Feature = Eigen::VectorXf;
+		using Feature = Vec;
 
 		/** classified pattern */
 		using Classified = std::unordered_map<ClassType, std::vector<Pattern>>;
@@ -60,8 +63,8 @@ namespace K {
 
 			bool init = false;
 			int cnt = 0;
-			Eigen::VectorXf sum;
-			Eigen::MatrixXf sum2;
+			Vec sum;
+			Mat sum2;
 
 
 			void add(const Feature& f) {
@@ -79,34 +82,30 @@ namespace K {
 
 			}
 
-			Eigen::MatrixXf getCovar() const {
+			Mat getCovar() const {
 				return (sum2/cnt) - ( (sum/cnt) * (sum/cnt).transpose() );
 			}
 
-			Eigen::VectorXf getAvgF() const {
+			Vec getAvg() const {
 				return sum/cnt;
 			}
 
-			Eigen::VectorXd getAvgD() const {
-				return sum.cast<double>() / cnt;
-			}
-
 			/** get a normal-distribution that describes all contained samples */
-			K::NormalDistributionN<float> getNormalDistribution() const {
-				return K::NormalDistributionN<float> (getAvgF(), getCovar());
+			K::NormalDistributionN<Scalar> getNormalDistribution() const {
+				return K::NormalDistributionN<Scalar> (getAvg(), getCovar());
 			}
 
 
 		};
 
 		struct PatternStats {
-			std::vector<float> absSum;
-			std::vector<float> sum;
-			std::vector<float> sum2;
-			std::vector<float> avg;
-			std::vector<float> stdDev;
-			std::vector<float> absAvg;
-			std::vector<float> mod;
+			std::vector<Scalar> absSum;
+			std::vector<Scalar> sum;
+			std::vector<Scalar> sum2;
+			std::vector<Scalar> avg;
+			std::vector<Scalar> stdDev;
+			std::vector<Scalar> absAvg;
+			std::vector<Scalar> mod;
 		};
 
 	private:
@@ -248,7 +247,7 @@ namespace K {
 
 			// prevent NaN issues etc.
 			auto init = [&, numParams] (const int, Scalar* genes) {
-				std::uniform_real_distribution<float> dist(-1.0f, +1.0f);
+				std::uniform_real_distribution<Scalar> dist(-1.0f, +1.0f);
 				for (int i = 0; i < numParams; ++i) {
 					genes[i] = dist(gen);
 				}
@@ -283,7 +282,7 @@ namespace K {
 			//Pattern map;
 			//map.resize(pattern.size(), 1);
 			//memcpy(map.data(), pattern.data(), pattern.size()*sizeof(Scalar));
-			const Eigen::Map<Matrix> map((float*)pattern.data(), patternLength, 1);
+			const Eigen::Map<Matrix> map((Scalar*)pattern.data(), patternLength, 1);
 
 			// get
 			return getFeature(map);
@@ -312,7 +311,7 @@ namespace K {
 //			mat.resize(dimensions, patternLength);
 //			memcpy(mat.data(), s, patternLength*dimensions*sizeof(Scalar));
 //			return mat;
-			return Eigen::Map<Matrix>((float*)s, dimensions, patternLength);
+			return Eigen::Map<Matrix>((Scalar*)s, dimensions, patternLength);
 		}
 
 
@@ -357,7 +356,7 @@ namespace K {
 
 					// 1D, 2D or 3D?
 					if (dimensions == 1) {
-						const float offset = std::sin(idx2) * 0.1; ++idx2;
+						const Scalar offset = std::sin(idx2) * 0.1; ++idx2;
 						//points2[classIdx].add(GnuplotPoint2(f[0], ((rand() % 25)*2+classIdx) / 100.0));//classIdx+offset));
 						points2[classIdx].add(GnuplotPoint2(f[0], classIdx+offset));
 					} else if (dimensions == 2) {
@@ -400,7 +399,7 @@ namespace K {
 	public:
 
 
-		static float maximizeDistance(const Scalar* params, const Classified& classifiedPatterns, const int patternLength, const int dimensions) {
+		static Scalar maximizeDistance(const Scalar* params, const Classified& classifiedPatterns, const int patternLength, const int dimensions) {
 
 			const Matrix mat = wrap(params, patternLength, dimensions);
 			std::unordered_map<ClassType, Stats> statsPerClass;
@@ -420,7 +419,7 @@ namespace K {
 			std::unordered_set<std::string> analyzed;
 
 			// calculate score
-			float score = 0;
+			Scalar score = 0;
 			for (const auto it1 : statsPerClass) {
 				const ClassType clazz1 = it1.first;
 
@@ -437,7 +436,7 @@ namespace K {
 					const Stats& s2 = it2.second;
 
 					// distance between s1 and s2
-					const float dist = (s1.getAvgF() - s2.getAvgF()).norm() / (s1.getCovar().norm() + s2.getCovar().norm());
+					const Scalar dist = (s1.getAvg() - s2.getAvg()).norm() / (s1.getCovar().norm() + s2.getCovar().norm());
 
 					score += dist;
 
@@ -451,7 +450,7 @@ namespace K {
 
 
 
-		static float bhattacharyya(const Scalar* params, const Classified& classifiedPatterns, const int patternLength, const int dimensions) {
+		static Scalar bhattacharyya(const Scalar* params, const Classified& classifiedPatterns, const int patternLength, const int dimensions) {
 
 			// https://en.wikipedia.org/wiki/Bhattacharyya_distance#cite_note-Coleman79-2
 
@@ -476,7 +475,7 @@ namespace K {
 
 
 			// calculate be comparing each class with each other [SINGLE DIRECTION!]
-			float score = 0;
+			Scalar score = 0;
 			for (size_t i = 0; i < statsPerClass.size(); ++i) {
 				for (size_t j = i+1; j < statsPerClass.size(); ++j) {
 
@@ -486,12 +485,12 @@ namespace K {
 
 					// correct?
 					const Eigen::MatrixXf combVar = (s1.getCovar() + s2.getCovar()) / 2.0;
-					const Eigen::MatrixXf combVarInv = combVar.cast<double>().inverse().cast<float>();
+					const Eigen::MatrixXf combVarInv = combVar.cast<double>().inverse().cast<Scalar>();
 
 					const double a =
-						(s1.getAvgF() - s2.getAvgF()).transpose() *
+						(s1.getAvg() - s2.getAvg()).transpose() *
 						combVarInv *
-						(s1.getAvgF() - s2.getAvgF());
+						(s1.getAvg() - s2.getAvg());
 
 					const double b =
 						combVar.determinant() /
@@ -511,7 +510,7 @@ namespace K {
 
 		}
 
-		static float mahalanobis(const Scalar* params, const Classified& classifiedPatterns, const int patternLength, const int dimensions) {
+		static Scalar mahalanobis(const Scalar* params, const Classified& classifiedPatterns, const int patternLength, const int dimensions) {
 
 			std::vector<Stats> statsPerClass;
 
@@ -534,7 +533,7 @@ namespace K {
 			}
 
 			// calculate be comparing each class with each other [SINGLE DIRECTION!]
-			float score = 0;
+			Scalar score = 0;
 			for (size_t i = 0; i < statsPerClass.size(); ++i) {
 				for (size_t j = i+1; j < statsPerClass.size(); ++j) {
 
@@ -545,10 +544,10 @@ namespace K {
 					// average covariance for both classes. correct?!?!
 					// needs double otherwise inverse often fails to build
 					const Eigen::MatrixXf combVarF = (s1.getCovar() + s2.getCovar()) / 2.0;
-					const Eigen::MatrixXf combVarInvF = combVarF.cast<double>().inverse().cast<float>();
+					const Eigen::MatrixXf combVarInvF = combVarF.cast<double>().inverse().cast<Scalar>();
 					//const Eigen::MatrixXd combVarInvD = combVarF.cast<double>().inverse();
 
-					const Eigen::VectorXf diff = s1.getAvgF() - s2.getAvgF();
+					const Eigen::VectorXf diff = s1.getAvg() - s2.getAvg();
 
 					const double x = diff.transpose() * combVarInvF * diff;
 
@@ -567,7 +566,7 @@ namespace K {
 
 		}
 
-		static float preventCrossMatch(const Scalar* params, const Classified& classifiedPatterns, const int patternLength, const int dimensions) {
+		static Scalar preventCrossMatch(const Scalar* params, const Classified& classifiedPatterns, const int patternLength, const int dimensions) {
 
 			const Matrix mat = wrap(params, patternLength, dimensions);
 			std::unordered_map<ClassType, Stats> statsPerClass;
@@ -587,7 +586,7 @@ namespace K {
 			std::unordered_set<std::string> analyzed;
 
 			// calculate score
-			float score = 0;
+			Scalar score = 0;
 			for (const auto it1 : statsPerClass) {
 				const ClassType clazz1 = it1.first;
 
@@ -603,12 +602,12 @@ namespace K {
 					const Stats& s1 = it1.second;
 					const Stats& s2 = it2.second;
 
-					const K::NormalDistributionN<float> nd1 = s1.getNormalDistribution();
-					const K::NormalDistributionN<float> nd2 = s2.getNormalDistribution();
+					const K::NormalDistributionN<Scalar> nd1 = s1.getNormalDistribution();
+					const K::NormalDistributionN<Scalar> nd2 = s2.getNormalDistribution();
 
-					const double p1 = nd1.getProbability(s2.getAvgF());
-					const double p2 = nd2.getProbability(s1.getAvgF());
-					const double d = (s1.getAvgF() - s2.getAvgF()).norm() / (s1.getCovar().norm() + s2.getCovar().norm());
+					const double p1 = nd1.getProbability(s2.getAvg());
+					const double p2 = nd2.getProbability(s1.getAvg());
+					const double d = (s1.getAvg() - s2.getAvg()).norm() / (s1.getCovar().norm() + s2.getCovar().norm());
 
 					score += (1-p1) * (1-p2) * (d);
 

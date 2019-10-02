@@ -154,13 +154,13 @@ namespace K {
 			// plot objects
 			objects.addTo(ss);
 
-			ss << "splot ";
+			ss << "splot \\\n";
 
 			// append the drawing-header for each element
 			int cnt = 0;
 			for (const GnuplotSplotElement* elem : elements) {
 				if (!elem->empty()) {
-					if (cnt != 0) {ss << ", ";}
+					if (cnt != 0) {ss << ",\\\n";}
 					elem->addHeaderTo(ss, mod);
 					++cnt;
 				}

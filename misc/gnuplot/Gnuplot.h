@@ -84,8 +84,18 @@ namespace K {
 			(*this) << "set output " << '"' << file.getAbsolutePath() << '"' << "\n";
 		}
 
+		/** set the file to write to */
+		void setOutput(const std::string& file) {
+			(*this) << "set output " << '"' << file << '"' << "\n";
+		}
+
 		/** send all buffered commands to gnuplot */
 		void flush() {
+
+			// write to process
+			*proc << getBuffer();
+			if (debug) {std::cout << getBuffer() << std::endl;}
+			proc->flush();
 
 			// write to file?
 			if (commandsFile != "") {
@@ -94,10 +104,7 @@ namespace K {
 				out.close();
 			}
 
-			// write to process
-			*proc << buffer.str();
-			if (debug) {std::cout << buffer.str() << std::endl;}
-			proc->flush();
+			// reset
 			buffer.str("");
 
 		}
@@ -115,6 +122,13 @@ namespace K {
 		/** set a filename to write the flush() data to [gnuplot commands] */
 		void writePlotToFile(const std::string& fileName) {
 			this->commandsFile = fileName;
+		}
+
+		/** write current data to the given file. now! */
+		void writePlotToFileNow(const std::string& fileName) {
+			std::ofstream out(fileName);
+			out << getBuffer();
+			out.close();
 		}
 
 	private:

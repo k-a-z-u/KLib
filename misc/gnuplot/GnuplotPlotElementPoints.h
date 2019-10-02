@@ -5,6 +5,7 @@
 
 #include "GnuplotPlotElementRaw.h"
 #include "attributes/GnuplotAttrColor.h"
+#include <functional>
 
 namespace K {
 
@@ -45,6 +46,13 @@ namespace K {
 			for (size_t i = 0; i < points.size(); ++i) {
 				const bool remove = func(points[i]);
 				if (remove) {points.erase(points.begin()+i); --i;}
+			}
+		}
+
+		void keepLatest(int cnt) {
+			int toRemove = points.size() - cnt;
+			if (toRemove > 0) {
+				points.erase(points.begin(), points.begin() + toRemove);
 			}
 		}
 

@@ -1,5 +1,6 @@
-
 #ifdef WITH_TESTS
+
+#ifdef WITH_OPENCV
 
 #include "../Test.h"
 #include "../../geo/Ellipse.h"
@@ -229,5 +230,7 @@ namespace K {
 
 
 }
+
+#endif
 
 #endif

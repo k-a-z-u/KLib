@@ -174,9 +174,11 @@ namespace K {
 
 		/** close the streams */
 		void close() {
+			usleep(1000*25);
 			closeFD(pipeFromProcess[READ]);
+			usleep(1000*25);
 			closeFD(pipeToProcess[WRITE]);
-			usleep(1000*10);	// dunno why but some processes need a little time here to close correctly
+			usleep(1000*25);	// dunno why but some processes need a little time here to close correctly
 		}
 
 		/** kill the process */

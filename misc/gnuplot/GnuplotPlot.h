@@ -169,10 +169,13 @@ namespace K {
 			ss << "plot ";
 
 			// append the drawing-header for each element
+			int cnt = 0;
 			for (const GnuplotPlotElement* elem : elements) {
-				if (elem->isEmpty()) {continue;}
-				elem->addHeaderTo(ss, mod);
-				ss << ", ";
+				if (!elem->isEmpty()) {
+					if (cnt != 0) {ss << ",\\\n";}
+					elem->addHeaderTo(ss, mod);
+					++cnt;
+				}
 			}
 			ss << "\n";
 

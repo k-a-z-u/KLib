@@ -26,6 +26,22 @@ namespace K {
 			this->bottom = bottom;
 		}
 
+		void setLeft(const float left) {
+			this->left = left;
+		}
+
+		void setRight(const float right) {
+			this->right = right;
+		}
+
+		void setTop(const float top) {
+			this->top = top;
+		}
+
+		void setBottom(const float bottom) {
+			this->bottom = bottom;
+		}
+
 	public:
 
 		/** convert to gnuplot commands */
