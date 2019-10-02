@@ -4,6 +4,8 @@
 #include <vector>
 #include <sstream>
 
+#include "GnuplotStructs.h"
+
 namespace K {
 
 
@@ -21,9 +23,7 @@ namespace K {
 
 
 		/** get drawing data for splot */
-		virtual std::string getData() {
-
-		}
+                virtual std::string getData() = 0;
 
 	};
 

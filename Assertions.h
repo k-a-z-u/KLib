@@ -12,8 +12,17 @@
 
 
 #ifdef WITH_ASSERTIONS
+#if defined(__linux__)
+	// supported by GCC
+	#define _getMethod()						std::string(__PRETTY_FUNCTION__)
+#elif defined(_WINDOWS)
+	// supported by MSVC
+	#define _getMethod()						std::string(__FUNCSIG__)
+#else
+	// the C++11 standard
+	#define _getMethod()						std::string(__func__) 
+#endif
 
-#define _getMethod()						std::string(__PRETTY_FUNCTION__)
 #define _throwAssertion(errorString)		throw K::Exception( "in:\t" + _getMethod() + "\nerror:\t" + errorString )
 
 #define _assertEqual(val1, val2, errorString)			if (val1 != val2) {_throwAssertion(errorString);}

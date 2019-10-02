@@ -14,6 +14,7 @@ namespace K {
 		float scaleAll = 1.0;
 		float scaleZ = 1.0;
 		bool enabled = true;
+		bool equalXY = false;
 
 	public:
 
@@ -31,6 +32,11 @@ namespace K {
 		void setScaleAll(const float scale) {
 			this->scaleAll = scale;
 		}
+		
+		void setEqualXY(const bool equalXY)
+		{
+			this->equalXY = equalXY;
+		}
 
 		/** disable "view" (allows for manual rotation for live-plots) */
 		void setEnabled(bool en) {
@@ -44,6 +50,11 @@ namespace K {
 				ss << "," << scaleAll << "," << scaleZ << " ";
 			}
 			ss << "\n";
+			
+			if (equalXY)
+			{
+				ss << "set view equal xy" << "\n";
+			}
 		}
 
 	};
