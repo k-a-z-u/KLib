@@ -127,6 +127,10 @@ namespace K {
 			return custom;
 		}
 
+		void clear() {
+			this->elements.clear();
+		}
+
 		/** get a string of what to draw */
 		void addTo(std::stringstream& ss) const override {
 
